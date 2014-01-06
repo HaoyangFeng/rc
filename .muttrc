@@ -131,4 +131,4 @@ macro index     .a      "l~A\n"
 macro index     .t      "l~d<1d\n"
 macro index     .y      "l~d<2d ~d>1d\n"
 
-folder-hook     .       push '.i' 
+#folder-hook     .       push '.i' 

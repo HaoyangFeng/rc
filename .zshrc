@@ -19,6 +19,13 @@ rc() {
   source ~/.zshrc
 }
 
+# Commit and push configuration files
+circ() {
+  cd ~/rc
+  ci $1
+  git push origin master
+}
+
 # Help: Keyword function help
 # h func : List all function documentation with the keyword func
 h() {
@@ -75,9 +82,9 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=MAP
+export MODE=JAVA
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
-export GREP_COLOR=NONE
+export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 
 # }}}
@@ -141,7 +148,7 @@ rpc() {
 menu() {
   eval $@ | nl
   read n
-  menu=$(eval $@ | sed -n "$n"p)
+  menu=$(eval $@ | sed -n "$n"p | decolor)
 }
 
 # Form a regex for full PascalCase abbreviation
@@ -206,9 +213,13 @@ clip() {
   xclip -sel clip
 }
 
+decolor() {
+  sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
+}
+
 eval3() {
   eval $@ &> $TMP/stdbuf/$$
-  sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
+  decolor $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
   cat3
 }
 
@@ -539,12 +550,11 @@ o() {
   if [ -d $1 ]; then
     cd $1
   elif [ -f $1 ]; then
-#   if [ "$2" = "" ]; then
-#     vi $1
-#   else
-#     vi +$2 $1
-#   fi
-    v $@
+    if [ "$2" = "" ]; then
+      vi $1
+    else
+      vi +$2 $1
+    fi
   fi
 }
 
@@ -685,7 +695,7 @@ done
 # Java Revision {{{
 
 export JPJ_ROOT="/home/haoyang.feng/projects"
-export JPJ=mes-8.0
+export JPJ=mes-excl-7.80/
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -797,7 +807,7 @@ EOF
 
 jpj() {
   j
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(8)"'
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
   crc JPJ $menu
   if [ -d $PJ_ROOT/$PJ ]; then
     pj
@@ -809,6 +819,13 @@ jpj() {
 # Copy universal java licence file
 cplic() {
   cp ~/Desktop/licence/Kiwiplan.licence $SV/$SITE_NAME/current/conf/licence
+}
+
+jsv() {
+  j
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
+  crc JPJ $menu
+  jup
 }
 
 jup() {
