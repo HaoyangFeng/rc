@@ -21,9 +21,11 @@ rc() {
 
 # Commit and push configuration files
 circ() {
+  pushd .
   cd ~/rc
   ci $1
   git push origin master
+  popd
 }
 
 # Help: Keyword function help
