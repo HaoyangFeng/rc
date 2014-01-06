@@ -193,6 +193,11 @@ exe() {
   done < $2
 }
 
+# Remove line numbers
+unl() {
+  cut -f2-
+}
+
 # }}}
 
 # System functions {{{
@@ -203,7 +208,7 @@ clip() {
 
 eval3() {
   eval $@ &> $TMP/stdbuf/$$
-  sed -e 's/\^\[\[.*\^\[\[K//g' $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
+  sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
   cat3
 }
 
@@ -394,9 +399,9 @@ gr() {
 
 gs() {
   if [ "$2" = "" ]; then
-    eval3 $(echo "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" .") | nl
+    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
   else
-    eval3 $(echo "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" .") | nl
+    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
   fi
 }
 
@@ -626,26 +631,18 @@ vw() {
 
 # Numbered Shortcut {{{
 
-# Remove line numbers
-unl() {
-  cut -f2-
-}
-
-en() {
-  aliasgrepnocolor
-# echo $(rpc | sed -n "$1"p | cut -f2-)
-  catl3 $1
-  aliasgrepfullcolor
+pn() {
+  eval3 $@ | nl
 }
 
 fn() {
-  en $1 | xargs $@
+  catl3nc $1 | xargs ${@:2}
 }
 
 # Numbered shortcut: Run numbered shortcut
 # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
-  n=$(en $1)
+  n=$(catl3nc $1)
   case $(pc | cut -d " " -f 1) in
       d) cd +$1;;
       t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
