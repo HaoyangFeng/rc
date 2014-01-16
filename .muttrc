@@ -130,5 +130,6 @@ macro index     .o      "l(~N|~O)\n"
 macro index     .a      "l~A\n"
 macro index     .t      "l~d<1d\n"
 macro index     .y      "l~d<2d ~d>1d\n"
+macro index A "<save-message>=archive<enter>"
 
 #folder-hook     .       push '.i' 
