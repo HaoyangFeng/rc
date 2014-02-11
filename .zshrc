@@ -2,6 +2,8 @@
 
 # Configuration Files {{{
 
+export ZSHRC=~/rc/.zshrc
+
 # Re-source Zsh
 rrc() {
   source ~/.zshrc
@@ -45,7 +47,7 @@ fh() {
 # Change variable in Zsh source
 crc() {
   rep=$(echo $2 | esr)
-  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' ~/.zshrc
+  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
   rrc
 }
 
@@ -1204,7 +1206,7 @@ maprev() {
   menu "echo 'boom_base\nboom_haoyang'"
   crc MAP_REV_SRC $menu
   menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
-  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' ~/.zshrc
+  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
   source ~/.zshrc
   rm /kiwi/kiwilink
   if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
@@ -1216,7 +1218,7 @@ maprev() {
 # Change MAP rev for dataset restores
 mapdatarev() {
   menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
-  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' ~/.zshrc
+  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
   source ~/.zshrc
 }
 
