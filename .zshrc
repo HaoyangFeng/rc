@@ -60,6 +60,11 @@ trc() {
   tmux source-file ~/.tmux.conf
 }
 
+# Configure Mutt
+mrc() {
+  vi ~/.muttrc
+}
+
 # Re-source Xmodmap
 keyon() {
   xmodmap ~/.Xmodmap
@@ -70,7 +75,7 @@ keyon() {
 # Environment variables {{{
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/rest/01jul2013/testtss
+export MD=/KIWI/datasets/GP/riegel.map
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
@@ -84,7 +89,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=JAVA
+export MODE=MAP
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -362,7 +367,8 @@ dh() {
 
 clog() {
   if [ "$1" = "" ]; then
-    for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d " " -f 8 | grep "\/[^\/]*@" | nl
+    #pn "for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d \" \" -f 8 | grep \"\/[^\/]*@\" | nl"
+    pn "for file in $\(ls\); do echo $file; done"
   else
     aliasgrepnocolor
     o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | grep $1 | cut -d " " -f 8 | grep "\/[^\/]*@")
@@ -412,7 +418,7 @@ gr() {
 
 gs() {
   if [ "$2" = "" ]; then
-    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
+    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
   else
     pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
   fi
@@ -697,7 +703,7 @@ done
 # Java Revision {{{
 
 export JPJ_ROOT="/home/haoyang.feng/projects"
-export JPJ=mes-excl-7.80/
+export JPJ=mes-excl-7.80
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -825,14 +831,14 @@ cplic() {
 
 jsv() {
   j
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
   crc JPJ $menu
-  jup
+  jin
 }
 
 jup() {
   if [ "$1" = "" ]; then
-    TARGET=$SITE_NAME
+    TARGET=$JPJ
   else
     TARGET=$1
   fi
@@ -844,7 +850,6 @@ jup() {
   ~/installers/$TARGET/$TARGET-*.sh << EOF
 n
 $SITE_NAME
-y
 y
 n
 1
@@ -859,19 +864,204 @@ EOF
   cplic
 }
 
-# javain : Do a fresh install of current java revision
-javain() {
-  if [ "$1" = "" ]; then
-    TARGET=$SITE_NAME
-  else
-    TARGET=$1
+#  ./$TARGET-*.sh << EOF
+## Basic
+# 
+#$SITE_NAME
+# 
+# 
+#1
+## Remove all services
+#2
+#3
+#4
+#5
+#6
+#7
+#8
+#9
+#10
+#11
+#12
+#13
+#14
+#15
+#16
+#17
+#18
+#19
+#20
+#21
+#22
+#23
+#24
+#25
+#26
+#27
+#28
+#29
+#30
+## Enable wanted services
+## Comms
+#2
+## Core
+#3
+## Csc
+#4
+## Man
+#7
+## Pcs
+#8
+## Basic
+#n
+#1
+#
+## Metric
+#y
+#n
+# 
+## Password
+#admin1
+#admin1
+# 
+## Comms SMTP
+#
+#
+#
+#
+#
+#
+#
+## Plant
+#
+## Trim
+#50125
+#
+#
+## Csc
+## Work DIR
+#
+## DB
+#root
+#
+#
+#
+#2
+#
+#
+#
+#
+#y
+#
+#localhost
+#
+#1
+#root
+#
+#
+#
+## Pcs
+## Work
+#
+## End
+#
+#e
+#EOF
+# jin : Do a fresh install of current java revision
+jin() {
+  rmsite
+  sqlrm csc
+  sqlrm pcs
+  sqlrm manufacturing
+  if [ -d ~/installers/$JPJ ]; then
+    rm -rf ~/installers/$JPJ
   fi
-  if [ -d ~/installers/$TARGET ]; then
-    rm -rf ~/installers/$TARGET
-  fi
-  mkdir ~/installers/$TARGET
-  scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $TARGET | sed "s/-[^-]*$//")'/'$TARGET'-*' ~/installers/$TARGET
-  ~/installers/$TARGET/$TARGET-*.sh
+  mkdir ~/installers/$JPJ
+  cd ~/installers/$JPJ
+  scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
+  ./$JPJ-*.sh << EOF
+ 
+$SITE_NAME
+ 
+ 
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+2
+3
+4
+7
+8
+n
+1
+
+y
+n
+ 
+admin1
+admin1
+ 
+
+
+
+
+
+
+
+
+50125
+
+
+
+root
+
+
+
+2
+
+
+
+
+y
+
+localhost
+
+1
+root
+
+
+
+
+
+e
+EOF
   cplic
 }
 
