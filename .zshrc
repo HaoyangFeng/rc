@@ -410,6 +410,12 @@ g() {
   grep -i $@
 }
 
+# Grep Utility: Reverse grep
+# gv a : Reverse grep "a"
+gv() {
+  g -v $@
+}
+
 gr() {
   if [ "$2" = "" ]; then
     eval $(echo "grep -irnI $1 .") | nl
