@@ -77,7 +77,7 @@ keyon() {
 # Environment variables {{{
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/GP/riegel.map
+export MD=/KIWI/datasets/rest/testeval
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"

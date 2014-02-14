@@ -92,6 +92,7 @@ alias absent Absent <Absent@kiwiplan.co.nz>
 alias jonathan Jonathan <jonathan.marsh@kiwiplan.co.nz>
 alias ian Ian <ian.collins@kiwiplan.co.nz>
 alias janet Janet <janet.stevenson@kiwiplan.co.nz>
+alias mike Mike <mike.treadgold@kiwiplan.co.nz>
 alias java Java Developers <javadevelopers@kiwiplan.co.nz>
 alias refreshdev sam,john,philip,edison,angeline,roberto,arnon,lucas,nigel,james,dave,sergei
 alias refreshjava sam,john,philip,edison,angeline,roberto,arnon,lucas
@@ -136,3 +137,4 @@ macro index     .c      "T~f jenkins\nT~f ssd\n;d"
 macro index A "<save-message>=archive<enter>"
 
 folder-hook     .       push '.i' 
+
