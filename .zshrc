@@ -370,7 +370,7 @@ dh() {
 clog() {
   if [ "$1" = "" ]; then
     #pn "for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d \" \" -f 8 | grep \"\/[^\/]*@\" | nl"
-    pn "for file in $\(ls\); do echo $file; done"
+    pn clog "for file in $\(ls\); do echo $file; done"
   else
     aliasgrepnocolor
     o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | grep $1 | cut -d " " -f 8 | grep "\/[^\/]*@")
@@ -426,9 +426,9 @@ gr() {
 
 gs() {
   if [ "$2" = "" ]; then
-    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
+    pn gs "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
   else
-    pn "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
+    pn gs "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
   fi
 }
 
@@ -539,6 +539,11 @@ pb() {
   mv $1.bk $1
 }
 
+# Directory history
+d() {
+  pn d "dirs -v | head -10"
+}
+
 # Tree
 t() {
   tree -f --noreport $@ | nl
@@ -561,10 +566,15 @@ tdiff() {
   rm $TMP/tdiff.2
 }
 
+function command_not_found_handler() {
+  echo aa
+}
+
 # Go to into directory or open file in Vi
 o() {
   if [ -d $1 ]; then
-    cd $1
+    builtin cd $1
+    l
   elif [ -f $1 ]; then
     if [ "$2" = "" ]; then
       vi $1
@@ -577,7 +587,7 @@ o() {
 # List Utility: List
 # l : List almost all files in human readable details sorted by modified time ascending
 l() {
-  ls -Alhrt $@ | nl
+  pn l "ls -Alhrt $@"
 }
 
 # Remove Utility: Remove
@@ -658,7 +668,12 @@ vw() {
 # Numbered Shortcut {{{
 
 pn() {
-  eval3 $@ | nl
+  echo $1 > $TMP/stdbuf/$$.cmd
+  eval3 $2 | nl
+}
+
+pnc() {
+  cat $TMP/stdbuf/$$.cmd
 }
 
 fn() {
@@ -669,11 +684,14 @@ fn() {
 # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
   n=$(catl3nc $1)
-  case $(pc | cut -d " " -f 1) in
+  case $(pnc | cut -d " " -f 1) in
       d) cd +$1;;
       t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
-      l) o $(echo $n | awk '{print $8}');;
+      l) case $2 in 
+             r) r $(echo $n | awk '{print $8}');;
+             *) o $(echo $n | awk '{print $8}');;
+         esac;;
       lt) o $(echo $n | awk '{print $8}');;
       f) o $n;;
       fa) o $n;;
@@ -693,10 +711,6 @@ rn() {
 
 for ((i = 0; i < 10000; i++)); do
   alias $i="rn $i"
-done
-
-for ((i = 0; i < 10000; i++)); do
-  alias e$i="en $i"
 done
 
 for ((i = 0; i < 10000; i++)); do
@@ -1650,6 +1664,7 @@ cdd() {
 # Go to the desktop work directory
 work() {
   cdd work
+  l
 }
 
 export NOTE=~/note
@@ -1790,6 +1805,15 @@ add-zsh-hook precmd prompt_precmd
 
 prompt_precmd() {
   echo "--- $TRED$MODE | $PJ $TBLUE$MAP_REV | $MAP_DATA_REV | $(rnode $MD \/ 0)"
+}
+
+add-zsh-hook preexec o_preexec
+
+o_preexec() {
+  if [[ -a $1 ]]; then
+    o $1
+    exec zsh
+  fi
 }
 
 PROMPT="$TYELLOW%~$ $FINISH"
