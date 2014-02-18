@@ -33,7 +33,7 @@ circ() {
 # Help: Keyword function help
 # h func : List all function documentation with the keyword func
 h() {
-  pattern="#.*$@"
+  pattern="#.*$(kw $@)"
   cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
 }
 
@@ -91,7 +91,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=MAP
+export MODE=JAVA
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -160,6 +160,13 @@ menu() {
   menu=$(eval $@ | sed -n "$n"p | decolor)
 }
 
+# Text Manipulation: Keyword
+# kw one two three : Outputs "one.*two.*three"
+kw() {
+  echo $@ | s "s/ /.*/g"
+}
+
+# Text Manipulation: Full PascalCase Abbreviation
 # Form a regex for full PascalCase abbreviation
 ab() {
   var=`echo $1 | sed 's/./&[^A-Z]*/g'`
@@ -825,6 +832,7 @@ cmp() {
 # Java Setup {{{
 
 # Java Setup: Check out Java project
+# jco mes-8.0 : Check out mes-8.0 projects
 jco() {
   j
   pj
@@ -1364,7 +1372,10 @@ boomdown() {
 
 # 
 kpi() {
- scp "kpi@maven:/home/kpi/haoyang/*.csv" ~/Desktop/kpi
+#  ssh kpi@maven "./haoyang_kpi_export.sh"
+  r ~/Desktop/kpi/*
+  scp "kpi@maven:/home/kpi/haoyang/*.csv" ~/Desktop/kpi
+#  ooffice ~/Desktop/kpi/*.csv
 }
 
 # Login to aurora
