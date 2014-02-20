@@ -37,6 +37,7 @@ h() {
   cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
 }
 
+# TODO gives error: decolor:2: maximum nested function level reached
 # Help: Full precise function help
 # fh func : Show the documentation and code of function func
 fh() {
@@ -574,7 +575,7 @@ tdiff() {
 }
 
 function command_not_found_handler() {
-  echo aa
+  echo I don\'t understand: $@
 }
 
 # Go to into directory or open file in Vi
@@ -582,6 +583,8 @@ o() {
   if [ -d $1 ]; then
     builtin cd $1
     l
+  elif [ -x $1 ]; then
+    $1
   elif [ -f $1 ]; then
     if [ "$2" = "" ]; then
       vi $1
@@ -697,7 +700,8 @@ rn() {
       note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       l) case $2 in 
              r) r $(echo $n | awk '{print $8}');;
-             *) o $(echo $n | awk '{print $8}');;
+             "") o $(echo $n | awk '{print $8}');;
+             *) $2 $(echo $n | awk '{print $8}');;
          esac;;
       lt) o $(echo $n | awk '{print $8}');;
       f) o $n;;
@@ -732,7 +736,7 @@ done
 # Java Revision {{{
 
 export JPJ_ROOT="/home/haoyang.feng/projects"
-export JPJ=mes-excl-7.80
+export JPJ=mes-7.80.1
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -1347,10 +1351,12 @@ boom() {
 # Download from boom
 # If $1 is defined then download the file to nzboom shared folder
 boomdl() {
+  cdd boom
+  rm -rf *
   if [ "$1" = "" ]; then
-    ssh nzboom
+    scp -r "nzboom:~/shared/*" .
   else
-    scp nzboom:~/shared/$1 .
+    scp -r "nzboom:~/shared/$1" .
   fi
 }
 
@@ -1362,12 +1368,6 @@ suboom() {
 # odie : Login to nzodie
 odie() {
   ssh ssd@nzodie
-}
-
-boomdown() {
-  cdd boom
-  rm -rf *
-  scp -r "nzboom:/home/haoyang.feng/shared/*" .
 }
 
 # 
@@ -1698,6 +1698,12 @@ note() {
 
 export TD_TODO=$NOTE/td/todo
 export TD_DONE=$NOTE/td/done
+
+# Todo Utility: Edit
+# tde : Edit the TODO list
+tde() {
+  vi $TD_TODO
+}
 
 # Todo Utility: Add to the top of the TODO list
 tdn() {
