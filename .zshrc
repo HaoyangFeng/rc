@@ -3,7 +3,7 @@
 # Environment variables {{{
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/rest/testeval
+export MD=/KIWI/datasets/GP/Riegelsville/MAP
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
@@ -1122,7 +1122,7 @@ esac
 
 # Go to MAP datasets directory
 ds() {
-  cd $DS
+  o $DS
 }
 
 # Go to MAP work directory
@@ -1823,7 +1823,7 @@ FINISH="%{$terminfo[sgr0]%}"
 add-zsh-hook precmd prompt_precmd
 
 prompt_precmd() {
-  echo "--- $TRED$MODE | $PJ $TBLUE$MAP_REV | $MAP_DATA_REV | $(rnode $MD \/ 0)"
+  echo "--- $TRED$MODE | $PJ $TBLUE$MAP_REV | $MAP_DATA_REV | $(rnode $MD \/ 2) $(rnode $MD \/ 1) $(rnode $MD \/ 0)"
 }
 
 add-zsh-hook preexec o_preexec
