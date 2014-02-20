@@ -221,6 +221,12 @@ unl() {
   cut -f2-
 }
 
+# Date : Timestamp
+# timestamp : Show current time stamp in nano second
+timestamp() {
+  date +%s%N
+}
+
 # }}}
 
 # System functions {{{
@@ -562,7 +568,7 @@ tl() {
 }
 
 for ((i = 0; i < 100; i++)); do
-  alias t$i="lt $i"
+  alias t$i="tl $i"
 done
 
 # Tree diff
@@ -600,16 +606,16 @@ l() {
   pn l "ls -Alhrt $@"
 }
 
+export TRASH=~/.Trash
+
 # Remove Utility: Remove
 # r file : Move file to trash
 r() {
-  if [ -f ~/.Trash/$1 ]; then
-    rm ~/.Trash/$1
+  if [[ -a $1 ]]; then
+    trash=$TRASH/$(timestamp)
+    md $trash
+    mv $@ $trash
   fi
-  if [ -d ~/.Trash/$1 ]; then
-    rm -rf ~/.Trash/$1
-  fi
-  mv $1 ~/.Trash
 }
 
 # Remove Utility: Remove list
@@ -628,6 +634,11 @@ catl() {
 # ins file "text" : Insert "text" into line 1 of file
 ins() {
   sed -i "1i$2" $1
+}
+
+# Directory : Make Directory
+md() {
+  mkdir -p $@
 }
 
 # }}}
@@ -1228,6 +1239,19 @@ mapdatarev() {
   menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
   sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
   source ~/.zshrc
+}
+
+# MAP Setup: MAP Work Cleanup
+# mwc : Clean up MAP work directory by removing temp files
+mwc() {
+  rm *.LS
+  rm *.TM
+  rm *.XXX
+  rm *.LOG
+  rm *.LG
+  rm *.LG1
+  rm *.OK
+  rm *.LK
 }
 
 # }}}
