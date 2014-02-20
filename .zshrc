@@ -105,6 +105,7 @@ fh() {
   which $1
 }
 
+# TODO seem to erase MAP_REV_SOURCE to MAP_REV
 # Change variable in Zsh source
 crc() {
   rep=$(echo $2 | esr)
@@ -806,7 +807,8 @@ rmsite() {
   rm -rf $TC/$SITE_NAME
 }
 
-# Tail all java logs
+# Java Development: Log
+# lg : Tail logs
 lg() {
   tail -f logs/*
 }
@@ -1093,7 +1095,7 @@ EOF
 
 # MAP Revision {{{
 
-export MAP_REV=messaging
+export MAP_REV_SRC=boom_base
 export MAP_REV=messaging
 export MAP_DATA_REV=01jul2013
 export MAP_TRUNK=trunk
