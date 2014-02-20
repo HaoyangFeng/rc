@@ -701,7 +701,7 @@ rn() {
       l) case $2 in 
              r) r $(echo $n | awk '{print $8}');;
              "") o $(echo $n | awk '{print $8}');;
-             *) $2 $(echo $n | awk '{print $8}');;
+             *) $2 $(echo $n | awk '{print $8}') ${@:3};;
          esac;;
       lt) o $(echo $n | awk '{print $8}');;
       f) o $n;;
