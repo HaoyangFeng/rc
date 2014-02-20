@@ -1,80 +1,5 @@
 ################## General OS ################## 
 
-# Configuration Files {{{
-
-export ZSHRC=~/rc/.zshrc
-
-# Re-source Zsh
-rrc() {
-  source ~/.zshrc
-}
-
-# Configure Zsh
-rc() {
-  echo ":set foldmethod=marker" > $TMP/rc.vi
-  echo "zR/^$1\(" > $TMP/rc1.vi
-  if [ "$1" = "" ]; then
-    vi ~/.zshrc -s "$TMP/rc.vi"
-  else
-    vi ~/.zshrc -s "$TMP/rc1.vi"
-  fi
-  source ~/.zshrc
-}
-
-# Commit and push configuration files
-circ() {
-  pushd .
-  cd ~/rc
-  ci $1
-  git push origin master
-  popd
-}
-
-# Help: Keyword function help
-# h func : List all function documentation with the keyword func
-h() {
-  pattern="#.*$(kw $@)"
-  cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
-}
-
-# TODO gives error: decolor:2: maximum nested function level reached
-# Help: Full precise function help
-# fh func : Show the documentation and code of function func
-fh() {
-  cat ~/.zshrc | grep "^$1\(" -B2  | head -2
-  which $1
-}
-
-# Change variable in Zsh source
-crc() {
-  rep=$(echo $2 | esr)
-  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
-  rrc
-}
-
-# Configure Vi
-vrc() {
-  vi ~/.vimrc
-}
-
-# Configure Tmux
-trc() {
-  vi ~/.tmux.conf
-  tmux source-file ~/.tmux.conf
-}
-
-# Configure Mutt
-mrc() {
-  vi ~/.muttrc
-}
-
-# Re-source Xmodmap
-keyon() {
-  xmodmap ~/.Xmodmap
-}
-
-# }}}
-
 # Environment variables {{{
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
@@ -114,7 +39,7 @@ alias bc='bc -l'
 
 aliasgrep() {
   if [ "$GREP_COLOR" = "FULL" ]; then
-    alias grep='grep --color=always -E'
+    alias grep='grep -E --color=always'
   else
     alias grep='grep -E --color=none'
   fi
@@ -133,6 +58,80 @@ aliasgrepfullcolor() {
 }
 
 aliasgrep
+
+# }}}
+
+# Configuration Files {{{
+
+export ZSHRC=~/rc/.zshrc
+
+# Re-source Zsh
+rrc() {
+  source ~/.zshrc
+}
+
+# Configure Zsh
+rc() {
+  echo ":set foldmethod=marker" > $TMP/rc.vi
+  echo "zR/^$1\(" > $TMP/rc1.vi
+  if [ "$1" = "" ]; then
+    vi ~/.zshrc -s "$TMP/rc.vi"
+  else
+    vi ~/.zshrc -s "$TMP/rc1.vi"
+  fi
+  source ~/.zshrc
+}
+
+# Commit and push configuration files
+circ() {
+  pushd .
+  cd ~/rc
+  ci $1
+  git push origin master
+  popd
+}
+
+# Help: Keyword function help
+# h func : List all function documentation with the keyword func
+h() {
+  pattern="#.*$(kw $@)"
+  cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
+}
+
+# Help: Full precise function help
+# fh func : Show the documentation and code of function func
+fh() {
+  cat ~/.zshrc | grep "^$1\(" -B2  | head -2
+  which $1
+}
+
+# Change variable in Zsh source
+crc() {
+  rep=$(echo $2 | esr)
+  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
+  rrc
+}
+
+# Configure Vi
+vrc() {
+  vi ~/.vimrc
+}
+
+# Configure Tmux
+trc() {
+  vi ~/.tmux.conf
+  tmux source-file ~/.tmux.conf
+}
+
+# Configure Mutt
+mrc() {
+  vi ~/.muttrc
+}
+
+# Re-source Xmodmap
+keyon() {
+  xmodmap ~/.Xmodmap
+}
 
 # }}}
 
@@ -547,10 +546,11 @@ pb() {
   mv $1.bk $1
 }
 
+# TODO
 # Directory history
-d() {
-  pn d "dirs -v | head -10"
-}
+#d() {
+#  pn d "dirs -v | head -10"
+#}
 
 # Tree
 t() {
