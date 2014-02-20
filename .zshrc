@@ -858,9 +858,10 @@ jpj() {
   fi
 }
 
+# TODO only works for CSC
 # Copy universal java licence file
 cplic() {
-  cp ~/Desktop/licence/Kiwiplan.licence $SV/$SITE_NAME/current/conf/licence
+  cp ~/Desktop/licence/Kiwiplan.licence .
 }
 
 jsv() {
@@ -1001,60 +1002,36 @@ EOF
 #
 #e
 #EOF
-# jin : Do a fresh install of current java revision
+
+# TODO only works for CSC-only
+# Java Setup: Fresh Service Installation
+# jin : Do a fresh installation of the current java revision
 jin() {
+
+# Clean up
   rmsite
   sqlrm csc
   sqlrm pcs
   sqlrm manufacturing
-  if [ -d ~/installers/$JPJ ]; then
-    rm -rf ~/installers/$JPJ
+  
+# Get installer
+  if [ -d $IN/$JPJ ]; then
+    rm -rf $IN/$JPJ
   fi
-  mkdir ~/installers/$JPJ
-  cd ~/installers/$JPJ
+  mkdir $IN/$JPJ
+  cd $IN/$JPJ
   scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
+  cplic
+
+# Run installation
   ./$JPJ-*.sh << EOF
  
 $SITE_NAME
  
  
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-2
-3
-4
-7
-8
 n
-1
+
+
 
 y
 n
@@ -1096,7 +1073,6 @@ root
 
 e
 EOF
-  cplic
 }
 
 # }}}
