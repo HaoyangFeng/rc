@@ -139,3 +139,4 @@ macro index A "<save-message>=archive<enter>"
 folder-hook     .       push '.i' 
 
 alias paul Paul <paul.mackenzie@kiwiplan.co.nz>
+alias wayne Wayne <wayne.stocks@kiwiplan.com>

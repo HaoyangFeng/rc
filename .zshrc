@@ -4,7 +4,7 @@
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
 export MD=/KIWI/datasets/GP/Riegelsville/MAP
-export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin"
+export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/work"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
 export CM="/KIWI/java/comms"
@@ -17,7 +17,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=JAVA
+export MODE=VUE
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -231,6 +231,11 @@ timestamp() {
 # }}}
 
 # System functions {{{
+
+# Clear Screen
+cs() {
+  clear
+}
 
 clip() {
   xclip -sel clip
@@ -543,14 +548,23 @@ uz() {
   rm $1
 }
 
-# Backup
-bk() {
-  mv $1 $1.bk
+# Back Up : Back Up
+bu() {
+  if [ $2 = "" ]; then
+    cp -r $1 $1.bu
+  else
+    cp -r $1 $1.bu.$2
+  fi
+}
+
+# Back Up : Back Up Remove
+bur() {
+  mv $1 $1.bu
 }
 
 # Put back backup
 pb() {
-  mv $1.bk $1
+  mv $1.bu $1
 }
 
 # TODO
@@ -640,6 +654,15 @@ ins() {
 # Directory : Make Directory
 md() {
   mkdir -p $@
+}
+
+# Directory: Directory
+# d ex : Move to directory "ex" even if it doesn't exist
+d() {
+  if [ ! -d $1 ]; then
+    mkdir -p $@
+  fi
+  o $1
 }
 
 # }}}
@@ -1120,14 +1143,27 @@ esac
 
 # MAP Navigation {{{
 
-# Go to MAP datasets directory
-ds() {
+# Data Set: Change Data Set
+cds() {
   o $DS
+}
+
+# Go to MAP dataset directory
+ds() {
+  o $MD/..
+}
+
+mds() {
+  o $MD
+}
+
+jds() {
+  o $MD/../VUE
 }
 
 # Go to MAP work directory
 mwk() {
-  cd $WORK
+  o $WORK
 }
 
 # Switch MAP dataset
@@ -1175,6 +1211,19 @@ restsql() {
   lndata $DIR/test$1.sql
 }
 
+
+jip() {
+  mwk
+  jimportpaper
+}
+jib() {
+  mwk
+  jimportboard
+}
+jih() {
+  mwk
+  jimporthistory
+}
 pcs() {
   mwk
   pcsmenu
@@ -1250,10 +1299,17 @@ mwc() {
   rm *.TM
   rm *.XXX
   rm *.LOG
+  rm *.log
   rm *.LG
   rm *.LG1
   rm *.OK
   rm *.LK
+  rm *.lk
+  rm *.TXT
+  rm *.txt
+  rm trim.log.*
+  rm *.out
+  rm core
 }
 
 # }}}
@@ -1277,7 +1333,7 @@ mgmess() {
 
 # Set general development environment variables
 case $MODE in
-JAVA)
+VUE)
   export SVN=$JSVN
   export PJ_ROOT=$JPJ_ROOT
   export PJ=$JPJ
@@ -1295,7 +1351,7 @@ esac
 
 # Selecting the development mode
 mode() {
-  menu "echo 'JAVA\nMAP'"
+  menu "echo 'VUE\nMAP'"
   crc MODE $menu
 }
 
@@ -1823,12 +1879,14 @@ FINISH="%{$terminfo[sgr0]%}"
 add-zsh-hook precmd prompt_precmd
 
 prompt_precmd() {
-  echo "--- $TRED$MODE | $PJ $TBLUE$MAP_REV | $MAP_DATA_REV | $(rnode $MD \/ 2) $(rnode $MD \/ 1) $(rnode $MD \/ 0)"
+  echo
+  echo "---  $TRED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $TBLUE$PJ   $TCYAN$MAP_REV | $MAP_DATA_REV"
 }
 
 add-zsh-hook preexec o_preexec
 
 o_preexec() {
+  cs
   if [[ -a $1 ]]; then
     o $1
     exec zsh
