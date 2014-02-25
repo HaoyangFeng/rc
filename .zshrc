@@ -708,6 +708,12 @@ vw() {
   vi $(which $1)
 }
 
+# Vim: Vim Diff
+# vd a b : Vim-diff file a and file b
+vd() {
+  vimdiff $@
+}
+
 # }}}
 
 # Numbered Shortcut {{{
@@ -1143,24 +1149,6 @@ esac
 
 # MAP Navigation {{{
 
-# Data Set: Change Data Set
-cds() {
-  o $DS
-}
-
-# Go to MAP dataset directory
-ds() {
-  o $MD/..
-}
-
-mds() {
-  o $MD
-}
-
-jds() {
-  o $MD/../VUE
-}
-
 # Go to MAP work directory
 mwk() {
   o $WORK
@@ -1327,6 +1315,7 @@ mgmess() {
 
 # }}}
 
+ 
 ################## General Developement ################## 
 
 # General Navigation {{{
@@ -1377,6 +1366,36 @@ hd() {
     cd $HD
   fi
 }
+
+# }}}
+
+# Data Set {{{
+
+# Data Set: Change Data Set
+# cds : Change data set
+cds() {
+  o $DS
+}
+
+# Data Set: Data Set
+# ds : Go to the data set
+ds() {
+  o $MD/..
+}
+
+# Data Set: MAP Data Set
+# mds : Go to the MAP data set
+mds() {
+  o $MD
+}
+
+# Data Set: VUE Data Set
+# jds : Go to the VUE data set
+vds() {
+  o $MD/../VUE
+}
+
+
 
 # }}}
 
