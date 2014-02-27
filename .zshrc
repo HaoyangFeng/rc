@@ -562,9 +562,14 @@ bur() {
   mv $1 $1.bu
 }
 
-# Put back backup
+# Back Up : Put Back
 pb() {
-  mv $1.bu $1
+  r $1
+  if [ $2 = "" ]; then
+    cp -r $1.bu $1
+  else
+    cp -r $1.bu.$2 $1
+  fi
 }
 
 # TODO
@@ -735,7 +740,7 @@ fn() {
 # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
   n=$(catl3nc $1)
-  case $(pnc | cut -d " " -f 1) in
+  case $(pnc) in
       d) cd +$1;;
       t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
@@ -1315,6 +1320,15 @@ mgmess() {
 
 # }}}
 
+# MAP Build {{{
+
+# MAP Build: MAP Continuous Integration
+# mci : Show the MAP continuous integration status
+mci() {
+  ssh nzboom ls -lrt /src/CI/logs
+}
+
+#}}}
  
 ################## General Developement ################## 
 
@@ -1909,6 +1923,11 @@ o_preexec() {
   if [[ -a $1 ]]; then
     o $1
     exec zsh
+  elif [[ "$(pnc)" = "l" ]]; then
+ # | awk '{print $8}'
+    #echo ZZZZZZZZZ
+    #echo $1 | sed -e 's/ [0-9]\+ /& $(catl3nc &)/g'
+    #echo ZZZZZZZZZ
   fi
 }
 
@@ -1922,38 +1941,42 @@ export EDITOR=vim
 
 # Syntax {{{
 setopt extended_glob
- TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
+TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
  
- recolor-cmd() {
-     region_highlight=()
-     colorize=true
-     start_pos=0
-     for arg in ${(z)BUFFER}; do
-         ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
-         ((end_pos=$start_pos+${#arg}))
-         if $colorize; then
-             colorize=false
-             res=$(LC_ALL=C builtin type $arg 2>/dev/null)
-             case $res in
-                 *'reserved word'*)   style="fg=magenta";;
-                 *'alias for'*)       style="fg=cyan";;
-                 *'shell builtin'*)   style="fg=yellow";;
-                 *'shell function'*)  style='fg=green';;
-                 *"$arg is"*)
-                     [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
-                 *)                   style='none';;
-             esac
-             region_highlight+=("$start_pos $end_pos $style")
-         fi
-         [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
-         start_pos=$end_pos
-     done
- }
-check-cmd-self-insert() { zle .self-insert && recolor-cmd }
- check-cmd-backward-delete-char() { zle .backward-delete-char && recolor-cmd }
+recolor-cmd() {
+   region_highlight=()
+   colorize=true
+   start_pos=0
+   for arg in ${(z)BUFFER}; do
+       ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
+       ((end_pos=$start_pos+${#arg}))
+       if $colorize; then
+           colorize=false
+           res=$(LC_ALL=C builtin type $arg 2>/dev/null)
+           case $res in
+               *'reserved word'*)   style="fg=magenta";;
+               *'alias for'*)       style="fg=cyan";;
+               *'shell builtin'*)   style="fg=yellow";;
+               *'shell function'*)  style='fg=green';;
+               *"$arg is"*)
+                   [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
+               *)                   style='none';;
+           esac
+           region_highlight+=("$start_pos $end_pos $style")
+       fi
+       [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
+       start_pos=$end_pos
+   done
+}
+
+expand-cmd() {
+}
+
+self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
+backward-delete-char() { zle .backward-delete-char && recolor-cmd }
  
-zle -N self-insert check-cmd-self-insert
-zle -N backward-delete-char check-cmd-backward-delete-char
+zle -N self-insert
+zle -N backward-delete-char
 # }}}
 
 # History {{{
