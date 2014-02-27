@@ -601,6 +601,7 @@ tdiff() {
 }
 
 function command_not_found_handler() {
+  cs
   echo I don\'t understand: $@
 }
 
@@ -1920,6 +1921,8 @@ add-zsh-hook preexec o_preexec
 
 o_preexec() {
   cs
+  echo $1
+  echo
   if [[ -a $1 ]]; then
     o $1
     exec zsh
