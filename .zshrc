@@ -405,10 +405,12 @@ clog() {
 
 # }}}
 
-# {{{ Browsing
+# Echo {{{
 
+# Echo
+# e text : Echo "text"
 e() {
-  elinks
+  echo $@
 }
 
 # }}}
