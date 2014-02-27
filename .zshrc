@@ -1,5 +1,6 @@
 ################## TODO ################## 
 # Coloriser
+# Completing running task beeps terminal
 
 
 
