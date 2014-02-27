@@ -1,3 +1,8 @@
+################## TODO ################## 
+# Coloriser
+
+
+
 ################## General OS ################## 
 
 # Environment variables {{{
