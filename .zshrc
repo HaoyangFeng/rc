@@ -664,6 +664,12 @@ l() {
   pn l "ls -Alhrt $@"
 }
 
+# List Utility: List Brief
+# lb : List files in brief in human readable details sorted by modified time ascending
+lb() {
+  pn l "ls -lhrt $@"
+}
+
 export TRASH=~/.Trash
 
 # Remove Utility: Remove
@@ -783,9 +789,9 @@ rn() {
       t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       l) case $2 in 
-             r) r $(echo $n | awk '{print $8}');;
-             "") o $(echo $n | awk '{print $8}');;
-             *) $2 $(echo $n | awk '{print $8}') ${@:3};;
+             r) r "$(echo $n | awk '{print $8}')";;
+             "") o "$(echo $n | awk '{print $8}')";;
+             *) $2 "$(echo $n | awk '{print $8}')" ${@:3};;
          esac;;
       lt) o $(echo $n | awk '{print $8}');;
       f) o $n;;
