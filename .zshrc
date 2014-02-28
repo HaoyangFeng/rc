@@ -658,14 +658,24 @@ o() {
   fi
 }
 
-# List Utility: List
-# l : List almost all files in human readable details sorted by modified time ascending
+# List Utility : List
+# l : List files in full or brief depending on total number of files
 l() {
+  if [[ $(lf | wc -l) -lt 30 ]]; then
+    lf
+  else
+    lb
+  fi
+}
+
+# List Utility: List All
+# lf : List almost all files
+lf() {
   pn l "ls -Alhrt $@"
 }
 
 # List Utility: List Brief
-# lb : List files in brief in human readable details sorted by modified time ascending
+# lb : List files in brief
 lb() {
   pn l "ls -lhrt $@"
 }
