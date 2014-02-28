@@ -791,7 +791,7 @@ done
 # Java Revision {{{
 
 export JPJ_ROOT="/home/haoyang.feng/projects"
-export JPJ=mes-7.80.1
+export JPJ=mes-7.90.1
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -837,9 +837,9 @@ ss() {
 
 # Go to java installers directory
 in() {
-  cd $IN
+  o $IN
   if [ -d $SITE_NAME ]; then
-    cd $SITE_NAME
+    o $SITE_NAME
   fi
 }
 
@@ -914,10 +914,10 @@ jpj() {
   fi
 }
 
-# TODO only works for CSC
 # Copy universal java licence file
+# cplic csc : Copy CSC licence to the current directory
 cplic() {
-  cp ~/Desktop/licence/Kiwiplan.licence .
+  cp ~/Desktop/licence/$1.licence .
 }
 
 jsv() {
@@ -1077,7 +1077,7 @@ jin() {
   mkdir $IN/$JPJ
   cd $IN/$JPJ
   scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
-  cplic
+  cplic csc
 
 # Run installation
   ./$JPJ-*.sh << EOF
