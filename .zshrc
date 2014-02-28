@@ -805,9 +805,9 @@ export PJ="/home/haoyang.feng/projects"
 
 # Go to java service directory
 sv() {
-  cd $SV
-  cd $SITE_NAME
-  cd current
+  o $SV
+  o $SITE_NAME
+  o current
 } 
 
 # Go to java tomcat directory
