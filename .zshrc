@@ -853,7 +853,11 @@ rmsite() {
 # Java Development: Log
 # lg : Tail logs
 lg() {
-  tail -f logs/*
+  if [[ "$1" = "" ]]; then
+    tail -f logs/*
+  else
+    tail -f logs/$1*
+  fi
 }
 
 # Start tomcat debug
