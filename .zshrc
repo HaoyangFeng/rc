@@ -587,7 +587,7 @@ uz() {
 
 # Back Up : Back Up
 bu() {
-  if [ $2 = "" ]; then
+  if [ "$2" = "" ]; then
     cp -r $1 $1.bu
   else
     cp -r $1 $1.bu.$2
@@ -1452,9 +1452,9 @@ mds() {
   o $MD
 }
 
-# Data Set: VUE Data Set
-# jds : Go to the VUE data set
-vds() {
+# Data Set: Java Data Set
+# jds : Go to the Java data set
+jds() {
   o $MD/../VUE
 }
 
