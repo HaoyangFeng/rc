@@ -3,6 +3,35 @@
 # Completing running task beeps terminal
 
 
+################## Keymap ################## 
+# a : Awk
+# b : 
+# c : Cat
+# d : Directory
+# e : Echo
+# f : Find
+# g : Grep
+# h : Help
+# i : 
+#*j : Java
+# k
+# l : List
+#*m : MAP
+# n
+# o
+# p
+# q
+# r
+# s : Sed
+# t
+# u
+# v : Vi
+# w
+# x
+# y
+# z
+# td : Todo
+
 
 ################## General OS ################## 
 
@@ -1133,6 +1162,13 @@ root
 
 e
 EOF
+}
+
+# Java Setup: Debug Trim
+# jdt : Turn on debug for trim
+jdt() {
+  sv
+  cat ~/Desktop/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
 }
 
 # }}}
