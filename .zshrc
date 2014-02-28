@@ -671,13 +671,13 @@ l() {
 # List Utility: List All
 # lf : List almost all files
 lf() {
-  pn l "ls -Alhrt $@"
+  pn l "ls -Alhrt --color $@"
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -lhrt $@"
+  pn l "ls -lhrt --color $@"
 }
 
 export TRASH=~/.Trash
