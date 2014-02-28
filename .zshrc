@@ -8,7 +8,7 @@
 # b : 
 # c : Cat
 # d : Directory
-# e : Echo
+# e : Echo - TODO maybe change to Edit and free up v, also consider expanding o
 # f : Find
 # g : Grep
 # h : Help
@@ -18,7 +18,7 @@
 # l : List
 #*m : MAP
 # n
-# o
+# o : Open
 # p
 # q
 # r
@@ -1982,7 +1982,7 @@ o_preexec() {
   fi
 }
 
-PROMPT="$TYELLOW%~$ $FINISH"
+PROMPT="$TYELLOW%/ $ $FINISH"
 
 # }}}
 
