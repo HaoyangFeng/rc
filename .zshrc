@@ -13,7 +13,7 @@
 # g : Grep
 # h : Help
 # i : 
-#*j : Java
+# j : 
 # k
 # l : List
 #*m : MAP
@@ -25,7 +25,7 @@
 # s : Sed
 # t
 # u
-# v : Vi
+#*v : Vi - Vue
 # w
 # x
 # y
@@ -52,7 +52,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=VUE
+export MODE=MAP
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -644,6 +644,7 @@ function command_not_found_handler() {
 
 # Go to into directory or open file in Vi
 o() {
+  cs
   if [ -d $1 ]; then
     builtin cd $1
     l
@@ -1003,110 +1004,6 @@ e
 EOF
   cplic
 }
-
-#  ./$TARGET-*.sh << EOF
-## Basic
-# 
-#$SITE_NAME
-# 
-# 
-#1
-## Remove all services
-#2
-#3
-#4
-#5
-#6
-#7
-#8
-#9
-#10
-#11
-#12
-#13
-#14
-#15
-#16
-#17
-#18
-#19
-#20
-#21
-#22
-#23
-#24
-#25
-#26
-#27
-#28
-#29
-#30
-## Enable wanted services
-## Comms
-#2
-## Core
-#3
-## Csc
-#4
-## Man
-#7
-## Pcs
-#8
-## Basic
-#n
-#1
-#
-## Metric
-#y
-#n
-# 
-## Password
-#admin1
-#admin1
-# 
-## Comms SMTP
-#
-#
-#
-#
-#
-#
-#
-## Plant
-#
-## Trim
-#50125
-#
-#
-## Csc
-## Work DIR
-#
-## DB
-#root
-#
-#
-#
-#2
-#
-#
-#
-#
-#y
-#
-#localhost
-#
-#1
-#root
-#
-#
-#
-## Pcs
-## Work
-#
-## End
-#
-#e
-#EOF
 
 # TODO only works for CSC-only
 # Java Setup: Fresh Service Installation
@@ -1825,13 +1722,15 @@ bl() {
 
 # Go to desktop folder
 cdd() {
-  cd ~/Desktop/$1
+  o ~/Desktop/$1
 }
 
 # Go to the desktop work directory
 work() {
   cdd work
-  l
+  if [[ "$1" != "" ]]; then
+    d $1
+  fi
 }
 
 export NOTE=~/note
@@ -1984,7 +1883,7 @@ prompt_precmd() {
 add-zsh-hook preexec o_preexec
 
 o_preexec() {
-  cs
+#  cs
   echo $1
   echo
   if [[ -a $1 ]]; then
