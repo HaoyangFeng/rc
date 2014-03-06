@@ -669,16 +669,16 @@ l() {
   fi
 }
 
-# List Utility: List All
+# List Utility: List FlL
 # lf : List almost all files
 lf() {
-  pn l "ls -Alhrt --color $@"
+  pn l "ls -Alht --color $@ | head -30"
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -lhrt --color $@"
+  pn l "ls -lht --color $@ | head -30"
 }
 
 export TRASH=~/.Trash
@@ -894,6 +894,9 @@ rmsite() {
   rm -rf $SV/$SITE_NAME
   rm -rf $WK/$SITE_NAME
   rm -rf $TC/$SITE_NAME
+  sqlrm csc
+  sqlrm pcs
+  sqlrm manufacturing
 }
 
 # Java Development: Log
@@ -1005,18 +1008,7 @@ EOF
   cplic
 }
 
-# TODO only works for CSC-only
-# Java Setup: Fresh Service Installation
-# jin : Do a fresh installation of the current java revision
-jin() {
-
-# Clean up
-  rmsite
-  sqlrm csc
-  sqlrm pcs
-  sqlrm manufacturing
-  
-# Get installer
+jid() {
   if [ -d $IN/$JPJ ]; then
     rm -rf $IN/$JPJ
   fi
@@ -1024,6 +1016,14 @@ jin() {
   cd $IN/$JPJ
   scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
   cplic csc
+}
+
+# TODO only works for CSC-only
+# Java Setup: Fresh Service Installation
+# jin : Do a fresh installation of the current java revision
+jin() {
+  rmsite
+  jid
 
 # Run installation
   ./$JPJ-*.sh << EOF
@@ -1091,15 +1091,15 @@ jdt() {
 
 # MAP Revision {{{
 
-export MAP_REV_SRC=boom_base
-export MAP_REV=messaging
+export MAP_REV=riegelsville
+export MAP_REV=riegelsville
 export MAP_DATA_REV=01jul2013
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
 export MPJ_ROOT="/home/haoyang.feng/projects/map"
-export MPJ=kiwi_messaging
+export MPJ=kiwi_riegelsville
 export MHD=kiwi_head
-export MMB=kiwi_messaging
+export MMB=kiwi_riegelsville
 
 case $MAP_REV_SRC in
 boom_base)
@@ -1366,8 +1366,8 @@ mds() {
 }
 
 # Data Set: Java Data Set
-# jds : Go to the Java data set
-jds() {
+# vds : Go to the Java data set
+vds() {
   o $MD/../VUE
 }
 
@@ -1500,7 +1500,7 @@ sqli() {
 # $2 database dump suffix
 # sqlo csc tailim : Exports mes_8_csc to mes_8_csc_tailim.sql if java revision is mes-8
 sqlo() {
-  mysqldump -uroot "$SQL_NAME"_"$1" > "$SQL_NAME"_"$1"_"$2".sql
+  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_"$1" > "$SQL_NAME"_"$1"_"$2".sql
 }
 
 # Show SQL process list
@@ -1883,7 +1883,7 @@ prompt_precmd() {
 add-zsh-hook preexec o_preexec
 
 o_preexec() {
-#  cs
+  cs
   echo $1
   echo
   if [[ -a $1 ]]; then

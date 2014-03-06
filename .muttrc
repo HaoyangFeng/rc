@@ -74,12 +74,13 @@ alias melody Melody <melody.yam@kiwiplan.co.nz>
 alias sam Sam <sam.chang@kiwiplan.co.nz>
 alias edison Edison <edison.ouyang@kiwiplan.co.nz>
 alias dave Dave <dave.philip@kiwiplan.co.nz>
-alias james James <james.irwin@kiwiplan.co.nz>
+alias jamesi James Irwin <james.irwin@kiwiplan.co.nz>
+alias jamesb James Bottomley <james.bottomley@kiwiplan.co.nz>
 alias nigel Nigel <nigel.hand@kiwiplan.co.nz>
 alias kugan Kugan <kugan.baladevan@kiwiplan.co.nz>
 alias philip Philip <philip.harris@kiwiplan.co.nz>
 alias lucas Lucas <lucas.kim@kiwiplan.co.nz>
-alias roberto Reoberto <roberto.di.fiore@kiwiplan.co.nz>
+alias roberto Roberto <roberto.di.fiore@kiwiplan.co.nz>
 alias bernard Bernard <bernard.bromell@kiwiplan.co.nz>
 alias sergei Sergei <sergei.tchernov@kiwiplan.co.nz>
 alias jane Jane <jane.agnew@kiwiplan.co.nz>
@@ -93,10 +94,20 @@ alias jonathan Jonathan <jonathan.marsh@kiwiplan.co.nz>
 alias ian Ian <ian.collins@kiwiplan.co.nz>
 alias janet Janet <janet.stevenson@kiwiplan.co.nz>
 alias mike Mike <mike.treadgold@kiwiplan.co.nz>
+alias kyle Kyle <kyle.yu@kiwiplan.co.nz>
 alias java Java Developers <javadevelopers@kiwiplan.co.nz>
-alias refreshdev sam,john,philip,edison,angeline,roberto,arnon,lucas,nigel,james,dave,sergei
-alias refreshjava sam,john,philip,edison,angeline,roberto,arnon,lucas
-
+alias refreshmap nigel,jamesi,dave,sergei,john,kugan
+alias refreshvue philip,edison,angeline,roberto,lucas
+alias refreshdev refreshmap,refreshvue
+alias refreshqa jonathan,melody,jane
+alias refresh refreshdev,refreshqa,jamesb
+alias mgmt paul,chris,tim
+alias refreshus wayne,chuck,neil
+alias release mike,kyle
+alias paul Paul <paul.mackenzie@kiwiplan.co.nz>
+alias wayne Wayne <wayne.stocks@kiwiplan.com>
+alias chuck Chuck <chuck.raymond@kiwiplan.com>
+alias neil Neil <neil.bond@kiwiplan.com>
 
 # IMAP connection settings
 set mail_check=60
@@ -126,8 +137,8 @@ mailboxes "!"
 set smtp_pass=Haofnz12
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
-macro index     .i      "l(~d<1w ~t haoyang !~Q)|~F\n"
-macro index     .u      "l(~d>1w | !~t haoyang | ~Q)!~F\n"
+macro index     .i      "l(~d<1w (~t haoyang|~f wayne|~f tim) !~Q)|~F\n"
+macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f jamesb) !~Q)|~F\n"
 macro index     .n      "l~N\n"
 macro index     .o      "l(~N|~O)\n"
 macro index     .a      "l~A\n"
@@ -137,6 +148,3 @@ macro index     .c      "T~f jenkins\nT~f ssd\n;d"
 macro index A "<save-message>=archive<enter>"
 
 folder-hook     .       push '.i' 
-
-alias paul Paul <paul.mackenzie@kiwiplan.co.nz>
-alias wayne Wayne <wayne.stocks@kiwiplan.com>
