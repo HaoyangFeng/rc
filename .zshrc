@@ -591,7 +591,11 @@ zr() {
 }
 
 uz() {
-  tar xvfz $1
+  if [[ $1 = *.tar.gz ]]; then
+    tar xvfz $1
+  elif [[ $1 = *.tar ]]; then
+    tar xvf $1
+  fi
   rm $1
 }
 
