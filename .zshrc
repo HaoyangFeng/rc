@@ -890,6 +890,7 @@ wk() {
   cd $SITE_NAME
 }
 
+# TODO BG and put status in prompt
 # Start java services
 ss() {
   sv
