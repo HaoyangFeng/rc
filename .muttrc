@@ -116,7 +116,7 @@ set timeout=15
 
 # IMAP account settings
 set imap_user="haoyang.feng@kiwiplan.co.nz"
-set imap_pass=Haofnz12
+set imap_pass=Haofnz03
 set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
 set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
 set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
@@ -134,11 +134,11 @@ mailboxes "!"
 #subscribe "gentoo-.*@gentoo\\.org"
 
 # SMTP mailing configuration (for sending mail)
-set smtp_pass=Haofnz12
+set smtp_pass=Haofnz03
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
-macro index     .i      "l(~d<1w (~t haoyang|~f wayne|~f tim) !~Q)|~F\n"
-macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f jamesb) !~Q)|~F\n"
+macro index     .i      "l(~d<1w (~t haoyang|~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
+macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
 macro index     .n      "l~N\n"
 macro index     .o      "l(~N|~O)\n"
 macro index     .a      "l~A\n"

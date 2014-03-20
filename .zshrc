@@ -39,7 +39,7 @@
 
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
 export MD=/KIWI/datasets/GP/Riegelsville/MAP
-export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/work"
+export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
 export CM="/KIWI/java/comms"
@@ -52,7 +52,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=MAP
+export MODE=VUE
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -442,6 +442,12 @@ e() {
   echo $@
 }
 
+# Eval Echo
+# ee {1..3}' r' : Evaluate "1 r" "2 r" "3 r"
+eve() {
+  eval $(e $@)
+}
+
 # }}}
 
 # Sed {{{
@@ -576,6 +582,10 @@ lt() {
 # Tar
 
 z() {
+  tar cvfz $1.tar.gz *$1*
+}
+
+zr() {
   tar cvfz $1.tar.gz $1
   rm -rf $1
 }
@@ -599,6 +609,7 @@ bur() {
   mv $1 $1.bu
 }
 
+# TODO pbr
 # Back Up : Put Back
 pb() {
   r $1
@@ -905,7 +916,7 @@ lg() {
   if [[ "$1" = "" ]]; then
     tail -f logs/*
   else
-    tail -f logs/$1*
+    tail -f logs/$1*.log.txt
   fi
 }
 
@@ -1016,6 +1027,14 @@ jid() {
   cd $IN/$JPJ
   scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
   cplic csc
+}
+
+jwid() {
+  d $IN/$JPJ
+  if [ -d windows ]; then
+    rm -rf windows
+  fi
+  scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
 }
 
 # TODO only works for CSC-only
@@ -1413,6 +1432,17 @@ boomdl() {
   fi
 }
 
+#TODO Doesn't work
+gromblecollect() {
+  cdd gromble
+  rm -rf *
+  scp -r 'gromble:/home/haoyang.feng/support/nzcollect/$1' .
+}
+
+release() {
+  scp -r ${@:2} gromble:/support/support/revisions/TEST_ONLY/refresh/$1
+}
+
 # suboom : Login to nzboom as ssd
 suboom() {
   ssh ssd@nzboom
@@ -1485,22 +1515,26 @@ sqlmk() {
   mysql -uroot -e "create database "$SQL_NAME"_"$1""
 }
 
+# TODO CSC only
 # Import SQL script to database
-# $1 shorthand database name
 # $2 database dump suffix
-# sqli csc tailim : Imports mes_8_csc_tailim.sql to mes_8_csc if java revision is mes-8
+# sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
 sqli() {
-  sqlrm $1
-  sqlmk $1
-  sql $1 < "$SQL_NAME"_"$1"_"$2".sql
+  sqlrm csc
+  sqlmk csc
+  sqlrm man
+  sqlmk man
+  sql man < "$SQL_NAME"_man_"$1".sql
+  sql csc < "$SQL_NAME"_csc_"$1".sql
 }
 
+# TODO CSC only
 # Export SQL database to script
-# $1 shorthand database name
-# $2 database dump suffix
-# sqlo csc tailim : Exports mes_8_csc to mes_8_csc_tailim.sql if java revision is mes-8
+# $1 database dump suffix
+# sqlo tailim : Exports mes_8_csc/man to mes_8_csc/man_tailim.sql if java revision is mes-8
 sqlo() {
-  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_"$1" > "$SQL_NAME"_"$1"_"$2".sql
+  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_csc > "$SQL_NAME"_csc_"$1".sql
+  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_man > "$SQL_NAME"_man_"$1".sql
 }
 
 # Show SQL process list
@@ -1896,6 +1930,13 @@ o_preexec() {
     #echo ZZZZZZZZZ
   fi
 }
+zle-enter() {
+  print -s ${(z)BUFFER}
+  BUFFER="eve $BUFFER"
+  zle accept-line
+}
+zle -N zle-enter
+bindkey "^T" zle-enter
 
 PROMPT="$TYELLOW%/ $ $FINISH"
 
