@@ -1380,9 +1380,9 @@ alias m="mode <<< 2"
 
 # Go to projects directory, depending on the development mode
 pj() {
-  o $PJ_ROOT
+  cd $PJ_ROOT
   if [ -d $PJ ]; then
-    cd $PJ
+    o $PJ
   fi
 }
 
