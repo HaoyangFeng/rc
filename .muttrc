@@ -137,10 +137,10 @@ mailboxes "!"
 set smtp_pass=Haofnz03
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
-macro index     .i      "l(~d<1w (~t haoyang|~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
 macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
+macro index     .i      "l(~d<1w (~t haoyang|~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
+macro index     .o      "l(~d>5d (~t haoyang|~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"
 macro index     .n      "l~N\n"
-macro index     .o      "l(~N|~O)\n"
 macro index     .a      "l~A\n"
 macro index     .t      "l~d<1d\n"
 macro index     .y      "l~d<2d ~d>1d\n"

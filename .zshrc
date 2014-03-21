@@ -1,6 +1,8 @@
 ################## TODO ################## 
 # Coloriser
 # Completing running task beeps terminal
+# Command takes precedence over file open
+# Archiving system
 
 
 ################## Keymap ################## 
@@ -657,23 +659,6 @@ function command_not_found_handler() {
   echo I don\'t understand: $@
 }
 
-# Go to into directory or open file in Vi
-o() {
-  cs
-  if [ -d $1 ]; then
-    builtin cd $1
-    l
-  elif [ -x $1 ]; then
-    $1
-  elif [ -f $1 ]; then
-    if [ "$2" = "" ]; then
-      vi $1
-    else
-      vi +$2 $1
-    fi
-  fi
-}
-
 # List Utility : List
 # l : List files in full or brief depending on total number of files
 l() {
@@ -741,6 +726,26 @@ d() {
 }
 
 # }}}
+
+# Open {{{
+
+# Go to into directory or open file in Vi
+o() {
+  if [[ -d $1 || $1 = "" ]]; then
+    builtin cd $1
+    l
+  elif [[ -x $1 ]]; then
+    $1
+  elif [[ -f $1 ]]; then
+    if [[ $2 = "" ]]; then
+      vi $1
+    else
+      vi +$2 $1
+    fi
+  fi
+}
+
+#}}}
 
 # Vi {{{
 
@@ -892,6 +897,20 @@ wk() {
 
 # TODO BG and put status in prompt
 # Start java services
+jss() {
+  sv
+  bin/startservers.sh
+}
+
+# TODO BG and put status in prompt
+# Stop java services
+jst() {
+  sv
+  bin/stopservers.sh
+}
+
+# TODO BG and put status in prompt
+# Start java services
 ss() {
   sv
   bin/launcher.sh
@@ -996,32 +1015,27 @@ jsv() {
   jin
 }
 
+# TODO only works for CSC-only
 jup() {
-  if [ "$1" = "" ]; then
-    TARGET=$JPJ
-  else
-    TARGET=$1
-  fi
-  if [ -d ~/installers/$TARGET ]; then
-    rm -rf ~/installers/$TARGET
-  fi
-  mkdir ~/installers/$TARGET
-  scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $TARGET | sed "s/-[^-]*$//")'/'$TARGET'-*' ~/installers/$TARGET
-  ~/installers/$TARGET/$TARGET-*.sh << EOF
-n
+  jst &
+  jid
+
+# Run installation
+  ./$JPJ-*.sh << EOF
+
 $SITE_NAME
-y
-n
-1
-n
-1
+
+
 n
 
 
 
-e
+
+
 EOF
-  cplic
+  sv
+  jdt
+  jss
 }
 
 jid() {
