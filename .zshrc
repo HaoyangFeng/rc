@@ -54,7 +54,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=VUE
+export MODE=MAP
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -1953,26 +1953,24 @@ prompt_precmd() {
 add-zsh-hook preexec o_preexec
 
 o_preexec() {
+}
+
+zle-enter() {
   cs
-  echo $1
-  echo
-  if [[ -a $1 ]]; then
-    o $1
-    exec zsh
+  #print -s ${(z)BUFFER}
+  if [[ -a $BUFFER ]]; then
+    BUFFER="cd $BUFFER"
   elif [[ "$(pnc)" = "l" ]]; then
  # | awk '{print $8}'
     #echo ZZZZZZZZZ
     #echo $1 | sed -e 's/ [0-9]\+ /& $(catl3nc &)/g'
     #echo ZZZZZZZZZ
   fi
-}
-zle-enter() {
-  print -s ${(z)BUFFER}
-  BUFFER="eve $BUFFER"
   zle accept-line
+  echo
 }
 zle -N zle-enter
-bindkey "^T" zle-enter
+bindkey "\r" zle-enter
 
 PROMPT="$TYELLOW%/ $ $FINISH"
 
