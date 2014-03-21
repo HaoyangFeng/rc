@@ -9,7 +9,7 @@
 # a : Awk
 # b : 
 # c : Cat
-# d : Directory
+# d : Directory/Disk
 # e : Echo - TODO maybe change to Edit and free up v, also consider expanding o
 # f : Find
 # g : Grep
@@ -711,6 +711,10 @@ ins() {
   sed -i "1i$2" $1
 }
 
+# }}}
+
+# Directory/Disk {{{
+
 # Directory : Make Directory
 md() {
   mkdir -p $@
@@ -724,6 +728,19 @@ d() {
   fi
   o $1
 }
+
+# Disk : Usage
+# du : Show a break down of the disk usages for the current directory
+du() {
+  #/usr/bin/du -h --max-depth=1
+
+  # Double du
+  #/usr/bin/du --max-depth=1 | sort -nr | cut -f2 | xargs -d '\n' du -sh
+
+  # Schwartzian transform
+  /usr/bin/du -h --max-depth=1 | perl -e '%byte_order = ( G => -3, M => -2, K => -1, k => -1 ); print map { $_->[0] } sort { $byte_order{$a->[1]} <=> $byte_order{$b->[1]} || $b->[2] <=> $a->[2] } map { [ $_, /([MGK])/, /(\d+)/ ] } <>' | head -30
+}
+
 
 # }}}
 
@@ -1363,7 +1380,7 @@ alias m="mode <<< 2"
 
 # Go to projects directory, depending on the development mode
 pj() {
-  cd $PJ_ROOT
+  o $PJ_ROOT
   if [ -d $PJ ]; then
     cd $PJ
   fi
