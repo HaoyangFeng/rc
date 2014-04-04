@@ -55,7 +55,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=VUE
+export MODE=MAP
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -352,10 +352,10 @@ std() {
     tmt Personal:1 "mutt" C-m
     tmt Personal:2 "irssi" C-m
     tmt Personal:3 "elinks" C-m
-    tmt Personal:4 "note" C-m
+    tmt Personal:4 "note main" C-m
     tmt Personal:5 "tde" C-m
     tmt Personal:6 "cd" C-m
-    tmt Personal:7 "cd;rc" C-m
+    tmt Personal:7 "cd;cd rc" C-m
     tmt Personal:8 "top" C-m
     tmg Personal:1
   fi
