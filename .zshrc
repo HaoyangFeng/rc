@@ -346,13 +346,17 @@ std() {
     tmw Personal:3 -n Elinks
     tmw Personal:4 -n Note
     tmw Personal:5 -n Todo
-    tmw Personal:6 -n Top
+    tmw Personal:6 -n Misc
+    tmw Personal:7 -n Rc
+    tmw Personal:8 -n Top
     tmt Personal:1 "mutt" C-m
     tmt Personal:2 "irssi" C-m
     tmt Personal:3 "elinks" C-m
     tmt Personal:4 "note" C-m
     tmt Personal:5 "tde" C-m
-    tmt Personal:6 "top" C-m
+    tmt Personal:6 "cd" C-m
+    tmt Personal:7 "cd;rc" C-m
+    tmt Personal:8 "top" C-m
     tmg Personal:1
   fi
 
