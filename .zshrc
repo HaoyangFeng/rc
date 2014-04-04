@@ -39,8 +39,9 @@
 
 # Environment variables {{{
 
+export PASS=Haofnz03
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/GP/Riegelsville/MAP
+export MD=/KIWI/datasets/GP/Riegelsville/MAP_SQL
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
@@ -54,7 +55,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=MAP
+export MODE=VUE
 export TMP="/home/haoyang.feng/Desktop/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
@@ -340,76 +341,52 @@ std() {
 
   if [[ "$1" = "" || "$1" = "1" ]]; then
     tmk Personal
-    tmn Personal -n mutt
-    tmw Personal:2 -n irssi
-    tmw Personal:3 -n elinks
-    tmw Personal:4 -n rc
-    tmw Personal:5 -n misc
-    tmw Personal:6 -n top
-    tmw Personal:7 -n sqlp
-    tmw Personal:8 -n jsv
-    tmw Personal:9 -n jlg
-    tmw Personal:10 -n todo
+    tmn Personal -n Mutt
+    tmw Personal:2 -n Irssi
+    tmw Personal:3 -n Elinks
+    tmw Personal:4 -n Note
+    tmw Personal:5 -n Todo
+    tmw Personal:6 -n Top
     tmt Personal:1 "mutt" C-m
     tmt Personal:2 "irssi" C-m
     tmt Personal:3 "elinks" C-m
-#   tmt Personal:4 "rc" C-m
-#   tmt Personal:5 "work" C-m
+    tmt Personal:4 "note" C-m
+    tmt Personal:5 "tde" C-m
     tmt Personal:6 "top" C-m
-    tmt Personal:7 "scron sqlp" C-m
-    tmt Personal:8 "ss" C-M
-    tmt Personal:9 "sv;lg" C-m
-    tmt Personal:10 "note todo" C-m
     tmg Personal:1
   fi
 
   if [[ "$1" = "" || "$1" = "2" ]]; then
-    tmk Primary
-    tmn Primary -n work
-    tmw Primary:2 -n mpj
-    tmw Primary:3 -n map
-    tmw Primary:4 -n map
-    tmw Primary:5 -n jpj
-    tmw Primary:6 -n sqlman
-    tmw Primary:7 -n sqlcsc
-    tmw Primary:8 -n sqlt
-    tmw Primary:9 -n note
-    tmt Primary:1 "work" C-m
-    tmt Primary:2 "m;pj" C-m
-    tmt Primary:3 "xl" C-m
-    tmt Primary:4 "csc" C-m
-    tmt Primary:5 "j;pj" C-m
-    tmt Primary:6 "sql man" C-m
-    tmt Primary:7 "sql csc" C-m
-    tmt Primary:8 "sqlt" C-m
-    tmt Primary:9 "note" C-m
-    tmg Primary:1
-  fi
-
-  if [[ "$1" = "" || "$1" = "3" ]]; then
-    tmk Secondary
-    tmn Secondary -n Secondary
-  fi
-
-  if [[ "$1" = "" || "$1" = "4" ]]; then
     tmk Browsing
-    tmn Browsing -n work
-    tmw Browsing:2 -n work2
-    tmw Browsing:3 -n mpj
-    tmw Browsing:4 -n map
-    tmw Browsing:5 -n jpj
-    tmw Browsing:6 -n sqlman
-    tmw Browsing:7 -n sqlcsc
-    tmw Browsing:8 -n sqlt
-    tmt Browsing:1 "work" C-m
-    tmt Browsing:2 "work" C-m
-    tmt Browsing:3 "m;pj" C-m
-    tmt Browsing:4 "csc" C-m
+    tmn Browsing -n CSC
+    tmw Browsing:2 -n CSC
+    tmw Browsing:3 -n XL
+    tmw Browsing:4 -n MPJ
+    tmw Browsing:5 -n JPJ
+    tmw Browsing:6 -n SQL:MAN
+    tmw Browsing:7 -n SQL:CSC
+    tmt Browsing:1 "csc" C-m
+    tmt Browsing:2 "csc" C-m
+    tmt Browsing:3 "xl" C-m
+    tmt Browsing:4 "m;pj" C-m
     tmt Browsing:5 "j;pj" C-m
     tmt Browsing:6 "sql man" C-m
     tmt Browsing:7 "sql csc" C-m
-    tmt Browsing:8 "sqlt" C-m
     tmg Browsing:1
+  fi
+
+  if [[ "$1" = "" || "$1" = "3" ]]; then
+    tmk Primary
+    tmn Primary -n Note
+    tmw Primary:2 -n Work
+    tmt Primary:1 "note" C-m
+    tmt Primary:2 "work" C-m
+    tmg Primary:1
+  fi
+
+  if [[ "$1" = "" || "$1" = "4" ]]; then
+    tmk Secondary
+    tmn Secondary -n Secondary
   fi
 
   tma Personal
@@ -662,10 +639,10 @@ function command_not_found_handler() {
 # List Utility : List
 # l : List files in full or brief depending on total number of files
 l() {
-  if [[ $(lf | wc -l) -lt 30 ]]; then
-    lf
+  if [[ $(lf $@ | wc -l) -lt 30 ]]; then
+    lf $@
   else
-    lb
+    lb $@
   fi
 }
 
@@ -740,6 +717,13 @@ du() {
   # Schwartzian transform
   /usr/bin/du -h --max-depth=1 | perl -e '%byte_order = ( G => -3, M => -2, K => -1, k => -1 ); print map { $_->[0] } sort { $byte_order{$a->[1]} <=> $byte_order{$b->[1]} || $b->[2] <=> $a->[2] } map { [ $_, /([MGK])/, /(\d+)/ ] } <>' | head -30
 }
+
+# Disk : Free
+# df : Show free disk space
+df() {
+  /bin/df -h
+}
+
 
 
 # }}}
@@ -1049,6 +1033,16 @@ n
 
 
 
+
+
+
+
+
+
+
+
+
+
 EOF
   sv
   jdt
@@ -1146,8 +1140,8 @@ jdt() {
 
 # MAP Revision {{{
 
-export MAP_REV=riegelsville
-export MAP_REV=riegelsville
+export MAP_REV=7.70_01apr2013
+export MAP_REV=7.70_01apr2013
 export MAP_DATA_REV=01jul2013
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
@@ -1233,6 +1227,14 @@ jib() {
 jih() {
   mwk
   jimporthistory
+}
+jio() {
+  mwk
+  jimportorder
+}
+jiq() {
+  mwk
+  jimportprogset
 }
 pcs() {
   mwk
@@ -1450,10 +1452,23 @@ boom() {
   if [ "$1" = "" ]; then
     ssh nzboom
   elif [ -d $1 ]; then
-    scp -r $1 nzboom:~/shared
+    if [[ $2 = "" ]]; then
+      scp -r $1 nzboom:~/shared
+    else
+      scp -r $1 nzboom:~/shared/$2
+    fi
   else
-    scp $1 nzboom:~/shared
+    if [[ $2 = "" ]]; then
+      scp $1 nzboom:~/shared
+    else
+      scp $1 nzboom:~/shared/$2
+    fi
   fi
+}
+
+support() {
+# tucan4
+  ssh remuser@kiwidev
 }
 
 # Download from boom
@@ -1475,8 +1490,42 @@ gromblecollect() {
   scp -r 'gromble:/home/haoyang.feng/support/nzcollect/$1' .
 }
 
+gromble() {
+  sshpass -p $PASS ssh gromble $@
+}
+
 release() {
-  scp -r ${@:2} gromble:/support/support/revisions/TEST_ONLY/refresh/$1
+  if [[ $1 = "" ]]; then
+    gromble "find /support/support/revisions/TEST_ONLY/refresh/"
+  else
+    sshpass -p $PASS scp -r ${@:2} gromble:/support/support/revisions/TEST_ONLY/refresh/$1
+  fi
+}
+
+# Release : All
+# releaseall "ssd@nzodie:/src/kiwi_7.91_01mar2014/linux_2.12_kiwi_7.91_140301.140331.rev.tar.gz" 0228
+releaseall() {
+# MAP Revision
+  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/classic/*"
+  work release
+  r *
+  scp $1 .
+  release classic *
+
+# VUE Data
+  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/data/*"
+  vds
+  release vue/data *$2*
+
+# VUE Revision
+  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/*.sh"
+  jid
+  release vue *.sh
+  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/windows/*"
+  jwid
+  release vue/windows windows/*
+
+  release
 }
 
 # suboom : Login to nzboom as ssd
