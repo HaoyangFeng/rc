@@ -562,6 +562,13 @@ lt() {
 
 # File {{{
 
+# Cat
+c() {
+  if [[ -f $1 ]]; then
+    cat $1;
+  fi
+}
+
 # Tar
 
 z() {
@@ -809,7 +816,7 @@ pn() {
 }
 
 pnc() {
-  cat $TMP/stdbuf/$$.cmd
+  c $TMP/stdbuf/$$.cmd
 }
 
 fn() {
@@ -1969,19 +1976,6 @@ PATH="/home/haoyang.feng/bin/Sencha/Cmd/3.0.0.250:$PATH"
 
 ################## ZSH ################## 
 
-# Startup {{{
-ZSH=$HOME/.oh-my-zsh
-ZSH_THEME="blinks"
-# CASE_SENSITIVE="true"
-DISABLE_AUTO_UPDATE="true"
-# DISABLE_LS_COLORS="true"
-DISABLE_AUTO_TITLE="true"
-# COMPLETION_WAITING_DOTS="true"
-#plugins=(svn vi-mode history-substring-search)
-plugins=(svn vi-mode)
-source $ZSH/oh-my-zsh.sh
-# }}}
-
 # Color {{{
 autoload colors
 colors
@@ -1996,14 +1990,14 @@ FINISH="%{$terminfo[sgr0]%}"
 
 # Prompt {{{  
 
-add-zsh-hook precmd prompt_precmd
-
 prompt_precmd() {
   echo
   echo "---  $TRED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $TBLUE$PJ   $TCYAN$MAP_REV | $MAP_DATA_REV"
 }
+add-zsh-hook precmd prompt_precmd
 
-add-zsh-hook preexec o_preexec
+
+#add-zsh-hook preexec o_preexec
 
 o_preexec() {
 }
@@ -2022,10 +2016,10 @@ zle-enter() {
   zle accept-line
   echo
 }
-zle -N zle-enter
-bindkey "\r" zle-enter
+#zle -N zle-enter
+#bindkey "\r" zle-enter
 
-PROMPT="$TYELLOW%/ $ $FINISH"
+#PROMPT="$TYELLOW%/ $ $FINISH"
 
 # }}}
 
