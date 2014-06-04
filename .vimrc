@@ -8,12 +8,9 @@ set smartindent
 set tabstop=2
 set shiftwidth=2
 set expandtab
-
-"syntax enable
-
+syntax enable
 set background=light
 colorscheme solarized
-"colorscheme bandit
 
 let fortran_fold=1
 let fortran_fold_conditionals=1

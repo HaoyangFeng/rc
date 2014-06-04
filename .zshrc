@@ -1,4 +1,5 @@
 ################## TODO ################## 
+# Dynamic Command Composition - Creating vw from v and w
 # Coloriser
 # Completing running task beeps terminal
 # Command takes precedence over file open
@@ -28,7 +29,7 @@
 # t
 # u
 #*v : Vi - Vue
-# w
+# w : Which
 # x
 # y
 # z
@@ -56,9 +57,10 @@ export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
 export MODE=MAP
-export TMP="/home/haoyang.feng/Desktop/work/.tmp"
+export TMP="/home/haoyang.feng/work/.tmp"
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
+export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
 
 # }}}
 
@@ -72,8 +74,10 @@ alias jr='jrebel'
 alias pls='sudo $(!!)'
 alias dp='deploy'
 alias tst='maven build-all || cat target/test-reports/*.txt'
+alias beep='paplay $BEEP'
 
 alias bc='bc -l'
+alias emacs='emacs -nw'
 
 aliasgrep() {
   if [ "$GREP_COLOR" = "FULL" ]; then
@@ -96,81 +100,6 @@ aliasgrepfullcolor() {
 }
 
 aliasgrep
-
-# }}}
-
-# Configuration Files {{{
-
-export ZSHRC=~/rc/.zshrc
-
-# Re-source Zsh
-rrc() {
-  source ~/.zshrc
-}
-
-# Configure Zsh
-rc() {
-  echo ":set foldmethod=marker" > $TMP/rc.vi
-  echo "zR/^$1\(" > $TMP/rc1.vi
-  if [ "$1" = "" ]; then
-    vi ~/.zshrc -s "$TMP/rc.vi"
-  else
-    vi ~/.zshrc -s "$TMP/rc1.vi"
-  fi
-  source ~/.zshrc
-}
-
-# Commit and push configuration files
-circ() {
-  pushd .
-  cd ~/rc
-  ci $1
-  git push origin master
-  popd
-}
-
-# Help: Keyword function help
-# h func : List all function documentation with the keyword func
-h() {
-  pattern="#.*$(kw $@)"
-  cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
-}
-
-# Help: Full precise function help
-# fh func : Show the documentation and code of function func
-fh() {
-  cat ~/.zshrc | grep "^$1\(" -B2  | head -2
-  which $1
-}
-
-# TODO seem to erase MAP_REV_SOURCE to MAP_REV
-# Change variable in Zsh source
-crc() {
-  rep=$(echo $2 | esr)
-  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
-  rrc
-}
-
-# Configure Vi
-vrc() {
-  vi ~/.vimrc
-}
-
-# Configure Tmux
-trc() {
-  vi ~/.tmux.conf
-  tmux source-file ~/.tmux.conf
-}
-
-# Configure Mutt
-mrc() {
-  vi ~/.muttrc
-}
-
-# Re-source Xmodmap
-keyon() {
-  xmodmap ~/.Xmodmap
-}
 
 # }}}
 
@@ -233,10 +162,10 @@ scron() {
   else
     SLEEP_TIME=$2
   fi
-  while; do
-    eval3 $1
+  while true; do
+    evb $1
     clear;
-    cat3
+    catb
     sleep $SLEEP_TIME;
   done 
 }
@@ -283,26 +212,123 @@ decolor() {
   sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
 }
 
-eval3() {
+evb() {
   eval $@ &> $TMP/stdbuf/$$
   decolor $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
-  cat3
+  catb
 }
 
-cat3() {
+catb() {
   cat $TMP/stdbuf/$$
 }
 
-cat3nc() {
+catbnc() {
   cat $TMP/stdbuf/$$.nocolor
 }
 
-catl3() {
+catlb() {
   catl $TMP/stdbuf/$$ $1
 }
 
-catl3nc() {
+catlbnc() {
   catl $TMP/stdbuf/$$.nocolor $1
+}
+
+evn() {
+  eval $@ &> /dev/null
+}
+
+w() {
+  which $@
+}
+
+wn() {
+  evn w $@
+}
+
+pi() {
+  e --- Installing $@
+  sudo apt-get install $@
+}
+
+pr() {
+  e --- Uninstalling $@
+  sudo apt-get remove $@
+}
+
+# }}}
+
+# Configuration Files {{{
+
+export ZSHRC=~/rc/.zshrc
+
+# Re-source Zsh
+rrc() {
+  source ~/.zshrc
+}
+
+# Configure Zsh
+rc() {
+  echo ":set foldmethod=marker" > $TMP/rc.vi
+  echo "zR/^$1\(" > $TMP/rc1.vi
+  if [ "$1" = "" ]; then
+    vi ~/.zshrc -s "$TMP/rc.vi"
+  else
+    vi ~/.zshrc -s "$TMP/rc1.vi"
+  fi
+  source ~/.zshrc
+}
+
+# Commit and push configuration files
+circ() {
+  pushd .
+  cd ~/rc
+  ci $1
+  git push origin master
+  popd
+}
+
+# Help: Keyword function help
+# h func : List all function documentation with the keyword func
+h() {
+  pattern="#.*$(kw $@)"
+  cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
+}
+
+# Help: Full precise function help
+# fh func : Show the documentation and code of function func
+fh() {
+  cat ~/.zshrc | grep "^$1\(" -B2  | head -2
+  w $1
+}
+
+# TODO seem to erase MAP_REV_SOURCE to MAP_REV
+# Change variable in Zsh source
+crc() {
+  rep=$(echo $2 | esr)
+  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
+  rrc
+}
+
+# Configure Vi
+vrc() {
+  vi ~/.vimrc
+}
+
+# Configure Tmux
+trc() {
+  vi ~/.tmux.conf
+  tmux source-file ~/.tmux.conf
+}
+
+# Configure Mutt
+mrc() {
+  vi ~/.muttrc
+}
+
+# Re-source Xmodmap
+keyon() {
+  xmodmap ~/.Xmodmap
 }
 
 # }}}
@@ -321,7 +347,7 @@ alias tmw='tmux neww -t'
 alias tmg='tmux selectw -t'
 alias tmt='tmux send -t'
 
-source ~/.bin/tmuxinator.zsh
+#source ~/.bin/tmuxinator.zsh
 
 b() {
  clear
@@ -649,7 +675,7 @@ function command_not_found_handler() {
 
 # List Utility : List
 # l : List files in full or brief depending on total number of files
-l() {
+function l () {
   if [[ $(lf $@ | wc -l) -lt 30 ]]; then
     lf $@
   else
@@ -797,7 +823,7 @@ vpa() {
 
 # Find executable in PATH and open with Vi
 vw() {
-  vi $(which $1)
+  vi $(w $1)
 }
 
 # Vim: Vim Diff
@@ -812,7 +838,7 @@ vd() {
 
 pn() {
   echo $1 > $TMP/stdbuf/$$.cmd
-  eval3 $2 | nl
+  evb $2 | nl
 }
 
 pnc() {
@@ -820,23 +846,23 @@ pnc() {
 }
 
 fn() {
-  catl3nc $1 | xargs ${@:2}
+  catlbnc $1 | xargs ${@:2}
 }
 
 # Numbered shortcut: Run numbered shortcut
 # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
-  n=$(catl3nc $1)
+  n=$(catlbnc $1)
   case $(pnc) in
       d) cd +$1;;
       t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
       l) case $2 in 
-             r) r "$(echo $n | awk '{print $8}')";;
-             "") o "$(echo $n | awk '{print $8}')";;
-             *) $2 "$(echo $n | awk '{print $8}')" ${@:3};;
+             r) r "$(echo $n | awk '{print $9}')";;
+             "") o "$(echo $n | awk '{print $9}')";;
+             *) $2 "$(echo $n | awk '{print $9}')" ${@:3};;
          esac;;
-      lt) o $(echo $n | awk '{print $8}');;
+      lt) o $(echo $n | awk '{print $9}');;
       f) o $n;;
       fa) o $n;;
       fp) o $n;;
@@ -929,7 +955,7 @@ ss() {
 }
 
 # Go to java installers directory
-in() {
+jind() {
   o $IN
   if [ -d $SITE_NAME ]; then
     o $SITE_NAME
@@ -1017,7 +1043,7 @@ jpj() {
 # Copy universal java licence file
 # cplic csc : Copy CSC licence to the current directory
 cplic() {
-  cp ~/Desktop/licence/$1.licence .
+  cp ~/common/licence/$1.licence .
 }
 
 jsv() {
@@ -1141,7 +1167,7 @@ EOF
 # jdt : Turn on debug for trim
 jdt() {
   sv
-  cat ~/Desktop/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
+  cat ~/common/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
 }
 
 # }}}
@@ -1552,9 +1578,9 @@ odie() {
 # 
 kpi() {
 #  ssh kpi@maven "./haoyang_kpi_export.sh"
-  r ~/Desktop/kpi/*
-  scp "kpi@maven:/home/kpi/haoyang/*.csv" ~/Desktop/kpi
-#  ooffice ~/Desktop/kpi/*.csv
+  r ~/common/kpi/*
+  scp "kpi@maven:/home/kpi/haoyang/*.csv" ~/common/kpi
+#  ooffice ~/common/kpi/*.csv
 }
 
 # Login to aurora
@@ -1850,9 +1876,9 @@ bl() {
 
 # Misc Navigation {{{
 
-# Go to desktop folder
+# Go to common folder
 cdd() {
-  o ~/Desktop/$1
+  o ~/common/$1
 }
 
 # Go to the desktop work directory
@@ -1981,18 +2007,21 @@ autoload colors
 colors
 for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
 eval _$color='%{$terminfo[bold]$fg[${(L)color}]%}'
-eval $color='%{$fg[${(L)color}]%}'
-eval T$color='$fg[${(L)color}]'
+eval $color='$fg[${(L)color}]'
+eval P$color='%{$fg[${(L)color}]%}'
 (( count = $count + 1 ))
 done
-FINISH="%{$terminfo[sgr0]%}"
+FINISH="$terminfo[sgr0]"
+PFINISH="%{$terminfo[sgr0]%}"
 # }}}
 
 # Prompt {{{  
 
+autoload -U add-zsh-hook
+
 prompt_precmd() {
-  echo
-  echo "---  $TRED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $TBLUE$PJ   $TCYAN$MAP_REV | $MAP_DATA_REV"
+  echo 
+  echo "---  $RED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $BLUE$PJ   $CYAN$MAP_REV | $MAP_DATA_REV $FINISH"
 }
 add-zsh-hook precmd prompt_precmd
 
@@ -2004,22 +2033,16 @@ o_preexec() {
 
 zle-enter() {
   cs
-  #print -s ${(z)BUFFER}
+  echo $GREEN$(pwd) $ $MAGENTA$BUFFER$FINISH
   if [[ -a $BUFFER ]]; then
-    BUFFER="cd $BUFFER"
-  elif [[ "$(pnc)" = "l" ]]; then
- # | awk '{print $8}'
-    #echo ZZZZZZZZZ
-    #echo $1 | sed -e 's/ [0-9]\+ /& $(catl3nc &)/g'
-    #echo ZZZZZZZZZ
+    BUFFER="d $BUFFER"
   fi
   zle accept-line
-  echo
 }
-#zle -N zle-enter
-#bindkey "\r" zle-enter
+zle -N zle-enter
+bindkey "\r" zle-enter
 
-#PROMPT="$TYELLOW%/ $ $FINISH"
+PROMPT="${PYELLOW}%/ $ ${PFINISH}"
 
 # }}}
 
@@ -2080,7 +2103,16 @@ setopt HIST_IGNORE_SPACE
 # }}}
 
 # Development Environment {{{
-PATH=$PATH:$HOME/.rvm/bin:~/bin # Add RVM to PATH for scripting
-source ~/.rvm/scripts/rvm
+#PATH=$PATH:$HOME/.rvm/bin:~/bin # Add RVM to PATH for scripting
+#source ~/.rvm/scripts/rvm
+
+# }}}
+
+
+################## Dependencies ################## 
+
+# Install Software {{{
+
+for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git) wn $dep || pi $dep;
 
 # }}}

@@ -1,3 +1,30 @@
+# personality settings
+set realname = "Haoyang Feng"
+set from = "haoyang.feng@kiwiplan.co.nz"
+set use_from=yes
+
+# IMAP account settings
+set imap_user="haoyang.feng@kiwiplan.co.nz"
+set imap_pass=Haofnz03
+set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
+set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
+set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
+set postponed=imaps://haoyang.feng@mail.kiwiplan.co.nz/Drafts
+
+# IMAP connection settings
+set mail_check=60
+set timeout=15
+#set imap_keepalive=300
+
+# use headercache for IMAP (make sure this is a directory for performance!)
+set header_cache=/var/tmp/.mutt
+
+# mailboxes we want to monitor for new mail
+mailboxes "!"
+
+# Solarized
+source /home/haoyang.feng/mutt-colors-solarized/mutt-colors-solarized-light-16.muttrc
+
 # character set on messages that we send
 set send_charset="utf-8"
 # if there is no character set given on incoming messages, it is probably windows
@@ -8,6 +35,10 @@ set editor="vim -c 'set syntax=mail ft=mail enc=utf-8'"
 
 # just scroll one line instead of full page
 set menu_scroll=yes
+
+# beeps
+set beep=yes
+set beep_new=yes
 
 # we want to see some MIME types inline, see below this code listing for explanation
 auto_view text/html
@@ -32,32 +63,6 @@ unignore        From To Cc Bcc Date Subject
 unhdr_order     *
 hdr_order       From: To: Cc: Bcc: Date: Subject:
 
-# brighten up stuff with colours, for more colouring examples see:
-# http://aperiodic.net/phil/configs/mutt/colors
-color normal      white          black
-color hdrdefault  green          default
-color quoted      green          default
-color quoted1     yellow         default
-color quoted2     red            default
-color signature   cyan           default
-color indicator   brightyellow   red
-color error       brightred      default
-color status      brightwhite    blue
-color tree        brightmagenta  black
-color tilde       blue           default
-color attachment  brightyellow   default
-color markers     brightred      default
-color message     white          black
-color search      brightwhite    magenta
-color bold        brightyellow   default
-# if you don't like the black progress bar at the bottom of the screen,
-# comment out the following line
-#color progress    white          black
-
-# personality settings
-set realname = "Haoyang Feng"
-set from = "haoyang.feng@kiwiplan.co.nz"
-set use_from=yes
 #alternates "andrew@mail.server|andrew.dalziel@mail.server"
 # this file must exist, and contains your signature, comment it out if
 # you don't want a signature to be used
@@ -109,27 +114,6 @@ alias wayne Wayne <wayne.stocks@kiwiplan.com>
 alias chuck Chuck <chuck.raymond@kiwiplan.com>
 alias neil Neil <neil.bond@kiwiplan.com>
 
-# IMAP connection settings
-set mail_check=60
-set timeout=15
-#set imap_keepalive=300
-
-# IMAP account settings
-set imap_user="haoyang.feng@kiwiplan.co.nz"
-set imap_pass=Haofnz03
-set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
-set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
-set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
-set postponed=imaps://haoyang.feng@mail.kiwiplan.co.nz/Drafts
-
-
-# use headercache for IMAP (make sure this is a directory for performance!)
-set header_cache=/var/tmp/.mutt
-
-# mailboxes we want to monitor for new mail
-mailboxes "!"
-#mailboxes "=Lists"
-
 # mailing lists we are on (these are regexps!)
 #subscribe "gentoo-.*@gentoo\\.org"
 
@@ -148,3 +132,41 @@ macro index     .c      "T~f jenkins\nT~f ssd\n;d"
 macro index A "<save-message>=archive<enter>"
 
 folder-hook     .       push '.i' 
+
+# Sidebar
+set sidebar_delim   = '  |'
+set sidebar_visible = yes
+set sidebar_width   = 24
+#color sidebar_new color221 color233
+
+# Status Bar
+set status_chars  = " *%A"
+set status_format = "---[ Folder: %f ]---[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]---%>-%?p?( %p postponed )?---"
+
+# Header Options
+ignore *                                # ignore all headers
+unignore from: to: cc: date: subject:   # show only these
+unhdr_order *                           # some distros order things by default
+hdr_order from: to: cc: date: subject:  # and in this order
+
+# Pager View Options
+set pager_index_lines = 10 # number of index lines to show
+set pager_context = 3      # number of context lines to show
+set pager_stop             # don't go to next message automatically
+set menu_scroll            # scroll in menus
+set tilde                  # show tildes like in vim
+unset markers              # no ugly plus signs
+
+set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
+alternative_order text/plain text/enriched text/html
+
+# Pager Key Bindings ---------------------------------
+bind pager k  previous-line
+bind pager j  next-line
+bind pager gg top
+bind pager G  bottom
+
+bind pager R  group-reply
+
+# View attachments properly.
+bind attach <return> view-mailcap
