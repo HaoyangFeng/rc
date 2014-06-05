@@ -294,7 +294,7 @@ rc() {
 circ() {
   pushd .
   cd ~/.rc
-  ci "$@"
+  ci $1
   git push origin master
   popd
 }
