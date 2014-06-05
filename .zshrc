@@ -56,7 +56,7 @@ export JSVN="svn+ssh://corona2/svn/mapjava"
 export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
-export MODE=MAP
+export MODE=VUE
 export TMP="/home/haoyang.feng/work/.tmp"
 export STDOUT=$TMP/stdout/$$
 export STDERR=$TMP/stderr/$$
@@ -64,6 +64,7 @@ export STDBUF=$TMP/stdbuf/$$
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
+export LS_COLORS="di=34:fi=0:ex=32:ln=93:or=31:mi=5;31:pi=33:so=33:bd=33:cd=33"
 
 # }}}
 
@@ -1437,7 +1438,7 @@ pj() {
 }
 
 pjr() {
-  cd $PJ_ROOT
+  o $PJ_ROOT
 }
 
 # Go to the head project directory, depending on the development mode
