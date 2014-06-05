@@ -87,6 +87,18 @@ nnoremap <LEADER>c 0R//<ESC>j
 :map <LEADER>b :call <SID>svnBlame()<CR>
 :command Blame call s:svnBlame() 
 
+:function PrepareGoogleDoc()
+  silent! s/<[^>]*>/\r&\r/
+  silent! g/^$/d
+  silent! %s/>\n</></
+  exec "normal /^[^<]\<CR>"
+  silent! syn match markup "<.*>"
+  silent! hi link markup Comment
+  silent! syn match content "^[^\<].*$"
+  silent! hi link content Keyword
+:endfunction
+:map <LEADER>g :call <SID>prepareGoogleDoc()<CR>
+:command Google call s:prepareGoogleDoc()
 
 :let g:easytags_auto_update = 0
 :autocmd CursorMoved * exe printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\'))

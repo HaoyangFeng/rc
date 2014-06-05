@@ -64,7 +64,6 @@ export STDBUF=$TMP/stdbuf/$$
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
-export LS_COLORS="di=34:fi=0:ex=32:ln=93:or=31:mi=5;31:pi=33:so=33:bd=33:cd=33"
 
 # }}}
 
@@ -294,8 +293,8 @@ rc() {
 # Commit and push configuration files
 circ() {
   pushd .
-  cd ~/rc
-  ci $1
+  cd ~/.rc
+  ci "$@"
   git push origin master
   popd
 }
@@ -630,15 +629,15 @@ uz() {
 # Back Up : Back Up
 bu() {
   if [ "$2" = "" ]; then
-    cp -r $1 $1.bu
+    cp -r $1 $1.bak
   else
-    cp -r $1 $1.bu.$2
+    cp -r $1 $1.bak.$2
   fi
 }
 
 # Back Up : Back Up Remove
 bur() {
-  mv $1 $1.bu
+  mv $1 $1.bak
 }
 
 # TODO pbr
@@ -646,9 +645,9 @@ bur() {
 pb() {
   r $1
   if [ $2 = "" ]; then
-    cp -r $1.bu $1
+    cp -r $1.bak $1
   else
-    cp -r $1.bu.$2 $1
+    cp -r $1.bak.$2 $1
   fi
 }
 
@@ -1320,8 +1319,8 @@ xl() {
 upmap() {
   cd /KIWI/revisions
   if [ -d kiwi_$MAP_REV ]; then
-    rm -rf kiwi_$MAP_REV.bk
-    mv kiwi_$MAP_REV kiwi_$MAP_REV.bk
+    rm -rf kiwi_$MAP_REV.bak
+    mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
   fi
   mkdir kiwi_$MAP_REV
   cd kiwi_$MAP_REV
@@ -1398,6 +1397,7 @@ mci() {
 
 #}}}
  
+
 ################## General Developement ################## 
 
 # General Navigation {{{
@@ -1711,7 +1711,7 @@ reapply() {
   dir=$(pwd)
   cd ..
   rm -rf $dir
-  mv $dir.bu $dir
+  mv $dir.bak $dir
   cd $dir
   dp
 }
@@ -1719,7 +1719,7 @@ reapply() {
 revert() {
   dir=$(pwd)
   cd ..
-  mv $dir $dir.bu
+  mv $dir $dir.bak
   svn up
   cd $dir
   dp
@@ -1915,7 +1915,16 @@ note() {
 
 # }}}
 
-################## Application ################## 
+
+################## General Application ################## 
+
+# Google Drive {{{
+
+gd() {
+  google docs edit --title $1 --folder Grive --format html --editor google_vim
+}
+
+# }}}
 
 # Todo {{{
 
@@ -1983,6 +1992,7 @@ tdlf() {
 
 # }}}
 
+
 ################## Other ################## 
 
 # Experimental {{{
@@ -1999,6 +2009,7 @@ dj() {
 #export HISTCONTROL=ignoredups
 #export _JAVA_OPTIONS="-Dawt.useSystemAAFontSettings=lcd"
 
+PATH="$PATH:/home/haoyang.feng/bin"
 if [ -d "$HOME/projects/maven-misc/bin" ] ; then
     PATH="$HOME/projects/maven-misc/bin:$PATH"
 fi
@@ -2066,43 +2077,43 @@ export EDITOR=vim
 # }}}
 
 # Syntax {{{
-setopt extended_glob
-TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
- 
-recolor-cmd() {
-   region_highlight=()
-   colorize=true
-   start_pos=0
-   for arg in ${(z)BUFFER}; do
-       ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
-       ((end_pos=$start_pos+${#arg}))
-       if $colorize; then
-           colorize=false
-           res=$(LC_ALL=C builtin type $arg 2>/dev/null)
-           case $res in
-               *'reserved word'*)   style="fg=magenta";;
-               *'alias for'*)       style="fg=cyan";;
-               *'shell builtin'*)   style="fg=yellow";;
-               *'shell function'*)  style='fg=green';;
-               *"$arg is"*)
-                   [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
-               *)                   style='none';;
-           esac
-           region_highlight+=("$start_pos $end_pos $style")
-       fi
-       [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
-       start_pos=$end_pos
-   done
-}
-
-expand-cmd() {
-}
-
-self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
-backward-delete-char() { zle .backward-delete-char && recolor-cmd }
- 
-zle -N self-insert
-zle -N backward-delete-char
+#setopt extended_glob
+#TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
+# 
+#recolor-cmd() {
+#   region_highlight=()
+#   colorize=true
+#   start_pos=0
+#   for arg in ${(z)BUFFER}; do
+#       ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
+#       ((end_pos=$start_pos+${#arg}))
+#       if $colorize; then
+#           colorize=false
+#           res=$(LC_ALL=C builtin type $arg 2>/dev/null)
+#           case $res in
+#               *'reserved word'*)   style="fg=magenta";;
+#               *'alias for'*)       style="fg=cyan";;
+#               *'shell builtin'*)   style="fg=yellow";;
+#               *'shell function'*)  style='fg=green';;
+#               *"$arg is"*)
+#                   [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
+#               *)                   style='none';;
+#           esac
+#           region_highlight+=("$start_pos $end_pos $style")
+#       fi
+#       [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
+#       start_pos=$end_pos
+#   done
+#}
+#
+#expand-cmd() {
+#}
+#
+#self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
+#backward-delete-char() { zle .backward-delete-char && recolor-cmd }
+# 
+#zle -N self-insert
+#zle -N backward-delete-char
 # }}}
 
 # History {{{
@@ -2140,6 +2151,12 @@ md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
 
 
 ################## Startup ################## 
+
+# Setup Environment {{{
+
+eval $(dircolors ~/.dir_colors)
+
+# }}}
 
 # Goto home {{{
 
