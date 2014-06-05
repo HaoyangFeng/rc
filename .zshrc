@@ -58,6 +58,9 @@ export KWSQL_USER=test
 export KWSQL_PASS=test
 export MODE=MAP
 export TMP="/home/haoyang.feng/work/.tmp"
+export STDOUT=$TMP/stdout/$$
+export STDERR=$TMP/stderr/$$
+export STDBUF=$TMP/stdbuf/$$
 export GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
@@ -164,7 +167,7 @@ scron() {
   fi
   while true; do
     evb $1
-    clear;
+    clear
     catb
     sleep $SLEEP_TIME;
   done 
@@ -232,6 +235,14 @@ catlb() {
 
 catlbnc() {
   catl $TMP/stdbuf/$$.nocolor $1
+}
+
+cato() {
+  c $STDOUT
+}
+
+cate() {
+  c $STDERR
 }
 
 evn() {
@@ -675,7 +686,7 @@ function command_not_found_handler() {
 
 # List Utility : List
 # l : List files in full or brief depending on total number of files
-function l () {
+l() {
   if [[ $(lf $@ | wc -l) -lt 30 ]]; then
     lf $@
   else
@@ -2020,8 +2031,6 @@ PFINISH="%{$terminfo[sgr0]%}"
 autoload -U add-zsh-hook
 
 prompt_precmd() {
-  echo 
-  echo "---  $RED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $BLUE$PJ   $CYAN$MAP_REV | $MAP_DATA_REV $FINISH"
 }
 add-zsh-hook precmd prompt_precmd
 
@@ -2031,11 +2040,16 @@ add-zsh-hook precmd prompt_precmd
 o_preexec() {
 }
 
-zle-enter() {
+top_prompt() {
   cs
+  echo "${GREEN}MSH $$   $RED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $BLUE$PJ   $CYAN$MAP_REV | $MAP_DATA_REV $FINISH"
   echo $GREEN$(pwd) $ $MAGENTA$BUFFER$FINISH
+}
+
+zle-enter() {
+  top_prompt
   if [[ -a $BUFFER ]]; then
-    BUFFER="d $BUFFER"
+    BUFFER="o $BUFFER"
   fi
   zle accept-line
 }
@@ -2113,6 +2127,23 @@ setopt HIST_IGNORE_SPACE
 
 # Install Software {{{
 
-for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git) wn $dep || pi $dep;
+for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree) wn $dep || pi $dep;
+
+# }}}
+
+# Directories {{{
+
+md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
+
+# }}}
+
+
+################## Startup ################## 
+
+# Goto home {{{
+
+top_prompt
+echo
+d
 
 # }}}
