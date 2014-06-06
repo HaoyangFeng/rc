@@ -724,6 +724,12 @@ rl() {
   l ~/.Trash
 }
 
+# Remove Utility: Remove empty
+# re : Empty files in trash
+re() {
+  rm -rf ~/.Trash/*
+}
+
 # Cat Utility: Cat line
 # catl file 1 : Cat file line 1
 catl() {
