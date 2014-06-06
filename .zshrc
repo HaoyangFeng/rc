@@ -694,7 +694,7 @@ l() {
   fi
 }
 
-# List Utility: List FlL
+# List Utility: List Full
 # lf : List almost all files
 lf() {
   pn l "ls -Alht --color $@ | head -30"
@@ -704,6 +704,13 @@ lf() {
 # lb : List files in brief
 lb() {
   pn l "ls -lht --color $@ | head -30"
+}
+
+# Move : Move
+# m a b c : Move a and b to c
+m() {
+  mv ${@:1:-1} $@[-1]
+  l
 }
 
 export TRASH=~/.Trash
@@ -719,25 +726,31 @@ r() {
   l
 }
 
-# Remove Utility: Remove list
+# Remove Utility: Remove Undo TODO Create history aware Undo TODO Doesn't work when removed nested file
+# ru : Undo the last removal
+ru() {
+  m $TRASH/$(ls $TRASH | tail -1)/*(D) .
+}
+
+# Remove Utility: Remove List
 # rl : List files in trash
 rl() {
   l ~/.Trash
 }
 
-# Remove Utility: Remove empty
+# Remove Utility: Remove Empty
 # re : Empty files in trash
 re() {
   rm -rf ~/.Trash/*
 }
 
-# Cat Utility: Cat line
+# Cat Utility: Cat Line
 # catl file 1 : Cat file line 1
 catl() {
   sed -n "$2"p $1
 }
 
-# Write Utility: Insert line
+# Write Utility: Insert Line
 # ins file "text" : Insert "text" into line 1 of file
 ins() {
   sed -i "1i$2" $1
@@ -1435,8 +1448,8 @@ mode() {
   crc MODE $menu
 }
 
-alias j="mode <<< 1"
-alias m="mode <<< 2"
+alias vue="mode <<< 1"
+alias classic="mode <<< 2"
 
 # Go to projects directory, depending on the development mode
 pj() {
@@ -1908,6 +1921,12 @@ work() {
   if [[ "$1" != "" ]]; then
     d $1
   fi
+}
+
+# Sandbox: Sandbox
+# sb : Go to the Sandbox directory
+sb() {
+  o ~/sandbox
 }
 
 export NOTE=~/note

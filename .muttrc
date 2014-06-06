@@ -23,7 +23,7 @@ set header_cache=/var/tmp/.mutt
 mailboxes "!"
 
 # Solarized
-source /home/haoyang.feng/mutt-colors-solarized/mutt-colors-solarized-light-16.muttrc
+source ~/src/solarized/mutt-colors-solarized/mutt-colors-solarized-light-16.muttrc
 
 # character set on messages that we send
 set send_charset="utf-8"
