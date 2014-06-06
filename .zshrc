@@ -716,6 +716,7 @@ r() {
     md $trash
     mv $@ $trash
   fi
+  l
 }
 
 # Remove Utility: Remove list
