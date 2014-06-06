@@ -61,7 +61,7 @@ export TMP="/home/haoyang.feng/work/.tmp"
 export STDOUT=$TMP/stdout/$$
 export STDERR=$TMP/stderr/$$
 export STDBUF=$TMP/stdbuf/$$
-export GREP_COLOR=FULL
+export USE_GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
 
@@ -83,7 +83,7 @@ alias bc='bc -l'
 alias emacs='emacs -nw'
 
 aliasgrep() {
-  if [ "$GREP_COLOR" = "FULL" ]; then
+  if [ "$USE_GREP_COLOR" = "FULL" ]; then
     alias grep='grep -E --color=always'
   else
     alias grep='grep -E --color=none'
@@ -91,13 +91,13 @@ aliasgrep() {
 }
 
 aliasgrepnocolor() {
-  crc GREP_COLOR NONE
+  crc USE_GREP_COLOR NONE
   aliasgrep
   rrc
 }
 
 aliasgrepfullcolor() {
-  crc GREP_COLOR FULL
+  crc USE_GREP_COLOR FULL
   aliasgrep
   rrc
 }
@@ -748,10 +748,11 @@ md() {
 # Directory: Directory
 # d ex : Move to directory "ex" even if it doesn't exist
 d() {
-  if [ ! -d $1 ]; then
+  if [[ ! -d $1 && $1 != "-" && $1 != "" ]]; then
     mkdir -p $@
   fi
-  o $1
+  builtin cd $1
+  l
 }
 
 # Disk : Usage
@@ -780,13 +781,14 @@ df() {
 
 # Go to into directory or open file in Vi
 o() {
-  if [[ -d $1 || $1 = "" ]]; then
-    builtin cd $1
-    l
-  elif [[ -x $1 ]]; then
-    $1
+  if [[ $1 = "" ]]; then
+    d
+  elif [[ -d $1 || $1 = "-" ]]; then
+    d $1
   elif [[ -f $1 ]]; then
-    if [[ $2 = "" ]]; then
+    if [[ -x $1 ]]; then
+      $1
+    elif [[ $2 = "" ]]; then
       vi $1
     else
       vi +$2 $1
@@ -2060,7 +2062,11 @@ top_prompt() {
 
 zle-enter() {
   top_prompt
-  if [[ -a $BUFFER ]]; then
+  if [[ $BUFFER = "" ]]; then
+    BUFFER="o"
+  elif [[ $BUFFER = "-" ]]; then
+    BUFFER="o -"
+  elif [[ -a $BUFFER ]]; then 
     BUFFER="o $BUFFER"
   fi
   zle accept-line
@@ -2139,7 +2145,7 @@ setopt HIST_IGNORE_SPACE
 
 # Install Software {{{
 
-for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree) wn $dep || pi $dep;
+for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc) wn $dep || pi $dep;
 
 # }}}
 
