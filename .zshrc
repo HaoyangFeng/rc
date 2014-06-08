@@ -2088,9 +2088,10 @@ top_prompt() {
 
 zle-enter() {
   top_prompt
+  zle expand-word
   if [[ $BUFFER = "" ]]; then
     BUFFER="o"
-  elif [[ -a $BUFFER || $BUFFER = "-" || $BUFFER[1] = "~" ]]; then 
+  elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
     BUFFER="o $BUFFER"
   fi
   zle accept-line
