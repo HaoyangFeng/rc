@@ -803,7 +803,7 @@ df() {
 o() {
   if [[ $1 = "" ]]; then
     d
-  elif [[ -d $1 || $1 = "-" || $1 = "~" ]]; then
+  elif [[ -d $1 || $1 = "-" ]]; then
     d $1
   elif [[ -f $1 ]]; then
     if [[ -x $1 ]]; then
