@@ -2090,7 +2090,7 @@ zle-enter() {
   top_prompt
   if [[ $BUFFER = "" ]]; then
     BUFFER="o"
-  elif [[ -a $BUFFER || $BUFFER = "-" || $BUFFER = "~" ]]; then 
+  elif [[ -a $BUFFER || $BUFFER = "-" || $BUFFER[1] = "~" ]]; then 
     BUFFER="o $BUFFER"
   fi
   zle accept-line
