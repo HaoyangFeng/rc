@@ -799,6 +799,10 @@ df() {
 
 # Open {{{
 
+# Default applications for opening different file types
+typeset -A OFT
+OFT=(png eog zip uz)
+
 # Go to into directory or open file in Vi
 o() {
   if [[ $1 = "" ]]; then
@@ -808,6 +812,8 @@ o() {
   elif [[ -f $1 ]]; then
     if [[ -x $1 ]]; then
       $1
+    #else
+    #  for 
     elif [[ $2 = "" ]]; then
       vi $1
     else
@@ -2088,11 +2094,14 @@ top_prompt() {
 
 zle-enter() {
   top_prompt
+  BUFFER_BAK=$BUFFER
   zle expand-word
   if [[ $BUFFER = "" ]]; then
     BUFFER="o"
   elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
     BUFFER="o $BUFFER"
+  else
+    BUFFER=$BUFFER_BAK
   fi
   zle accept-line
 }
