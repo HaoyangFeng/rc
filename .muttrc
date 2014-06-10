@@ -5,7 +5,7 @@ set use_from=yes
 
 # IMAP account settings
 set imap_user="haoyang.feng@kiwiplan.co.nz"
-set imap_pass=Haofnz03
+set imap_pass=Haofnz06
 set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
 set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
 set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
@@ -118,7 +118,7 @@ alias neil Neil <neil.bond@kiwiplan.com>
 #subscribe "gentoo-.*@gentoo\\.org"
 
 # SMTP mailing configuration (for sending mail)
-set smtp_pass=Haofnz03
+set smtp_pass=Haofnz06
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
 macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"

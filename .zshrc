@@ -42,8 +42,9 @@
 
 export PASS=Haofnz03
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/GP/Riegelsville/MAP_SQL
+export MD=/KIWI/datasets/GP/Riegelsville/MAP
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
+export LD_LIBRARY_PATH="/kiwi/progs"
 export DS="/KIWI/datasets"
 export SV="/KIWI/java/sites"
 export CM="/KIWI/java/comms"
@@ -462,8 +463,12 @@ e() {
   echo $@
 }
 
+ev() {
+  eve "e \$$1:u"
+}
+
 # Eval Echo
-# ee {1..3}' r' : Evaluate "1 r" "2 r" "3 r"
+# eve {1..3}' r' : Evaluate "1 r" "2 r" "3 r"
 eve() {
   eval $(e $@)
 }
@@ -799,11 +804,13 @@ df() {
 
 # Open {{{
 
-# Default applications for opening different file types
+# Open : Open File Type (Variable)
+# OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
 OFT=(png eog zip uz)
 
-# Go to into directory or open file in Vi
+# Open : Open
+# o a : Go to into directory or open file in Vi
 o() {
   if [[ $1 = "" ]]; then
     d
@@ -812,12 +819,18 @@ o() {
   elif [[ -f $1 ]]; then
     if [[ -x $1 ]]; then
       $1
-    #else
-    #  for 
-    elif [[ $2 = "" ]]; then
-      vi $1
     else
-      vi +$2 $1
+      for ft in ${(k)OFT}; do
+        if [[ $1 = *.$ft ]]; then
+          $OFT[$ft] $1;
+          return;
+        fi
+      done
+      if [[ $2 = "" ]]; then
+        vi $1
+      else
+        vi +$2 $1
+      fi
     fi
   fi
 }
