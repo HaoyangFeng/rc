@@ -306,6 +306,15 @@ circ() {
   popd
 }
 
+# Commit and push configuration files
+ciarc() {
+  pushd .
+  cd ~/.rc
+  cia $1
+  git push origin master
+  popd
+}
+
 # Help: Keyword function help
 # h func : List all function documentation with the keyword func
 h() {
@@ -1904,6 +1913,12 @@ dt() {
   fi
 }
 
+cia() {
+  if [ -d .git ]; then
+    git commit -a --amend -m $1
+  fi
+}
+
 ci() {
   if [ -d .git ]; then
     git commit -a -m $1
@@ -1916,6 +1931,15 @@ ci() {
       svn st | grep "^C"
       return 1
     fi
+  fi
+}
+
+co() {
+  if [[ $1 == *git* ]]; then
+    git clone $1
+  fi
+  if [[ $1 == *svn* ]]; then
+    svn co $1
   fi
 }
 
