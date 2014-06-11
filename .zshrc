@@ -311,7 +311,7 @@ ciarc() {
   pushd .
   cd ~/.rc
   cia $1
-  git push origin master
+  git push -f origin master
   popd
 }
 
