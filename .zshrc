@@ -1919,6 +1919,15 @@ ci() {
   fi
 }
 
+co() {
+  if [ -d .git ]; then
+    git clone $1
+  fi
+  if [ -d .svn ]; then
+    svn co $1
+  fi
+}
+
 up() {
   if [ -d .git ]; then
     git up
