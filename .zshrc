@@ -927,6 +927,25 @@ vd() {
 
 # Numbered Shortcut {{{
 
+# Numbered Shortcut : Add Number
+# an 12 : Add number 12 into the number list
+an() {
+  n=$(catlbnc $1)
+  case $(pnc) in
+      l) SN="$SN $(echo $n | awk '{print $9}')";;
+      *) echo Done nothing.;;
+  esac
+  e ${BLUE}Selected:$SN $FINISH
+  $(pnc)
+}
+
+# Numbered Shortcut : Selected Numbers
+# sn m a : Move all selected items to a (translates to "m $(e $SN) a")
+sn() {
+  $1 $(e $SN) ${@:2}
+  unset SN
+}
+
 pn() {
   echo $1 > $TMP/stdbuf/$$.cmd
   evb $2 | nl
@@ -940,34 +959,47 @@ fn() {
   catlbnc $1 | xargs ${@:2}
 }
 
-# Numbered shortcut: Run numbered shortcut
-# rn 2: Run the numbered shortcut for line 2 of the output of the previous command
+# Numbered shortcut: Run numbered shortcut # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
-  n=$(catlbnc $1)
-  case $(pnc) in
-      d) cd +$1;;
-      t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
-      note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
-      l) case $2 in 
-             r) r "$(echo $n | awk '{print $9}')";;
-             "") o "$(echo $n | awk '{print $9}')";;
-             *) $2 "$(echo $n | awk '{print $9}')" ${@:3};;
-         esac;;
-      lt) o $(echo $n | awk '{print $9}');;
-      f) o $n;;
-      fa) o $n;;
-      fp) o $n;;
-      fps) o $n;;
-      fpa) o $n;;
-      tca) vimdiff $n $PJ_ROOT/$MB/$n;;
-      g) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
-      gs) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
-      gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
-      wh) wh $(echo $n | cut -d " " -f 1);;
-      clog) o $n;;
+# Listing numbers to add to selected list quickly
+  if [[ $2 != "" && $2 = [0-9]* ]]; then
+    cmd=()
+    for arg in $@; do
+      if [[ $arg = [0-9]* ]]; then
+        an $arg
+      else
+        cmd+=$arg
+      fi
+    done
+    sn $cmd
+    unset cmd
+  else
+    n=$(catlbnc $1)
+    case $(pnc) in
+        d) cd +$1;;
+        t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        l) case $2 in 
+               r) r "$(echo $n | awk '{print $9}')";;
+               "") o "$(echo $n | awk '{print $9}')";;
+               *) $2 "$(echo $n | awk '{print $9}')" ${@:3};;
+           esac;;
+        lt) o $(echo $n | awk '{print $9}');;
+        f) o $n;;
+        fa) o $n;;
+        fp) o $n;;
+        fps) o $n;;
+        fpa) o $n;;
+        tca) vimdiff $n $PJ_ROOT/$MB/$n;;
+        g) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
+        gs) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
+        gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
+        wh) wh $(echo $n | cut -d " " -f 1);;
+        clog) o $n;;
 
-      *) echo Done nothing.;;
-  esac
+        *) echo Done nothing.;;
+    esac
+  fi
 }
 
 for ((i = 0; i < 10000; i++)); do
@@ -976,6 +1008,10 @@ done
 
 for ((i = 0; i < 10000; i++)); do
   alias f$i="fn $i"
+done
+
+for ((i = 0; i < 10000; i++)); do
+  alias a$i="an $i"
 done
 
 # }}}
