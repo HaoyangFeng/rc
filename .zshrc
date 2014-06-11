@@ -4,6 +4,8 @@
 # Completing running task beeps terminal
 # Command takes precedence over file open
 # Archiving system
+# Post-command support
+# Multi-numbered action
 
 
 ################## Keymap ################## 
@@ -730,10 +732,28 @@ lb() {
   pn l "ls -lht --color $@ | head -30"
 }
 
+# Shortcut : Shortcut
+# sc a/b : Create shortcut b pointing to a/b (shortcut name is taken from leaf of destination)
+# sc a/b c : Create shortcut c pointing to a/b
+sc() {
+  ln -s $@
+}
+
+
 # Move : Move
 # m a b c : Move a and b to c
 m() {
   mv ${@:1:-1} $@[-1]
+  l
+}
+
+# Move : Move Shortcut
+# ml a b c : Move a and b to c, and create symbolic links from a and b to c/a and c/b
+ms() {
+  m $@
+  for file in ${@:1:-1}; do
+    sc $@[-1]/$file
+  done
   l
 }
 
