@@ -40,9 +40,9 @@
 
 # Environment variables {{{
 
-export PASS=Haofnz03
+export PASS=Haofnz06
 export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/GP/Riegelsville/MAP
+export MD=/KIWI/datasets/GP/Riegelsville/MAP_SQL
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
 export LD_LIBRARY_PATH="/kiwi/progs"
 export DS="/KIWI/datasets"
@@ -203,6 +203,12 @@ timestamp() {
 
 # System functions {{{
 
+# Verbal Test
+# vt "[[ -a src ]]" : Test if src exists, and print the result
+vt() {
+  eval $1 && e \"$1\" is true || e \"$1\" is false
+}
+
 # Clear Screen
 cs() {
   clear
@@ -272,7 +278,7 @@ pr() {
 
 # Configuration Files {{{
 
-export ZSHRC=~/rc/.zshrc
+export ZSHRC=~/.rc/.zshrc
 
 # Re-source Zsh
 rrc() {
@@ -677,8 +683,12 @@ done
 
 # Tree diff
 tdiff() {
-  tree -f $1 | sed "s/$1/\./g" > $TMP/tdiff.1
-  tree -f $2 | sed "s/$2/\./g" > $TMP/tdiff.2
+  d $1
+  tree > $TMP/tdiff.1
+  d -
+  d $2
+  tree > $TMP/tdiff.2
+  d -
   vimdiff $TMP/tdiff.1 $TMP/tdiff.2
   rm $TMP/tdiff.1
   rm $TMP/tdiff.2
@@ -1719,8 +1729,14 @@ sqlp() {
 
 # Execute SQL in database
 sqle() {
+  e Queried $@
+  e Finding table of interest ..
   table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
+  e Table of interest = $table
+  e Finding database of interest ..
   database=$(sqlf $table)
+  e "Database of interest = $database"
+  e Running query ..
   eval "mysql -uroot $database -e \"$@\""
 }
 
@@ -2213,8 +2229,11 @@ eval $(dircolors ~/.dir_colors)
 
 # Goto home {{{
 
-top_prompt
-echo
-d
+NEW=true
+if $NEW; then
+  top_prompt
+  echo
+  d
+fi
 
 # }}}
