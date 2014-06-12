@@ -1,6 +1,5 @@
 #### TODO {{{
 # Dynamic Command Composition - Creating vw from v and w
-# Coloriser
 # Completing running task beeps terminal
 # Command takes precedence over file open
 # Archiving system
@@ -530,7 +529,9 @@ eve() {
 # Awk : Awk Line
 # al 1 10 : Print from line 1 to 10
 al() {
-  awk 'NR >= start && NR <= end' start=$1 end=$2
+  awk 'NR >= start && NR <= end && NR % 2 == 0 {print bgwhite $0 finish}
+       NR >= start && NR <=end && NR % 2 == 1 {print $0}' \
+       start=$1 end=$2 bgwhite=$BGWHITE finish=$FINISH
 }
 
 # }}}
@@ -761,13 +762,13 @@ l() {
 # List Utility: List Full
 # lf : List almost all files
 lf() {
-  pn l "ls -Alht --color $@"
+  pn l "ls -Alht --color $@ | gv ^total"
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -lht --color $@"
+  pn l "ls -lht --color $@ | gv ^total"
 }
 
 # List Utility: List Hidden
@@ -2235,7 +2236,9 @@ autoload colors
 colors
 for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
 eval _$color='%{$terminfo[bold]$fg[${(L)color}]%}'
+eval _BG$color='%{$terminfo[bold]$bg[${(L)color}]%}'
 eval $color='$fg[${(L)color}]'
+eval BG$color='$bg[${(L)color}]'
 eval P$color='%{$fg[${(L)color}]%}'
 (( count = $count + 1 ))
 done
