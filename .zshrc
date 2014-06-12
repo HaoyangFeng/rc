@@ -2323,11 +2323,11 @@ eval $(dircolors ~/.dir_colors)
 
 # Goto home {{{
 
-NEW=true
 if $NEW; then
   cs
   echo
   d
 fi
+NEW=false
 
 # }}}
