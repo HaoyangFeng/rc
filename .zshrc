@@ -214,6 +214,7 @@ vt() {
 # Clear Screen
 cs() {
   clear
+  top_prompt
 }
 
 clip() {
@@ -936,7 +937,15 @@ an() {
       *) echo Done nothing.;;
   esac
   e ${BLUE}Selected:$SN $FINISH
-  $(pnc)
+  catb | nl
+}
+
+# Numbered Shortcut : Clear Numbers
+# cn : Remove all selected numbers
+cn() {
+  unset SN
+  e ${BLUE}Selected:$SN $FINISH
+  catb | nl
 }
 
 # Numbered Shortcut : Selected Numbers
@@ -967,6 +976,7 @@ rn() {
     for arg in $@; do
       if [[ $arg = [0-9]* ]]; then
         an $arg
+        cs
       else
         cmd+=$arg
       fi
@@ -2196,13 +2206,17 @@ o_preexec() {
 }
 
 top_prompt() {
-  cs
+# Restore old Buffer
+  if [[ $BUFFER != "" ]]; then
+    LAST_BUFFER=$BUFFER
+  fi
   echo "${GREEN}MSH $$   $RED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $BLUE$PJ   $CYAN$MAP_REV | $MAP_DATA_REV $FINISH"
-  echo $GREEN$(pwd) $ $MAGENTA$BUFFER$FINISH
+  echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
 }
 
 zle-enter() {
-  top_prompt
+  unset LAST_BUFFER
+  cs
   BUFFER_BAK=$BUFFER
   zle expand-word
   if [[ $BUFFER = "" ]]; then
@@ -2311,7 +2325,7 @@ eval $(dircolors ~/.dir_colors)
 
 NEW=true
 if $NEW; then
-  top_prompt
+  cs
   echo
   d
 fi
