@@ -110,7 +110,6 @@ aliasgrep
 
 # Utility functions {{{
 
-
 # $3 node index from the right, 0 is leaf
 rnode() {
     echo $1 | cut -d $2 -f $(echo "$(echo $1 | grep -o $2 | wc -l) + 1 - $3" | bc)
@@ -975,11 +974,13 @@ vd() {
 # Numbered Shortcut : Add Number
 # an 12 : Add number 12 into the number list
 an() {
-  n=$(catlbnc $1)
-  case $(pnc) in
-      l) SN="$SN $(echo $n | awk '{print $9}')";;
-      *) echo Done nothing.;;
-  esac
+  for var in $@; do
+    n=$(catlbnc $var)
+    case $(pnc) in
+        l) SN="$SN $(echo $n | awk '{print $9}')";;
+        *) echo Done nothing.;;
+    esac
+  done
   e ${BLUE}Selected:$SN $FINISH
   pgp
 }
