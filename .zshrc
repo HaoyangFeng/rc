@@ -1,14 +1,13 @@
-################## TODO ################## 
+#### TODO {{{
 # Dynamic Command Composition - Creating vw from v and w
 # Coloriser
 # Completing running task beeps terminal
 # Command takes precedence over file open
 # Archiving system
-# Post-command support
-# Multi-numbered action
+# Post-command support such as pager
+# }}}
 
-
-################## Keymap ################## 
+#### Keymap {{{
 # a : Awk
 # b : 
 # c : Cat
@@ -36,9 +35,9 @@
 # y
 # z
 # td : Todo
+# }}}
 
-
-################## General OS ################## 
+#### General OS {{{
 
 # Environment variables {{{
 
@@ -110,6 +109,7 @@ aliasgrep
 # }}}
 
 # Utility functions {{{
+
 
 # $3 node index from the right, 0 is leaf
 rnode() {
@@ -203,6 +203,40 @@ timestamp() {
 
 # }}}
 
+# Pager {{{
+
+# Pager : Pager Print
+# pgp : Print the current page
+pgp() {
+  catb | nl | al $PAGER_TOP $PAGER_BOTTOM
+}
+
+# Pager : Pager
+# pg : Print the first page
+pg() {
+  PAGER_TOP=1
+  PAGER_BOTTOM=30
+  pgp
+}
+
+# Pager : Pager Next
+# n : Print the next page
+n() {
+  (( PAGER_TOP += 30 ))
+  (( PAGER_BOTTOM += 30 ))
+  pgp
+}
+
+# Pager : Pager Previous
+# p : Print the previous page
+p() {
+  (( PAGER_TOP -= 30 ))
+  (( PAGER_BOTTOM -= 30 ))
+  pgp
+}
+
+# }}}
+
 # System functions {{{
 
 # Verbal Test
@@ -228,7 +262,6 @@ decolor() {
 evb() {
   eval $@ &> $TMP/stdbuf/$$
   decolor $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
-  catb
 }
 
 catb() {
@@ -493,6 +526,16 @@ eve() {
 
 # }}}
 
+# Awk {{{
+
+# Awk : Awk Line
+# al 1 10 : Print from line 1 to 10
+al() {
+  awk 'NR >= start && NR <= end' start=$1 end=$2
+}
+
+# }}}
+
 # Sed {{{
 
 # Sed Utility: Sed
@@ -613,11 +656,6 @@ fpa() {
   fps $(pab $1)
 }
 
-# Find the most recently modified files
-lt() {
-  ls -lt | head -10 | tail -9 | nl
-}
-
 # }}}
 
 # File {{{
@@ -724,13 +762,19 @@ l() {
 # List Utility: List Full
 # lf : List almost all files
 lf() {
-  pn l "ls -Alht --color $@ | head -30"
+  pn l "ls -Alht --color $@"
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -lht --color $@ | head -30"
+  pn l "ls -lht --color $@"
+}
+
+# List Utility: List Hidden
+# lh : List hidden files
+lh() {
+  pn l "ls -lhtd --color .*"
 }
 
 # Shortcut : Shortcut
@@ -937,7 +981,7 @@ an() {
       *) echo Done nothing.;;
   esac
   e ${BLUE}Selected:$SN $FINISH
-  catb | nl
+  pgp
 }
 
 # Numbered Shortcut : Clear Numbers
@@ -945,7 +989,7 @@ an() {
 cn() {
   unset SN
   e ${BLUE}Selected:$SN $FINISH
-  catb | nl
+  pgp
 }
 
 # Numbered Shortcut : Selected Numbers
@@ -957,7 +1001,8 @@ sn() {
 
 pn() {
   echo $1 > $TMP/stdbuf/$$.cmd
-  evb $2 | nl
+  evb $2
+  pg
 }
 
 pnc() {
@@ -1026,8 +1071,9 @@ done
 
 # }}}
 
+#}}}
 
-################## Java Development ################## 
+#### Java Development {{{
 
 # Java Revision {{{
 
@@ -1309,8 +1355,9 @@ jdt() {
 
 # }}}
 
+#}}}
 
-################# MAP Development ################## 
+#### MAP Development {{{
 
 # MAP Revision {{{
 
@@ -1523,8 +1570,9 @@ mci() {
 
 #}}}
  
+#}}}
 
-################## General Developement ################## 
+#### General Developement {{{
 
 # General Navigation {{{
 
@@ -2068,8 +2116,9 @@ note() {
 
 # }}}
 
+#}}}
 
-################## General Application ################## 
+#### General Application {{{
 
 # Google Drive {{{
 
@@ -2145,8 +2194,9 @@ tdlf() {
 
 # }}}
 
+#}}}
 
-################## Other ################## 
+#### Other {{{
 
 # Experimental {{{
 
@@ -2175,8 +2225,9 @@ fi
 PATH="/home/haoyang.feng/bin/Sencha/Cmd/3.0.0.250:$PATH"
 # }}}
 
+#}}}
 
-################## ZSH ################## 
+#### ZSH {{{ 
 
 # Color {{{
 autoload colors
@@ -2297,8 +2348,9 @@ setopt HIST_IGNORE_SPACE
 
 # }}}
 
+#}}}
 
-################## Dependencies ################## 
+#### Dependencies {{{ 
 
 # Install Software {{{
 
@@ -2312,8 +2364,9 @@ md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
 
 # }}}
 
+#}}}
 
-################## Startup ################## 
+#### Startup {{{ 
 
 # Setup Environment {{{
 
@@ -2331,3 +2384,5 @@ fi
 NEW=false
 
 # }}}
+
+#}}}
