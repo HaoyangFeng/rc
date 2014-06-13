@@ -203,9 +203,14 @@ timestamp() {
 
 # Pager {{{
 
+# Pager : Pager Size
+# PAGER_SIZE=30 : Set the pager size to 30
+PAGER_SIZE=30
+
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
+  e ${BLUE}Selected:$SI $FINISH
   catb | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
 
@@ -213,23 +218,23 @@ pgp() {
 # pg : Print the first page
 pg() {
   PAGER_TOP=1
-  PAGER_BOTTOM=30
+  PAGER_BOTTOM=$PAGER_SIZE
   pgp
 }
 
 # Pager : Pager Next
 # n : Print the next page
 n() {
-  (( PAGER_TOP += 30 ))
-  (( PAGER_BOTTOM += 30 ))
+  (( PAGER_TOP += $PAGER_SIZE ))
+  (( PAGER_BOTTOM += $PAGER_SIZE ))
   pgp
 }
 
 # Pager : Pager Previous
 # p : Print the previous page
 p() {
-  (( PAGER_TOP -= 30 ))
-  (( PAGER_BOTTOM -= 30 ))
+  (( PAGER_TOP -= $PAGER_SIZE ))
+  (( PAGER_BOTTOM -= $PAGER_SIZE ))
   pgp
 }
 
@@ -529,9 +534,14 @@ eve() {
 # Awk : Awk Line
 # al 1 10 : Print from line 1 to 10
 al() {
-  awk 'NR >= start && NR <= end && NR % 2 == 0 {print bgwhite $0 finish}
-       NR >= start && NR <=end && NR % 2 == 1 {print $0}' \
-       start=$1 end=$2 bgwhite=$BGWHITE finish=$FINISH
+  SNA="NR < 0"
+  for sn in $SN; do
+    SNA+=" || NR == $sn"
+  done
+  awk "NR >= $1 && NR <= $2 && ( $SNA ) {printf selected}
+       NR >= $1 && NR <= $2 && NR % 2 == 0 {print altbg \$0 finish}
+       NR >= $1 && NR <= $2 && NR % 2 == 1 {print \$0}" \
+       selected=$BLUE altbg=$BGWHITE finish=$FINISH
 }
 
 # }}}
@@ -972,33 +982,40 @@ vd() {
 
 # Numbered Shortcut {{{
 
+# Numbered Shortcut : Selected Numbers Initialise
+# sni : Reset the selected numbers
+sni() {
+   SI=""
+   SN=()
+}
+sni
+
 # Numbered Shortcut : Add Number
 # an 12 : Add number 12 into the number list
 an() {
   for var in $@; do
+    SN+=$var
     n=$(catlbnc $var)
     case $(pnc) in
-        l) SN="$SN $(echo $n | awk '{print $9}')";;
+        l) SI="$SI $(echo $n | awk '{print $9}')";;
         *) echo Done nothing.;;
     esac
   done
-  e ${BLUE}Selected:$SN $FINISH
   pgp
 }
 
 # Numbered Shortcut : Clear Numbers
 # cn : Remove all selected numbers
 cn() {
-  unset SN
-  e ${BLUE}Selected:$SN $FINISH
+  sni
   pgp
 }
 
 # Numbered Shortcut : Selected Numbers
-# sn m a : Move all selected items to a (translates to "m $(e $SN) a")
+# sn m a : Move all selected items to a (translates to "m $(e $SI) a")
 sn() {
-  $1 $(e $SN) ${@:2}
-  unset SN
+  $1 $(e $SI) ${@:2}
+  sni
 }
 
 pn() {
@@ -2235,8 +2252,10 @@ PATH="/home/haoyang.feng/bin/Sencha/Cmd/3.0.0.250:$PATH"
 autoload colors
 colors
 for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
-eval _$color='%{$terminfo[bold]$fg[${(L)color}]%}'
-eval _BG$color='%{$terminfo[bold]$bg[${(L)color}]%}'
+eval BR$color='$terminfo[bold]$fg[${(L)color}]'
+eval PBR$color='%{$terminfo[bold]$fg[${(L)color}]%}'
+eval BRBG$color='$terminfo[bold]$bg[${(L)color}]'
+eval PBRBG$color='%{$terminfo[bold]$bg[${(L)color}]%}'
 eval $color='$fg[${(L)color}]'
 eval BG$color='$bg[${(L)color}]'
 eval P$color='%{$fg[${(L)color}]%}'
