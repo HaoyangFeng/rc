@@ -3,7 +3,7 @@
 # Completing running task beeps terminal
 # Command takes precedence over file open
 # Archiving system
-# Post-command support such as pager
+# Advanced post-command support
 # }}}
 
 #### Keymap {{{

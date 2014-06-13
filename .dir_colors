@@ -155,7 +155,7 @@ EIGHTBIT 1
 # global default
 NORMAL 00
 # normal file
-FILE 00
+FILE 01;33
 # directory
 DIR 36
 # symbolic link
