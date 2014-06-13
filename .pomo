@@ -1,0 +1,7 @@
+--- 
+- !ruby/object:Pomo::Task 
+  complete: true
+  description: 
+  length: 25
+  name: Test pomo
+  running: false

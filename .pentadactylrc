@@ -1,0 +1,10 @@
+"1.1
+
+loadplugins '\.(js|penta)$'
+group user
+set hintkeys=asdfghjkl;qwertyuiopzxcvbnm,.
+set complete=search,bookmark,history,location,file,suggestion
+colorscheme solarized-light
+au Fullscreen .* :set guioptions+=s
+
+" vim: set ft=pentadactyl:
