@@ -76,8 +76,8 @@ USAGEEND
 
 ### Start external settings handling
 Irssi::settings_add_bool('hilightnotify', 'hilight_run_cmd_when_away', 1);
-Irssi::settings_add_str ('hilightnotify', 'hilight_cmd_on_hilight', '/home/haoyang.feng/bin/hilight');
-Irssi::settings_add_str ('hilightnotify', 'hilight_cmd_on_dehilight', '/home/haoyang.feng/bin/dehilight');
+Irssi::settings_add_str ('hilightnotify', 'hilight_cmd_on_hilight', '/home/haoyang.feng/mos/bin/hilight');
+Irssi::settings_add_str ('hilightnotify', 'hilight_cmd_on_dehilight', '/home/haoyang.feng/mos/bin/dehilight');
 
 my $hilight_run_cmd_when_away;
 my $hilight_cmd_on_hilight;

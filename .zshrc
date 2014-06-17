@@ -70,6 +70,7 @@ export COMMON=$MOS_ROOT/common
 export SANDBOX=$MOS_ROOT/sandbox
 export NOTE=$MOS_ROOT/note
 export MOS_BIN=$MOS_ROOT/bin
+export LANG=en_NZ.UTF-8
 
 # }}}
 

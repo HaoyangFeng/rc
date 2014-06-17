@@ -5,3 +5,9 @@
   length: 25
   name: Test pomo
   running: false
+- !ruby/object:Pomo::Task 
+  complete: false
+  description: 
+  length: 25
+  name: customise bottom bar
+  running: true
