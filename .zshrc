@@ -40,8 +40,9 @@
 
 # Environment variables {{{
 
+export MOS_ROOT=~/mos
 export PASS=Haofnz06
-export REBEL_HOME="/home/haoyang.feng/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
+export REBEL_HOME="~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
 export MD=/KIWI/datasets/GP/Riegelsville/MAP_SQL
 export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
 export LD_LIBRARY_PATH="/kiwi/progs"
@@ -50,7 +51,7 @@ export SV="/KIWI/java/sites"
 export CM="/KIWI/java/comms"
 export TC="/KIWI/java/tomcat"
 export WK="/KIWI/java/work"
-export IN="/home/haoyang.feng/installers"
+export IN="~/installers"
 export SVN="svn+ssh://corona2/svn/mapjava"
 export MSVN="svn+ssh://corona2/svn/map"
 export JSVN="svn+ssh://corona2/svn/mapjava"
@@ -58,13 +59,17 @@ export WORK="/KIWI/work"
 export KWSQL_USER=test
 export KWSQL_PASS=test
 export MODE=VUE
-export TMP="/home/haoyang.feng/work/.tmp"
+export TMP="$MOS_ROOT/work/.tmp"
 export STDOUT=$TMP/stdout/$$
 export STDERR=$TMP/stderr/$$
 export STDBUF=$TMP/stdbuf/$$
 export USE_GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
+export COMMON=$MOS_ROOT/common
+export SANDBOX=$MOS_ROOT/sandbox
+export NOTE=$MOS_ROOT/note
+export MOS_BIN=$MOS_ROOT/bin
 
 # }}}
 
@@ -317,11 +322,16 @@ pr() {
 
 # Configuration Files {{{
 
-export ZSHRC=~/.rc/.zshrc
+export RC=$MOS_ROOT/.rc
+export ZSHRC=$RC/.zshrc
+export VIMRC=$RC/.vimrc
+export TMUXRC=$RC/.tmux.conf
+export MUTTRC=$RC/.muttrc
+export XMODMAP=$RC/.Xmodmap
 
 # Re-source Zsh
 rrc() {
-  source ~/.zshrc
+  source $ZSHRC
 }
 
 # Configure Zsh
@@ -329,17 +339,17 @@ rc() {
   echo ":set foldmethod=marker" > $TMP/rc.vi
   echo "zR/^$1\(" > $TMP/rc1.vi
   if [ "$1" = "" ]; then
-    vi ~/.zshrc -s "$TMP/rc.vi"
+    vi $ZSHRC -s "$TMP/rc.vi"
   else
-    vi ~/.zshrc -s "$TMP/rc1.vi"
+    vi $ZSHRC -s "$TMP/rc1.vi"
   fi
-  source ~/.zshrc
+  source $ZSHRC
 }
 
 # Commit and push configuration files
 circ() {
   pushd .
-  cd ~/.rc
+  cd $RC
   ci $1
   git push origin master
   popd
@@ -348,7 +358,7 @@ circ() {
 # Commit and push configuration files
 ciarc() {
   pushd .
-  cd ~/.rc
+  cd $RC
   cia $1
   git push -f origin master
   popd
@@ -358,13 +368,13 @@ ciarc() {
 # h func : List all function documentation with the keyword func
 h() {
   pattern="#.*$(kw $@)"
-  cat ~/.zshrc | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
+  cat $ZSHRC | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
 }
 
 # Help: Full precise function help
 # fh func : Show the documentation and code of function func
 fh() {
-  cat ~/.zshrc | grep "^$1\(" -B2  | head -2
+  cat $ZSHRC | grep "^$1\(" -B2  | head -2
   w $1
 }
 
@@ -378,23 +388,23 @@ crc() {
 
 # Configure Vi
 vrc() {
-  vi ~/.vimrc
+  vi $VIMRC
 }
 
 # Configure Tmux
 trc() {
-  vi ~/.tmux.conf
-  tmux source-file ~/.tmux.conf
+  vi $TMUXRC
+  tmux source-file $TMUXRC
 }
 
 # Configure Mutt
 mrc() {
-  vi ~/.muttrc
+  vi $MUTTRC
 }
 
 # Re-source Xmodmap
 keyon() {
-  xmodmap ~/.Xmodmap
+  xmodmap $XMODMAP
 }
 
 # }}}
@@ -412,8 +422,6 @@ alias tmd='tmux detach'
 alias tmw='tmux neww -t'
 alias tmg='tmux selectw -t'
 alias tmt='tmux send -t'
-
-#source ~/.bin/tmuxinator.zsh
 
 b() {
  clear
@@ -834,13 +842,13 @@ ru() {
 # Remove Utility: Remove List
 # rl : List files in trash
 rl() {
-  l ~/.Trash
+  l $TRASH
 }
 
 # Remove Utility: Remove Empty
 # re : Empty files in trash
 re() {
-  rm -rf ~/.Trash/*
+  rm -rf $TRASH/*
 }
 
 # Cat Utility: Cat Line
@@ -867,7 +875,10 @@ md() {
 # Directory: Directory
 # d ex : Move to directory "ex" even if it doesn't exist
 d() {
-  if [[ ! -d $1 && $1 != "-" && $1 != "" ]]; then
+  if [[ $1 == "" ]]; then
+    1=$MOS_ROOT
+  fi
+  if [[ ! -d $1 && $1 != "-" ]]; then
     mkdir -p $@
   fi
   builtin cd $1
@@ -1096,7 +1107,7 @@ done
 
 # Java Revision {{{
 
-export JPJ_ROOT="/home/haoyang.feng/projects"
+export JPJ_ROOT="~/projects"
 export JPJ=mes-7.90.1
 export JHD=mes-8.0
 export JMB=mes-8.0
@@ -1107,7 +1118,7 @@ export SQL_NAME=$SITE_NAME
 
 # Java Navigation {{{
 
-export PJ="/home/haoyang.feng/projects"
+export PJ="~/projects"
 
 # Go to java service directory
 sv() {
@@ -1245,7 +1256,7 @@ jpj() {
 # Copy universal java licence file
 # cplic csc : Copy CSC licence to the current directory
 cplic() {
-  cp ~/common/licence/$1.licence .
+  cp $COMMON/licence/$1.licence .
 }
 
 jsv() {
@@ -1369,7 +1380,7 @@ EOF
 # jdt : Turn on debug for trim
 jdt() {
   sv
-  cat ~/common/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
+  cat $COMMON/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
 }
 
 # }}}
@@ -1385,7 +1396,7 @@ export MAP_REV=7.70_01apr2013
 export MAP_DATA_REV=01jul2013
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
-export MPJ_ROOT="/home/haoyang.feng/projects/map"
+export MPJ_ROOT="~/projects/map"
 export MPJ=kiwi_riegelsville
 export MHD=kiwi_head
 export MMB=kiwi_riegelsville
@@ -1397,7 +1408,7 @@ boom_base)
   ;;
 boom_haoyang)
   export MAP_REV_SRC_SERVER=nzboom
-  export MAP_REV_SRC_DIR=/home/haoyang.feng/projects
+  export MAP_REV_SRC_DIR=~/projects
   ;;
 esac
 
@@ -1529,7 +1540,7 @@ maprev() {
   crc MAP_REV_SRC $menu
   menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
   sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
-  source ~/.zshrc
+  source $ZSHRC
   rm /kiwi/kiwilink
   if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
     upmap
@@ -1541,7 +1552,7 @@ maprev() {
 mapdatarev() {
   menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
   sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
-  source ~/.zshrc
+  source $ZSHRC
 }
 
 # MAP Setup: MAP Work Cleanup
@@ -1729,7 +1740,7 @@ boomdl() {
 gromblecollect() {
   cdd gromble
   rm -rf *
-  scp -r 'gromble:/home/haoyang.feng/support/nzcollect/$1' .
+  scp -r 'gromble:~/support/nzcollect/$1' .
 }
 
 gromble() {
@@ -1783,9 +1794,9 @@ odie() {
 # 
 kpi() {
 #  ssh kpi@maven "./haoyang_kpi_export.sh"
-  r ~/common/kpi/*
-  scp "kpi@maven:/home/kpi/haoyang/*.csv" ~/common/kpi
-#  ooffice ~/common/kpi/*.csv
+  r $COMMON/kpi/*
+  scp "kpi@maven:/home/kpi/haoyang/*.csv" $COMMON/kpi
+#  ooffice $COMMON/kpi/*.csv
 }
 
 # Login to aurora
@@ -2104,7 +2115,7 @@ bl() {
 
 # Go to common folder
 cdd() {
-  o ~/common/$1
+  o $COMMON/$1
 }
 
 # Go to the desktop work directory
@@ -2118,10 +2129,8 @@ work() {
 # Sandbox: Sandbox
 # sb : Go to the Sandbox directory
 sb() {
-  o ~/sandbox
+  o $SANDBOX
 }
-
-export NOTE=~/note
 
 # Edit note
 note() {
@@ -2231,9 +2240,9 @@ dj() {
 #export HISTCONTROL=ignoredups
 #export _JAVA_OPTIONS="-Dawt.useSystemAAFontSettings=lcd"
 
-PATH="$PATH:/home/haoyang.feng/bin"
-if [ -d "$HOME/projects/maven-misc/bin" ] ; then
-    PATH="$HOME/projects/maven-misc/bin:$PATH"
+PATH="$PATH:$MOS_BIN"
+if [ -d "~/projects/maven-misc/bin" ] ; then
+    PATH="~/projects/maven-misc/bin:$PATH"
 fi
 if [ -d "/usr/local/java/maven3/bin" ] ; then
     PATH="/usr/local/java/maven3/bin:$PATH"
@@ -2241,7 +2250,7 @@ fi
 if [ -d "~/.local/bin" ] ; then
     PATH="~/.local/bin:$PATH"
 fi
-PATH="/home/haoyang.feng/bin/Sencha/Cmd/3.0.0.250:$PATH"
+PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
 # }}}
 
 #}}}
