@@ -215,6 +215,7 @@ PAGER_SIZE=30
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
+  cs && echo
   e ${BLUE}Selected:$SI $FINISH
   catb | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
@@ -1056,8 +1057,12 @@ rn() {
         cmd+=$arg
       fi
     done
-    sn $cmd
-    unset cmd
+    if [[ $cmd != "" ]]; then
+      sn $cmd
+      unset cmd
+    else
+      pgp
+    fi
   else
     n=$(catlbnc $1)
     case $(pnc) in
