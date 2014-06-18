@@ -18,6 +18,7 @@ let fortran_fold_conditionals=1
 
 "set foldmethod=syntax
 
+set number
 set relativenumber
 set cursorline
 set ruler

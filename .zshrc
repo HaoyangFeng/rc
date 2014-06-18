@@ -1,9 +1,13 @@
 #### TODO {{{
+# Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
+# Isolate personal parts from common parts
+# Sensible command names
+# Usage statistics and automatic enhancement recommendation based on usage
 # Dynamic Command Composition - Creating vw from v and w
-# Completing running task beeps terminal
-# Command takes precedence over file open
 # Archiving system
 # Advanced post-command support
+# Completing running task beeps terminal
+# Command takes precedence over file open
 # }}}
 
 #### Keymap {{{
@@ -38,43 +42,31 @@
 
 #### General OS {{{
 
-# Environment variables {{{
+# Core Environment variables {{{
 
-export MOS_ROOT=~/mos
 export PASS=Haofnz06
-export REBEL_HOME="~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel"
-export MD=/KIWI/datasets/GP/Riegelsville/MAP_SQL
-export KIWISEA="$MD:/kiwi/progs:/kiwi/sql:/kiwi/scp:/kiwi/bin:/kiwi/etc:/kiwi/work"
-export LD_LIBRARY_PATH="/kiwi/progs"
-export DS="/KIWI/datasets"
-export SV="/KIWI/java/sites"
-export CM="/KIWI/java/comms"
-export TC="/KIWI/java/tomcat"
-export WK="/KIWI/java/work"
-export IN="~/installers"
-export SVN="svn+ssh://corona2/svn/mapjava"
-export MSVN="svn+ssh://corona2/svn/map"
-export JSVN="svn+ssh://corona2/svn/mapjava"
-export WORK="/KIWI/work"
-export KWSQL_USER=test
-export KWSQL_PASS=test
-export MODE=VUE
-export TMP="$MOS_ROOT/work/.tmp"
-export STDOUT=$TMP/stdout/$$
-export STDERR=$TMP/stderr/$$
-export STDBUF=$TMP/stdbuf/$$
-export USE_GREP_COLOR=FULL
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
+export LANG=en_NZ.UTF-8
+
+export MOS_ROOT=~/mos
+
+export WORK=$MOS_ROOT/work
 export COMMON=$MOS_ROOT/common
 export SANDBOX=$MOS_ROOT/sandbox
 export NOTE=$MOS_ROOT/note
 export MOS_BIN=$MOS_ROOT/bin
-export LANG=en_NZ.UTF-8
+
+export TMP=$WORK/.tmp
+export STDOUT=$TMP/stdout/$$
+export STDERR=$TMP/stderr/$$
+export STDBUF=$TMP/stdbuf/$$
+
+export USE_GREP_COLOR=FULL
 
 # }}}
 
-# Aliases {{{
+# Core Aliases {{{
 
 alias ja='mvn clean install'
 alias jats='mvn clean install -Dmaven.test.skip'
@@ -867,6 +859,32 @@ ins() {
 
 # }}}
 
+# Remote {{{
+
+# Remote : Remote Copy
+# rmc a:/b/ c:/d : Remotely copy from a:/b to c:/d
+# rmc a:/b/ c:/d *.zip: Remotely copy *.zip from a:/b to c:/d
+rmc() {
+  if [[ $3 != "" ]]; then
+    rsync -rLpt $1 $2 --include="$3" --exclude="*"
+  else
+    rsync -rLpt $1 $2
+  fi
+}
+
+# Remote : Remote Update
+# rmu a:/b/ c:/d : Remotely update c:/d to match a:/b
+# rmu a:/b/ c:/d *.zip: Remotely update c:/d to match a:/b/*.zip
+rmu() {
+  if [[ $3 != "" ]]; then
+    rsync -rLpt --delete-excluded $1 $2 --include="$3" --exclude="*"
+  else
+    rsync -rLpt --delete-excluded $1 $2
+  fi
+}
+
+# }}}
+
 # Directory/Disk {{{
 
 # Directory : Make Directory
@@ -1053,7 +1071,6 @@ rn() {
     for arg in $@; do
       if [[ $arg = [0-9]* ]]; then
         an $arg
-        cs
       else
         cmd+=$arg
       fi
@@ -1109,535 +1126,19 @@ done
 
 #}}}
 
-#### Java Development {{{
-
-# Java Revision {{{
-
-export JPJ_ROOT="~/projects"
-export JPJ=mes-7.90.1
-export JHD=mes-8.0
-export JMB=mes-8.0
-export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
-export SQL_NAME=$SITE_NAME
-
-# }}}
-
-# Java Navigation {{{
-
-export PJ="~/projects"
-
-# Go to java service directory
-sv() {
-  o $SV
-  o $SITE_NAME
-  o current
-} 
-
-# Go to java tomcat directory
-tc() {
-  cd $TC
-  cd $SITE_NAME
-  cd current
-}
-
-# Go to java comms directory
-cm() {
-  cd $CM
-  cd $SITE_NAME
-}
-
-# Go to java work directory
-wk() {
-  cd $WK
-  cd $SITE_NAME
-}
-
-# TODO BG and put status in prompt
-# Start java services
-jss() {
-  sv
-  bin/startservers.sh
-}
-
-# TODO BG and put status in prompt
-# Stop java services
-jst() {
-  sv
-  bin/stopservers.sh
-}
-
-# TODO BG and put status in prompt
-# Start java services
-ss() {
-  sv
-  bin/launcher.sh
-}
-
-# Go to java installers directory
-jind() {
-  o $IN
-  if [ -d $SITE_NAME ]; then
-    o $SITE_NAME
-  fi
-}
-
-# rmsite : Removes current java revision installation
-rmsite() {
-  rm -rf $SV/$SITE_NAME
-  rm -rf $WK/$SITE_NAME
-  rm -rf $TC/$SITE_NAME
-  sqlrm csc
-  sqlrm pcs
-  sqlrm manufacturing
-}
-
-# Java Development: Log
-# lg : Tail logs
-lg() {
-  if [[ "$1" = "" ]]; then
-    tail -f logs/*
-  else
-    tail -f logs/$1*.log.txt
-  fi
-}
-
-# Start tomcat debug
-rdb() {
-  ps xu | grep tomcat | grep -v grep | awk '{print $2}' | xargs kill -9
-  export JPDA_ADDRESS=13066
-  export JPDA_TRANSPORT=dt_socket
-  bin/catalina.sh jpda run
-}
-
-# Edit java fix time
-fixtime() {
-  vi $SV/$SITE_NAME/current/conf/kiwiplan/time.properties;
-  cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties;
-}
-
-# View latest java comms response
-cmr() {
-  cat kiwi_to_host/$(ls kiwi_to_host -rt | tail -1)
-}
-
-# Clear java comms folders
-cmc() {
-  rm host_to_kiwi/* <<< "y"
-  rm kiwi_to_host/* <<< "y"
-  rm archive/* <<< "y"
-}
-
-# Place java comms request
-cmp() {
-  cp $1 host_to_kiwi
-}
-
-# }}}
-
-# Java Setup {{{
-
-# Java Setup: Check out Java project
-# jco mes-8.0 : Check out mes-8.0 projects
-jco() {
-  j
-  pj
-  mvn project:workspace << EOF
-$SVN/projects/$1
-
-Y
-EOF
-}
-
-jpj() {
-  j
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
-  crc JPJ $menu
-  if [ -d $PJ_ROOT/$PJ ]; then
-    pj
-  else
-    jco $menu
-  fi
-}
-
-# Copy universal java licence file
-# cplic csc : Copy CSC licence to the current directory
-cplic() {
-  cp $COMMON/licence/$1.licence .
-}
-
-jsv() {
-  j
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
-  crc JPJ $menu
-  jin
-}
-
-# TODO only works for CSC-only
-jup() {
-  jst &
-  jid
-
-# Run installation
-  ./$JPJ-*.sh << EOF
-
-$SITE_NAME
-
-
-n
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-EOF
-  sv
-  jdt
-  jss
-}
-
-jid() {
-  if [ -d $IN/$JPJ ]; then
-    rm -rf $IN/$JPJ
-  fi
-  mkdir $IN/$JPJ
-  cd $IN/$JPJ
-  scp 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")'/'$JPJ'-*' .
-  cplic csc
-}
-
-jwid() {
-  d $IN/$JPJ
-  if [ -d windows ]; then
-    rm -rf windows
-  fi
-  scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
-}
-
-# TODO only works for CSC-only
-# Java Setup: Fresh Service Installation
-# jin : Do a fresh installation of the current java revision
-jin() {
-  rmsite
-  jid
-
-# Run installation
-  ./$JPJ-*.sh << EOF
- 
-$SITE_NAME
- 
- 
-n
-
-
-
-y
-n
- 
-admin1
-admin1
- 
-
-
-
-
-
-
-
-
-50125
-
-
-
-root
-
-
-
-2
-
-
-
-
-y
-
-localhost
-
-1
-root
-
-
-
-
-
-e
-EOF
-}
-
-# Java Setup: Debug Trim
-# jdt : Turn on debug for trim
-jdt() {
-  sv
-  cat $COMMON/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
-}
-
-# }}}
-
-#}}}
-
-#### MAP Development {{{
-
-# MAP Revision {{{
-
-export MAP_REV=7.70_01apr2013
-export MAP_REV=7.70_01apr2013
-export MAP_DATA_REV=01jul2013
-export MAP_TRUNK=trunk
-export MAP_BRANCH=dev_branches/messaging
-export MPJ_ROOT="~/projects/map"
-export MPJ=kiwi_riegelsville
-export MHD=kiwi_head
-export MMB=kiwi_riegelsville
-
-case $MAP_REV_SRC in
-boom_base)
-  export MAP_REV_SRC_SERVER=nzboom
-  export MAP_REV_SRC_DIR=/src
-  ;;
-boom_haoyang)
-  export MAP_REV_SRC_SERVER=nzboom
-  export MAP_REV_SRC_DIR=~/projects
-  ;;
-esac
-
-# }}}
-
-# MAP Navigation {{{
-
-# Go to MAP work directory
-mwk() {
-  o $WORK
-}
-
-# Switch MAP dataset
-lndata() {
-  if [ "$1" = "" ]; then
-    TARGET=$(pwd)
-  else
-    TARGET=$1
-  fi
-# rm /kiwi/data
-  if [[ "$TARGET" = *.sql ]]; then
-    ln -s $DS/sql /kiwi/data
-    TARGET_DB=$(echo $TARGET | sed s/.sql//)
-    KWSQL_FILE=$DS/sql/kwsql
-    rm $KWSQL_FILE
-    echo "DATA=$TARGET" >> $KWSQL_FILE
-    echo "HOST=localhost" >> $KWSQL_FILE
-    echo "INTERFACE=sql" >> $KWSQL_FILE
-    echo "LOG=error" >> $KWSQL_FILE
-    echo "LOGPID=1" >> $KWSQL_FILE
-  else
-#   ln -s $TARGET /kiwi/data
-    crc MD $TARGET
-  fi
-}
-
-# Restore MAP QA ISAM dataset
-rest() {
-  DIR=$DS/rest/$MAP_DATA_REV
-  if [ ! -d  $DIR ]; then
-    mkdir -p $DIR
-  fi
-  if [ ! -d  $DIR/test$1 ]; then
-    scp -r ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1 $DIR
-  fi
-  lndata $DIR/test$1
-}
-
-# Restore MAP QA SQL dataset
-restsql() {
-  DIR=$DS/rest/$MAP_DATA_REV
-  if [ ! -f $DIR/test$1.sql ]; then
-    scp ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1.sql $DIR
-  fi
-  lndata $DIR/test$1.sql
-}
-
-
-jip() {
-  mwk
-  jimportpaper
-}
-jib() {
-  mwk
-  jimportboard
-}
-jih() {
-  mwk
-  jimporthistory
-}
-jio() {
-  mwk
-  jimportorder
-}
-jiq() {
-  mwk
-  jimportprogset
-}
-pcs() {
-  mwk
-  pcsmenu
-}
-csc() {
-  mwk
-  cscmenu
-}
-xm() {
-  mwk
-  xmgen grp=$1
-}
-ult() {
-  mwk
-  ult00
-}
-rss() {
-  mwk
-  rss01
-}
-xl() {
-  mwk
-  echo -e "secr8\n" > .secr8
-  xlmain -i .secr8
-  rm .secr8
-}
-
-# }}}
-
-# MAP Setup {{{
-
-# Update MAP rev
-upmap() {
-  cd /KIWI/revisions
-  if [ -d kiwi_$MAP_REV ]; then
-    rm -rf kiwi_$MAP_REV.bak
-    mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
-  fi
-  mkdir kiwi_$MAP_REV
-  cd kiwi_$MAP_REV
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
-}
-
-# Change MAP rev
-maprev() {
-  menu "echo 'boom_base\nboom_haoyang'"
-  crc MAP_REV_SRC $menu
-  menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
-  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
-  source $ZSHRC
-  rm /kiwi/kiwilink
-  if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
-    upmap
-  fi
-  ln -s /kiwi/revisions/kiwi_$menu /kiwi/kiwilink
-}
-
-# Change MAP rev for dataset restores
-mapdatarev() {
-  menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
-  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
-  source $ZSHRC
-}
-
-# MAP Setup: MAP Work Cleanup
-# mwc : Clean up MAP work directory by removing temp files
-mwc() {
-  rm *.LS
-  rm *.TM
-  rm *.XXX
-  rm *.LOG
-  rm *.log
-  rm *.LG
-  rm *.LG1
-  rm *.OK
-  rm *.LK
-  rm *.lk
-  rm *.TXT
-  rm *.txt
-  rm trim.log.*
-  rm *.out
-  rm core
-}
-
-# }}}
-
-# MAP Workflow {{{
-
-mgmess() {
-  m
-  pj && rv && up
-  svn merge -c 11111 $SVN/trunk
-  echo pj
-  hd && rv && up
-  echo hd
-}
-
-# }}}
-
-# MAP Build {{{
-
-# MAP Build: MAP Continuous Integration
-# mci : Show the MAP continuous integration status
-mci() {
-  ssh nzboom ls -lrt /src/CI/logs
-}
-
-#}}}
- 
-#}}}
-
 #### General Developement {{{
 
 # General Navigation {{{
 
-# Set general development environment variables
-case $MODE in
-VUE)
-  export SVN=$JSVN
-  export PJ_ROOT=$JPJ_ROOT
-  export PJ=$JPJ
-  export HD=$JHD
-  export MB=$JMB
-  ;;
-MAP)
-  export SVN=$MSVN
-  export PJ_ROOT=$MPJ_ROOT
-  export PJ=$MPJ
-  export HD=$MHD
-  export MB=$MMB
-  ;;
-esac
+export DS=/KIWI/datasets
+export CDS=/KIWI/datasets/Amcor/Awlive
+export MODE=VUE
 
 # Selecting the development mode
 mode() {
   menu "echo 'VUE\nMAP'"
   crc MODE $menu
 }
-
-alias vue="mode <<< 1"
-alias classic="mode <<< 2"
 
 # Go to projects directory, depending on the development mode
 pj() {
@@ -1666,25 +1167,36 @@ hd() {
 # Data Set: Change Data Set
 # cds : Change data set
 cds() {
-  o $DS
+  crc CDS $(pwd)
+
+#  if [[ "$TARGET" = *.sql ]]; then
+#    ln -s $DS/sql /kiwi/data
+#    TARGET_DB=$(echo $TARGET | sed s/.sql//)
+#    KWSQL_FILE=$DS/sql/kwsql
+#    rm $KWSQL_FILE
+#    echo "DATA=$TARGET" >> $KWSQL_FILE
+#    echo "HOST=localhost" >> $KWSQL_FILE
+#    echo "INTERFACE=sql" >> $KWSQL_FILE
+#    echo "LOG=error" >> $KWSQL_FILE
+#    echo "LOGPID=1" >> $KWSQL_FILE
 }
 
-# Data Set: Data Set
-# ds : Go to the data set
+# Data Set: Data Sets
+# ds : Go to the data sets directory
 ds() {
-  o $MD/..
+  o $DS
 }
 
 # Data Set: MAP Data Set
 # mds : Go to the MAP data set
 mds() {
-  o $MD
+  o $CDS/MAP
 }
 
 # Data Set: Java Data Set
 # vds : Go to the Java data set
 vds() {
-  o $MD/../VUE
+  o $CDS/VUE
 }
 
 
@@ -1830,33 +1342,33 @@ sql() {
   else
     DB=$SQL_NAME"_"$1
   fi
-  mysql -uroot $DB "${@:2}"
+  mysql -uroot -proot $DB "${@:2}"
 }
 
 # Find table in databases
 sqlf() {
   aliasgrepnocolor
-  for database in $(mysql -uroot -e "show databases" | grep $SQL_NAME); do if mysql -uroot $database -e "show tables" | grep "^"$1"$"; then echo $database; fi; done | grep -v $1
+  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_NAME); do if mysql -uroot -proot $database -e "show tables" | grep "^"$1"$"; then echo $database; fi; done | grep -v $1
   aliasgrepfullcolor
 }
 
 # Rename SQL database
 sqlmv() {
-  mysql -uroot -e "create database $2"
-  for table in `mysql -uroot -B -N -e "show tables" $1`; do 
-    mysql -uroot -e "rename table $1.$table to $2.$table"
+  mysql -uroot -proot -e "create database $2"
+  for table in `mysql -uroot -proot -B -N -e "show tables" $1`; do 
+    mysql -uroot -proot -e "rename table $1.$table to $2.$table"
   done
-  mysql -uroot -e "drop database $1"
+  mysql -uroot -proot -e "drop database $1"
 }
 
 # Drop SQL database
 sqlrm() {
-  mysql -uroot -e "drop database "$SQL_NAME"_"$1""
+  mysql -uroot -proot -e "drop database "$SQL_NAME"_"$1""
 }
 
 # Create SQL database
 sqlmk() {
-  mysql -uroot -e "create database "$SQL_NAME"_"$1""
+  mysql -uroot -proot -e "create database "$SQL_NAME"_"$1""
 }
 
 # TODO CSC only
@@ -1864,12 +1376,18 @@ sqlmk() {
 # $2 database dump suffix
 # sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
 sqli() {
+  if [[ $1 != "" ]]; then
+    SQL_SUFFIX=_$1
+  fi
   sqlrm csc
   sqlmk csc
+  sql csc < "$SQL_NAME"_csc$SQL_SUFFIX.sql
   sqlrm man
   sqlmk man
-  sql man < "$SQL_NAME"_man_"$1".sql
-  sql csc < "$SQL_NAME"_csc_"$1".sql
+  sql man < "$SQL_NAME"_man$SQL_SUFFIX.sql
+  sqlrm pcs
+  sqlmk pcs
+  sql pcs < "$SQL_NAME"_pcs_$SQL_SUFFIX.sql
 }
 
 # TODO CSC only
@@ -1877,13 +1395,13 @@ sqli() {
 # $1 database dump suffix
 # sqlo tailim : Exports mes_8_csc/man to mes_8_csc/man_tailim.sql if java revision is mes-8
 sqlo() {
-  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_csc > "$SQL_NAME"_csc_"$1".sql
-  mysqldump --skip-tz-utc -uroot "$SQL_NAME"_man > "$SQL_NAME"_man_"$1".sql
+  mysqldump --skip-tz-utc -uroot -proot "$SQL_NAME"_csc > "$SQL_NAME"_csc_"$1".sql
+  mysqldump --skip-tz-utc -uroot -proot "$SQL_NAME"_man > "$SQL_NAME"_man_"$1".sql
 }
 
 # Show SQL process list
 sqlp() {
-  mysql -uroot -e "show processlist"
+  mysql -uroot -proot -e "show processlist"
 }
 
 # Execute SQL in database
@@ -1896,7 +1414,7 @@ sqle() {
   database=$(sqlf $table)
   e "Database of interest = $database"
   e Running query ..
-  eval "mysql -uroot $database -e \"$@\""
+  eval "mysql -uroot -proot $database -e \"$@\""
 }
 
 # SQL Utility: Explain a SQL table
@@ -1913,7 +1431,7 @@ sqlt() {
 sqlte() {
   database=$(sqlf $1)
   echo Found in $database
-  mysql -uroot $database -e "select * from $1 limit 1 \G;" | vi -
+  mysql -uroot -proot $database -e "select * from $1 limit 1 \G;" | vi -
 }
 
 # }}}
@@ -2152,6 +1670,513 @@ note() {
 
 #}}}
 
+#### Java Development {{{
+
+# Java Navigation {{{
+
+export JPJ_ROOT="~/projects"
+export JPJ=mes-7.90.4
+export JHD=mes-8.0
+export JMB=mes-8.0
+export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
+export SQL_NAME=$SITE_NAME
+export VDS=$CDS/VUE
+export REBEL_HOME=~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel
+export SV=/kiwi/java/sites
+export CM=/kiwi/java/comms
+export TC=/kiwi/java/tomcat
+export WK=/kiwi/java/work
+export IN=~/installers
+export JSVN="svn+ssh://corona2/svn/mapjava"
+if [[ $MODE == "VUE" ]]; then
+  export SVN=$JSVN
+  export PJ_ROOT=$JPJ_ROOT
+  export PJ=$JPJ
+  export HD=$JHD
+  export MB=$JMB
+  export SVN=$JSVN
+fi
+
+alias vue="mode <<< 1"
+
+# Go to java service directory
+sv() {
+  o $SV
+  o $SITE_NAME
+  1
+} 
+
+# Go to java tomcat directory
+tc() {
+  cd $TC
+  cd $SITE_NAME
+  cd current
+}
+
+# Go to java comms directory
+cm() {
+  cd $CM
+  cd $SITE_NAME
+}
+
+# Go to java work directory
+wk() {
+  cd $WK
+  cd $SITE_NAME
+}
+
+# TODO BG and put status in prompt
+# Start java services
+jss() {
+  sv
+  bin/startservers.sh
+}
+
+# TODO BG and put status in prompt
+# Stop java services
+jst() {
+  sv
+  bin/stopservers.sh
+}
+
+# TODO BG and put status in prompt
+# Start java services
+ss() {
+  sv
+  bin/launcher.sh
+}
+
+# Go to java installers directory
+jind() {
+  o $IN
+  if [ -d $SITE_NAME ]; then
+    o $SITE_NAME
+  fi
+}
+
+# rmsite : Removes current java revision installation
+rmsite() {
+  rm -rf $SV/$SITE_NAME
+  rm -rf $WK/$SITE_NAME
+  rm -rf $TC/$SITE_NAME
+  sqlrm csc
+  sqlrm pcs
+  sqlrm man
+}
+
+# Java Development: Log
+# lg : Tail logs
+lg() {
+  if [[ "$1" = "" ]]; then
+    tail -f logs/*
+  else
+    tail -f logs/$1*.log.txt
+  fi
+}
+
+# Start tomcat debug
+rdb() {
+  ps xu | grep tomcat | grep -v grep | awk '{print $2}' | xargs kill -9
+  export JPDA_ADDRESS=13066
+  export JPDA_TRANSPORT=dt_socket
+  bin/catalina.sh jpda run
+}
+
+# Edit java fix time
+fixtime() {
+  vi $SV/$SITE_NAME/current/conf/kiwiplan/time.properties;
+  cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties;
+}
+
+# View latest java comms response
+cmr() {
+  cat kiwi_to_host/$(ls kiwi_to_host -rt | tail -1)
+}
+
+# Clear java comms folders
+cmc() {
+  rm host_to_kiwi/* <<< "y"
+  rm kiwi_to_host/* <<< "y"
+  rm archive/* <<< "y"
+}
+
+# Place java comms request
+cmp() {
+  cp $1 host_to_kiwi
+}
+
+# }}}
+
+# Java Setup {{{
+
+# Java Setup: Check out Java project
+# jco mes-8.0 : Check out mes-8.0 projects
+jco() {
+  j
+  pj
+  mvn project:workspace << EOF
+$SVN/projects/$1
+
+Y
+EOF
+}
+
+jpj() {
+  j
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
+  crc JPJ $menu
+  if [ -d $PJ_ROOT/$PJ ]; then
+    pj
+  else
+    jco $menu
+  fi
+}
+
+# Copy universal java licence file
+# cplic csc : Copy CSC licence to the current directory
+cplic() {
+  cp $COMMON/licence/$1.licence .
+}
+
+jsv() {
+  vue
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
+  crc JPJ $menu
+  jin
+}
+
+# TODO only works for CSC-only
+jup() {
+  jst &
+  jid
+
+# Run installation
+  ./$JPJ-*.sh << EOF
+
+$SITE_NAME
+
+
+n
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+EOF
+  sv
+  jdt
+  jss
+}
+
+jid() {
+  d $IN/$JPJ
+  rmu 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")/ . $JPJ'-*'
+  cplic csc
+}
+
+jwid() {
+  d $IN/$JPJ
+  if [ -d windows ]; then
+    rm -rf windows
+  fi
+  scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
+}
+
+jdi() {
+  vds
+  sqli $1
+  sv
+  bin/upgrade.sh
+}
+
+# TODO only works for CSC-only
+# Java Setup: Fresh Service Installation
+# jin : Do a fresh installation of the current java revision
+jin() {
+  rmsite
+  jid
+
+# Run installation
+  METRIC=y
+  OFFSET=0
+echo "### Basic
+# Change base?
+n
+# Site name
+$SITE_NAME
+# Offset
+$OFFSET
+# Install
+n
+# Admin password
+admin1
+n
+### Database
+# Hostname
+localhost
+# Super user name
+root
+# Super user password
+root
+# Normal user name
+root
+# Super user password
+root
+# Metric
+y
+$METRIC
+n
+### Comms
+n
+# CSC
+# Change database name?
+n
+# Database failed
+#
+### Manufacturing
+# Change database name?
+n
+# Database failed
+#
+### Completed
+# Configure
+e
+" | gv "#" | ./$JPJ-*.sh
+jdi
+}
+
+# Java Setup: Debug Trim
+# jdt : Turn on debug for trim
+jdt() {
+  sv
+  cat $COMMON/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
+}
+
+# }}}
+
+#}}}
+
+#### MAP Development {{{
+
+# MAP Navigation {{{
+
+export MAP_REV=7.70_01apr2013
+export MAP_REV=7.70_01apr2013
+export MAP_DATA_REV=01jul2013
+export MAP_TRUNK=trunk
+export MAP_BRANCH=dev_branches/messaging
+export MPJ_ROOT="~/projects/map"
+export MPJ=kiwi_riegelsville
+export MHD=kiwi_head
+export MMB=kiwi_riegelsville
+export MSVN="svn+ssh://corona2/svn/map"
+if [[ $MODE == "MAP" ]]; then
+  export SVN=$MSVN
+  export PJ_ROOT=$MPJ_ROOT
+  export PJ=$MPJ
+  export HD=$MHD
+  export MB=$MMB
+  export SVN=$MSVN
+fi
+
+case $MAP_REV_SRC in
+boom_base)
+  export MAP_REV_SRC_SERVER=nzboom
+  export MAP_REV_SRC_DIR=/src
+  ;;
+boom_haoyang)
+  export MAP_REV_SRC_SERVER=nzboom
+  export MAP_REV_SRC_DIR=~/projects
+  ;;
+esac
+
+export MDS=$CDS/MAP
+export KIWIPROGS=/kiwi/progs
+export KIWISQL=/kiwi/sql
+export KIWISCP=/kiwi/scp
+export KIWIBIN=/kiwi/bin
+export KIWIETC=/kiwi/etc
+export KIWIWORK=/kiwi/work
+export KIWISEA=$MDS:$KIWIPROGS:$KIWISQL:$KIWISCP:$KIWIBIN:$KIWIETC:$KIWIWORK
+export LD_LIBRARY_PATH=$KIWIPROGS
+export KWSQL_USER=test
+export KWSQL_PASS=test
+
+
+alias map="mode <<< 2"
+
+# Go to MAP work directory
+mwk() {
+  o $WORK
+}
+
+# Restore MAP QA ISAM dataset
+rest() {
+  DIR=$DS/rest/$MAP_DATA_REV
+  if [ ! -d  $DIR ]; then
+    mkdir -p $DIR
+  fi
+  if [ ! -d  $DIR/test$1 ]; then
+    scp -r ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1 $DIR
+  fi
+  lndata $DIR/test$1
+}
+
+# Restore MAP QA SQL dataset
+restsql() {
+  DIR=$DS/rest/$MAP_DATA_REV
+  if [ ! -f $DIR/test$1.sql ]; then
+    scp ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1.sql $DIR
+  fi
+  lndata $DIR/test$1.sql
+}
+
+
+jip() {
+  mwk
+  jimportpaper
+}
+jib() {
+  mwk
+  jimportboard
+}
+jih() {
+  mwk
+  jimporthistory
+}
+jio() {
+  mwk
+  jimportorder
+}
+jiq() {
+  mwk
+  jimportprogset
+}
+pcs() {
+  mwk
+  pcsmenu
+}
+csc() {
+  mwk
+  cscmenu
+}
+xm() {
+  mwk
+  xmgen grp=$1
+}
+ult() {
+  mwk
+  ult00
+}
+rss() {
+  mwk
+  rss01
+}
+xl() {
+  mwk
+  echo -e "secr8\n" > .secr8
+  xlmain -i .secr8
+  rm .secr8
+}
+
+# }}}
+
+# MAP Setup {{{
+
+# Update MAP rev
+upmap() {
+  cd /KIWI/revisions
+  if [ -d kiwi_$MAP_REV ]; then
+    rm -rf kiwi_$MAP_REV.bak
+    mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
+  fi
+  mkdir kiwi_$MAP_REV
+  cd kiwi_$MAP_REV
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
+}
+
+# Change MAP rev
+maprev() {
+  menu "echo 'boom_base\nboom_haoyang'"
+  crc MAP_REV_SRC $menu
+  menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
+  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
+  source $ZSHRC
+  rm /kiwi/kiwilink
+  if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
+    upmap
+  fi
+  ln -s /kiwi/revisions/kiwi_$menu /kiwi/kiwilink
+}
+
+# Change MAP rev for dataset restores
+mapdatarev() {
+  menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
+  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
+  source $ZSHRC
+}
+
+# MAP Setup: MAP Work Cleanup
+# mwc : Clean up MAP work directory by removing temp files
+mwc() {
+  rm *.LS
+  rm *.TM
+  rm *.XXX
+  rm *.LOG
+  rm *.log
+  rm *.LG
+  rm *.LG1
+  rm *.OK
+  rm *.LK
+  rm *.lk
+  rm *.TXT
+  rm *.txt
+  rm trim.log.*
+  rm *.out
+  rm core
+}
+
+# }}}
+
+# MAP Workflow {{{
+
+mgmess() {
+  m
+  pj && rv && up
+  svn merge -c 11111 $SVN/trunk
+  echo pj
+  hd && rv && up
+  echo hd
+}
+
+# }}}
+
+# MAP Build {{{
+
+# MAP Build: MAP Continuous Integration
+# mci : Show the MAP continuous integration status
+mci() {
+  ssh nzboom ls -lrt /src/CI/logs
+}
+
+#}}}
+ 
+#}}}
+
 #### General Application {{{
 
 # Google Drive {{{
@@ -2299,7 +2324,7 @@ top_prompt() {
   if [[ $BUFFER != "" ]]; then
     LAST_BUFFER=$BUFFER
   fi
-  echo "${GREEN}MSH $$   $RED$(rnode $MD \/ 2) $(rnode $MD \/ 1) | $MODE   $BLUE$PJ   $CYAN$MAP_REV | $MAP_DATA_REV $FINISH"
+  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE   $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
 }
 

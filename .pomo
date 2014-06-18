@@ -6,8 +6,32 @@
   name: Test pomo
   running: false
 - !ruby/object:Pomo::Task 
-  complete: false
+  complete: true
   description: 
   length: 25
   name: customise bottom bar
+  running: false
+- !ruby/object:Pomo::Task 
+  complete: false
+  description: 
+  length: 25
+  name: Set up services
   running: true
+- !ruby/object:Pomo::Task 
+  complete: false
+  description: 
+  length: 25
+  name: Set up MAP
+  running: false
+- !ruby/object:Pomo::Task 
+  complete: false
+  description: 
+  length: 25
+  name: Convert AWLive
+  running: false
+- !ruby/object:Pomo::Task 
+  complete: false
+  description: 
+  length: 25
+  name: Quick switch tab tmux
+  running: false
