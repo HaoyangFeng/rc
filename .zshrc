@@ -1970,9 +1970,9 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=7.70_01apr2013
-export MAP_REV=7.70_01apr2013
-export MAP_DATA_REV=01jul2013
+export MAP_REV=7.94_01oct2014
+export MAP_REV=7.94_01oct2014
+export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
 export MPJ_ROOT="~/projects/map"
@@ -2017,19 +2017,13 @@ alias map="mode <<< 2"
 
 # Go to MAP work directory
 mwk() {
-  o $WORK
+  o $KIWIWORK
 }
 
 # Restore MAP QA ISAM dataset
 rest() {
-  DIR=$DS/rest/$MAP_DATA_REV
-  if [ ! -d  $DIR ]; then
-    mkdir -p $DIR
-  fi
-  if [ ! -d  $DIR/test$1 ]; then
-    scp -r ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1 $DIR
-  fi
-  lndata $DIR/test$1
+  mds
+  scp -r "ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1/*" .
 }
 
 # Restore MAP QA SQL dataset

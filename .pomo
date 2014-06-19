@@ -12,11 +12,11 @@
   name: customise bottom bar
   running: false
 - !ruby/object:Pomo::Task 
-  complete: false
+  complete: true
   description: 
   length: 25
   name: Set up services
-  running: true
+  running: false
 - !ruby/object:Pomo::Task 
   complete: false
   description: 
