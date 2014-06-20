@@ -932,7 +932,7 @@ df() {
 # Open : Open File Type (Variable)
 # OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
-OFT=(png eog zip uz)
+OFT=(png eog pdf evince zip uz)
 
 # Open : Open
 # o a : Go to into directory or open file in Vi
@@ -2142,6 +2142,7 @@ mwc() {
   rm trim.log.*
   rm *.out
   rm core
+  rm SQLERROR.*
 }
 
 # }}}
