@@ -18,7 +18,7 @@
   name: Set up services
   running: false
 - !ruby/object:Pomo::Task 
-  complete: false
+  complete: true
   description: 
   length: 25
   name: Set up MAP

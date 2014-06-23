@@ -1406,15 +1406,29 @@ sqlp() {
 
 # Execute SQL in database
 sqle() {
-  e Queried $@
-  e Finding table of interest ..
   table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
-  e Table of interest = $table
-  e Finding database of interest ..
   database=$(sqlf $table)
-  e "Database of interest = $database"
-  e Running query ..
   eval "mysql -uroot -proot $database -e \"$@\""
+}
+
+# SQL Utility : SQL Query
+# sqlq "Query" : query the database with Simplified-SQL
+sqlq() {
+  if [[ $1 == "" ]]; then
+    while read table; do
+      sqlqe $table
+    done
+  else
+    sqlqe $table
+  fi
+}
+sqlqe() {
+  table=$1
+  database=$(sqlf $table)
+  count=$(sqle "select count(*) from $table" | head -3 | tail -1)
+  (( column = $(sqle "desc $table" | wc -l) - 1 )) 
+  (e $table@$database: $count rows and $column columns;
+   sqle "select * from $1 \G") | vi -
 }
 
 # SQL Utility: Explain a SQL table
@@ -1430,7 +1444,6 @@ sqlt() {
 }
 sqlte() {
   database=$(sqlf $1)
-  echo Found in $database
   mysql -uroot -proot $database -e "select * from $1 limit 1 \G;" | vi -
 }
 
