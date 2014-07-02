@@ -1,5 +1,6 @@
 #### TODO {{{
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
+# Mount MAP rev with sshfs
 # Isolate personal parts from common parts
 # Sensible command names
 # Usage statistics and automatic enhancement recommendation based on usage
@@ -107,9 +108,17 @@ aliasgrep
 
 # Utility functions {{{
 
-# $3 node index from the right, 0 is leaf
+
+# Left Node
+# lnode a/b/c/d / 2 : Split a/b/c/d by delimiter / to [a,b,c,d] and obtain the second substring b
+lnode() {
+  echo $1 | cut -d $2 -f $3
+}
+
+# Right Node
+# rnode a/b/c/d / 2 : Split a/b/c/d by delimiter / to [a,b,c,d] and obtain the second to last substring c
 rnode() {
-    echo $1 | cut -d $2 -f $(echo "$(echo $1 | grep -o $2 | wc -l) + 1 - $3" | bc)
+  echo $1 | cut -d $2 -f $(echo "$(echo $1 | grep -o $2 | wc -l) + 1 - $3" | bc)
 }
 
 # Print previous command
@@ -304,7 +313,7 @@ wn() {
 
 pi() {
   e --- Installing $@
-  sudo apt-get install $@
+  sudo apt-get install $@ <<< y
 }
 
 pr() {
@@ -435,50 +444,34 @@ std() {
 
   if [[ "$1" = "" || "$1" = "1" ]]; then
     tmk Personal
-    tmn Personal -n Mutt
-    tmw Personal:2 -n Irssi
-    tmw Personal:3 -n Elinks
-    tmw Personal:4 -n Note
-    tmw Personal:5 -n Todo
-    tmw Personal:6 -n Misc
-    tmw Personal:7 -n Rc
-    tmw Personal:8 -n Top
+    tmn Personal
+    tmw Personal:2 
+    tmw Personal:3
+    tmw Personal:4
+    tmw Personal:5
     tmt Personal:1 "mutt" C-m
     tmt Personal:2 "irssi" C-m
-    tmt Personal:3 "elinks" C-m
-    tmt Personal:4 "note main" C-m
-    tmt Personal:5 "tde" C-m
-    tmt Personal:6 "cd" C-m
-    tmt Personal:7 "cd;cd rc" C-m
-    tmt Personal:8 "top" C-m
+    tmt Personal:3 "douban.fm" C-m
+    tmt Personal:4 "top" C-m
+    tmt Personal:5 "note main" C-m
     tmg Personal:1
   fi
 
   if [[ "$1" = "" || "$1" = "2" ]]; then
     tmk Browsing
-    tmn Browsing -n CSC
-    tmw Browsing:2 -n CSC
-    tmw Browsing:3 -n XL
-    tmw Browsing:4 -n MPJ
-    tmw Browsing:5 -n JPJ
-    tmw Browsing:6 -n SQL:MAN
-    tmw Browsing:7 -n SQL:CSC
-    tmt Browsing:1 "csc" C-m
-    tmt Browsing:2 "csc" C-m
-    tmt Browsing:3 "xl" C-m
-    tmt Browsing:4 "m;pj" C-m
-    tmt Browsing:5 "j;pj" C-m
-    tmt Browsing:6 "sql man" C-m
-    tmt Browsing:7 "sql csc" C-m
+    tmn Browsing
+    tmt Browsing:1 "pj" C-m
     tmg Browsing:1
   fi
 
   if [[ "$1" = "" || "$1" = "3" ]]; then
     tmk Primary
-    tmn Primary -n Note
-    tmw Primary:2 -n Work
+    tmn Primary
+    tmw Primary:2
+    tmw Primary:3
     tmt Primary:1 "note" C-m
     tmt Primary:2 "work" C-m
+    tmt Primary:3 "pj" C-m
     tmg Primary:1
   fi
 
@@ -768,25 +761,28 @@ l() {
     lf $@
   else
     lb $@
-  fi
+ fi
 }
 
 # List Utility: List Full
 # lf : List almost all files
 lf() {
   pn l "ls -Alht --color $@ | gv ^total"
+  wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
   pn l "ls -lht --color $@ | gv ^total"
+  wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Hidden
 # lh : List hidden files
 lh() {
   pn l "ls -lhtd --color .*"
+  wt $(rnode $(pwd) "/" 0)
 }
 
 # Shortcut : Shortcut
@@ -819,9 +815,11 @@ export TRASH=~/.Trash
 # Remove Utility: Remove
 # r file : Move file to trash
 r() {
-  if [[ -a $1 ]]; then
-    trash=$TRASH/$(timestamp)
-    md $trash
+  trash=$TRASH/$(timestamp)
+  md $trash
+  if [[ $1 == "" ]]; then
+    mv * $trash
+  elif [[ -a $1 ]]; then
     mv $@ $trash
   fi
   l
@@ -855,6 +853,22 @@ catl() {
 # ins file "text" : Insert "text" into line 1 of file
 ins() {
   sed -i "1i$2" $1
+}
+
+# }}}
+
+# Process {{{
+
+# Process : Process Find
+# pf java tss : List all processes that includes "java" and "tss" in its details, order significant
+pf() {
+  ps -ef | gv grep | g $(kw $@)
+}
+
+# Process : Process Kill
+# pk java tss : Kill all processes that includes "java" and "tss" in its details, order significant
+pk() {
+  pf $@ | cut -d " " -f 2 | xargs kill -9
 }
 
 # }}}
@@ -942,6 +956,7 @@ o() {
   elif [[ -d $1 || $1 = "-" ]]; then
     d $1
   elif [[ -f $1 ]]; then
+    wt $1
     if [[ -x $1 ]]; then
       $1
     else
@@ -952,9 +967,9 @@ o() {
         fi
       done
       if [[ $2 = "" ]]; then
-        vi $1
+        v $1
       else
-        vi +$2 $1
+        v $1 $2
       fi
     fi
   fi
@@ -968,8 +983,10 @@ o() {
 v() {
   if [ "$2" = "" ]; then
     vi $(f $1 | unl)
+    l
   else
     vi +$2 $(f $1 | unl)
+    l
   fi
 }
 
@@ -1028,7 +1045,7 @@ an() {
     SN+=$var
     n=$(catlbnc $var)
     case $(pnc) in
-        l) SI="$SI $(echo $n | awk '{print $9}')";;
+        l) SI="$SI $(pwd)/$(echo $n | awk '{print $9}')";;
         *) echo Done nothing.;;
     esac
   done
@@ -1131,7 +1148,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/Amcor/Awlive
+export CDS=/KIWI/datasets/GP/Kansas
 export MODE=VUE
 
 # Selecting the development mode
@@ -1348,7 +1365,12 @@ sql() {
 # Find table in databases
 sqlf() {
   aliasgrepnocolor
-  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_NAME); do if mysql -uroot -proot $database -e "show tables" | grep "^"$1"$"; then echo $database; fi; done | grep -v $1
+  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_NAME); do
+    #if mysql -uroot -proot $database -e "show tables" | grep "^"$1"$"; then
+    if mysql -uroot -proot $database -e "show tables" | grep $(pab $1); then
+      echo $database
+    fi
+  done | gv $1
   aliasgrepfullcolor
 }
 
@@ -1651,7 +1673,7 @@ bl() {
 # Misc Navigation {{{
 
 # Go to common folder
-cdd() {
+oc() {
   o $COMMON/$1
 }
 
@@ -1687,8 +1709,8 @@ note() {
 
 # Java Navigation {{{
 
-export JPJ_ROOT="~/projects"
-export JPJ=mes-7.90.4
+export JPJ_ROOT=~/projects
+export JPJ=tss-7.90.4
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -1716,7 +1738,17 @@ alias vue="mode <<< 1"
 sv() {
   o $SV
   o $SITE_NAME
-  1
+  o current
+  wt sv
+} 
+
+# Go to java service logs directory
+svl() {
+  o $SV
+  o $SITE_NAME
+  o current
+  o logs
+  wt svl
 } 
 
 # Go to java tomcat directory
@@ -1738,26 +1770,38 @@ wk() {
   cd $SITE_NAME
 }
 
-# TODO BG and put status in prompt
-# Start java services
-jss() {
-  sv
-  bin/startservers.sh
+cd $SV/$SITE_NAME/current/conf/kiwiplan/jini
+export JSVC=$(( $(fp launch | wc -l) + 1 ))
+sss() {
+  jpc=$(pf jdk java $SITE_NAME | wc -l)
+  if [[ $jpc == 0 ]]; then
+    e DOWN
+  elif [[ $jpc < $JSVC ]]; then
+    e STARTING
+  else
+    e UP
+  fi
 }
 
-# TODO BG and put status in prompt
-# Stop java services
-jst() {
-  sv
-  bin/stopservers.sh
-}
-
-# TODO BG and put status in prompt
 # Start java services
 ss() {
   sv
-  bin/launcher.sh
+  sss=$(sss)
+  case $sss in
+    DOWN) evn bin/startservers.sh;;
+    *) pk jdk java $SITE_NAME
+  esac
 }
+
+# Start Scheduler
+# ssc : Start TSS scheduler
+ssc() {
+  sv
+  wt ssc
+  bin/runpcstssscheduler.sh
+  wt "ssc[DONE]"
+}
+
 
 # Go to java installers directory
 jind() {
@@ -1825,7 +1869,7 @@ cmp() {
 # Java Setup: Check out Java project
 # jco mes-8.0 : Check out mes-8.0 projects
 jco() {
-  j
+  vue
   pj
   mvn project:workspace << EOF
 $SVN/projects/$1
@@ -1835,7 +1879,7 @@ EOF
 }
 
 jpj() {
-  j
+  vue
   menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
   crc JPJ $menu
   if [ -d $PJ_ROOT/$PJ ]; then
@@ -1894,7 +1938,7 @@ EOF
 jid() {
   d $IN/$JPJ
   rmu 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")/ . $JPJ'-*'
-  cplic csc
+  cplic $(lnode $JPJ - 1)
 }
 
 jwid() {
@@ -1968,6 +2012,47 @@ e
 jdi
 }
 
+#jtss() {
+## Base
+#  n
+## Site name and offset
+#  $SITENAME
+#  $OFFSET
+## Install
+#  n
+##
+#  admin1
+#  n
+#  localhost
+#  root
+#  root
+#  root
+#  root
+## Metric?
+#  y
+#  $METRIC
+#  n
+## Manufacturing Classic DB
+#  y
+#  ${SQL_NAME}_man
+#  n
+## TSS integration
+## Unit size calculator
+#  n
+## PCS scheduler configuration
+#  n # Should be changed
+## TSS DB
+#  n
+## Completed
+#  e
+#
+#  TODO PORT PROBLEM
+#  TODO Obtain XML for classic and RAF for OSM routers
+#  TODO Change pcs properties
+#  TODO MAP: Tomcat/webapps/kp-tss-map-tiles
+#  sudo mount nzmaptiles.kiwiplan.co.nz:/data  /mnt
+#}
+
 # Java Setup: Debug Trim
 # jdt : Turn on debug for trim
 jdt() {
@@ -1983,8 +2068,8 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=7.94_01oct2014
-export MAP_REV=7.94_01oct2014
+export MAP_REV=7.90_01apr2014
+export MAP_REV=7.90_01apr2014
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
@@ -2317,11 +2402,7 @@ PFINISH="%{$terminfo[sgr0]%}"
 
 autoload -U add-zsh-hook
 
-prompt_precmd() {
-}
-add-zsh-hook precmd prompt_precmd
-
-
+#add-zsh-hook precmd title_precmd
 #add-zsh-hook preexec o_preexec
 
 o_preexec() {
@@ -2332,8 +2413,13 @@ top_prompt() {
   if [[ $BUFFER != "" ]]; then
     LAST_BUFFER=$BUFFER
   fi
-  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE   $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE  $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
+}
+
+# Set tmux window title
+wt() {
+  print -Pn "\033k$1\033\\"
 }
 
 zle-enter() {
