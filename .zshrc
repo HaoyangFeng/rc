@@ -57,6 +57,7 @@ export COMMON=$MOS_ROOT/common
 export SANDBOX=$MOS_ROOT/sandbox
 export NOTE=$MOS_ROOT/note
 export MOS_BIN=$MOS_ROOT/bin
+export MNT=$MOS_ROOT/mnt
 
 export TMP=$WORK/.tmp
 export STDOUT=$TMP/stdout/$$
@@ -218,7 +219,7 @@ PAGER_SIZE=30
 # pgp : Print the current page
 pgp() {
   cs && echo
-  e ${BLUE}Selected:$SI $FINISH
+  e $MAGENTA $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BLUE}Selected:$SI$FINISH
   catb | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
 
@@ -313,7 +314,7 @@ wn() {
 
 pi() {
   e --- Installing $@
-  sudo apt-get install $@ <<< y
+  sudo apt-get install $@
 }
 
 pr() {
@@ -631,6 +632,12 @@ wha() {
 
 # Find {{{
 
+# Find : Find Locate
+# fl intellij : Find the system file with the keyword "intellij" in its name
+fl() {
+  pn fl "locate -bi $1 | gv .Trash | gv .cache | g $1"
+}
+
 # Find by full file name
 f() {
   find . -regex ".*/$1" ${@:2} | nl
@@ -897,6 +904,20 @@ rmu() {
   fi
 }
 
+# Remote : Remote Mount
+# rmm a:/b/ c:/d : Remotely mount a:/b/ to c:/d
+rmm() {
+  md $2
+  sshfs $1 $2
+}
+
+# Remote : Remote Unmount
+# rmum a:/b/ : Remotely unmount a:/b/
+rmum() {
+  fusermount -u $1
+  r $1
+}
+
 # }}}
 
 # Directory/Disk {{{
@@ -906,7 +927,7 @@ md() {
   mkdir -p $@
 }
 
-# Directory: Directory
+# Directory : Directory
 # d ex : Move to directory "ex" even if it doesn't exist
 d() {
   if [[ $1 == "" ]]; then
@@ -917,6 +938,12 @@ d() {
   fi
   builtin cd $1
   l
+}
+
+# Directory : Mount
+# dm calypso : Move to mounted directory calypso
+dm() {
+  d $MNT/$1
 }
 
 # Disk : Usage
@@ -1110,6 +1137,7 @@ rn() {
                *) $2 "$(echo $n | awk '{print $9}')" ${@:3};;
            esac;;
         lt) o $(echo $n | awk '{print $9}');;
+        fl) o $n;;
         f) o $n;;
         fa) o $n;;
         fp) o $n;;
@@ -1233,6 +1261,13 @@ upall() {
 # }}}
 
 # Servers {{{
+
+
+# Server : Calypso
+# calypso : Go to the mounted server calypso
+calypso() {
+  dm calypso
+}
 
 # Login to nzboom
 # If $1 is defined then upload the file to nzboom shared folder
@@ -1679,7 +1714,7 @@ oc() {
 
 # Go to the desktop work directory
 work() {
-  cdd work
+  o $MOS_ROOT/work
   if [[ "$1" != "" ]]; then
     d $1
   fi
@@ -2423,6 +2458,7 @@ wt() {
 }
 
 zle-enter() {
+  wt $(lnode $BUFFER " " 1)
   unset LAST_BUFFER
   cs
   BUFFER_BAK=$BUFFER
@@ -2505,23 +2541,55 @@ setopt HIST_IGNORE_SPACE
 
 # }}}
 
+# Completion {{{
+
+#. $MOS_ROOT/src/zsh-autosuggestions/autosuggestions.zsh
+#zle-line-init() {
+#  zle autosuggest-start
+#}
+#zle -N zle-line-init
+#bindkey '^T' autosuggest-toggle
+
+
+autoload predict-on
+predict-toggle() {
+    ((predict_on=1-predict_on)) && predict-on || predict-off
+}
+zle -N predict-toggle
+bindkey '^T' predict-toggle
+#zstyle ':predict' toggle true
+#zstyle ':predict' verbose true
+
+# }}}
+
 #}}}
 
 #### Dependencies {{{ 
 
 # Install Software {{{
 
-for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc) wn $dep || pi $dep;
+for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs) wn $dep || pi $dep;
 
 # }}}
 
 # Directories {{{
 
 md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
+md $MNT
 
 # }}}
 
-#}}}
+# Mount {{{
+
+if [[ ! -d $MNT/calypso ]]; then
+  md $MNT/calypso
+  rmm calypso:/data/kiwiplan/docs/TSS $MNT/calypso
+fi
+
+
+# }}}
+
+# }}}
 
 #### Startup {{{ 
 
