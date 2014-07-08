@@ -1142,7 +1142,7 @@ rn() {
     n=$(catlbnc $1)
     case $(pnc) in
         d) cd +$1;;
-        t) e $(rnode $n " " 0);;
+        t) o $(rnode $n " " 0);;
         note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
         l) case $2 in 
                r) r "$(echo $n | awk '{print $9}')";;
