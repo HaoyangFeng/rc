@@ -1,6 +1,7 @@
 #### TODO {{{
+# Regression test for circ
+# Block stdout for rrc
 # Implement directory stack
-# rrc bring to arbitrary dir
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
 # Mount MAP rev with sshfs
 # Isolate personal parts from common parts
@@ -800,7 +801,7 @@ fl() {
 
 # Find by full file name
 f() {
-  pn f "find . -regex '.*/$1' ${@:2}"
+  pn f "find $2 -regex '.*/$1' ${@:3}"
 }
 
 # Find by partial name
@@ -1988,10 +1989,8 @@ wk() {
   cd $SITE_NAME
 }
 
-cd $SV/$SITE_NAME/current/conf/kiwiplan/jini
-fp launch
+evn fp launch $SV/$SITE_NAME/current/conf/kiwiplan/jini
 export JSVC=$(( $(pglc) + 1 ))
-cd -
 sss() {
   jpc=$(pf jdk java $SITE_NAME | wc -l)
   if [[ $jpc == 0 ]]; then
