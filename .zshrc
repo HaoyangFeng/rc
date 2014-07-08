@@ -710,6 +710,7 @@ bu() {
   else
     cp -r $1 $1.bak.$2
   fi
+  l
 }
 
 # Back Up : Back Up Remove
