@@ -1,5 +1,4 @@
 #### TODO {{{
-# Regression test for circ
 # Block stdout for rrc
 # Implement directory stack
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
