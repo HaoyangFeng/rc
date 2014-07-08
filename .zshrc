@@ -1,4 +1,5 @@
 #### TODO {{{
+# Globally fix pglc
 # Block stdout for rrc
 # Implement directory stack
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
@@ -964,21 +965,21 @@ l() {
 # List Utility: List Full
 # lf : List almost all files
 lf() {
-  pn l "ls -Alht --color $@ | gv ^total"
+  pn l "ls -ltuhA --color $@ | gv ^total"
   wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -lht --color $@ | gv ^total"
+  pn l "ls -ltuh --color $@ | gv ^total"
   wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Hidden
 # lh : List hidden files
 lh() {
-  pn l "ls -lhtd --color .*"
+  pn l "ls -ltuhd --color .*"
   wt $(rnode $(pwd) "/" 0)
 }
 
@@ -1126,6 +1127,7 @@ d() {
   if [[ ! -d $1 && $1 != "-" ]]; then
     mkdir -p $@
   fi
+  touch -a $1
   builtin cd $1
   l
 }
