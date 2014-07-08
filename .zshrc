@@ -1198,10 +1198,10 @@ oj() {
 v() {
   if [ "$2" = "" ]; then
     vi $1
-    l
+    pg
   else
     vi +$2 $1
-    l
+    pg
   fi
 }
 
