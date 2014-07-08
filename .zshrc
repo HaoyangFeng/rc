@@ -736,11 +736,11 @@ pb() {
 
 # Tree
 t() {
-  tree -f --noreport $@ | nl
+  pn t "tree -f --noreport $@"
 }
 
 tl() {
-  tree -f --noreport -L $1 ${@:2} | nl
+  pn t "tree -f --noreport -L $1 ${@:2}"
 }
 
 for ((i = 0; i < 100; i++)); do
@@ -971,7 +971,7 @@ df() {
 # Open : Open File Type (Variable)
 # OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
-OFT=(png eog pdf evince zip uz)
+OFT=(png eog pdf evince zip uz jar oj)
 
 # Open : Open
 # o a : Go to into directory or open file in Vi
@@ -987,8 +987,8 @@ o() {
     else
       for ft in ${(k)OFT}; do
         if [[ $1 = *.$ft ]]; then
-          $OFT[$ft] $1;
-          return;
+          $OFT[$ft] $1
+          return
         fi
       done
       if [[ $2 = "" ]]; then
@@ -998,6 +998,10 @@ o() {
       fi
     fi
   fi
+}
+
+oj() {
+  java -jar $1
 }
 
 #}}}
@@ -1138,7 +1142,7 @@ rn() {
     n=$(catlbnc $1)
     case $(pnc) in
         d) cd +$1;;
-        t) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        t) e $(rnode $n " " 0);;
         note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
         l) case $2 in 
                r) r "$(echo $n | awk '{print $9}')";;
@@ -1457,7 +1461,7 @@ sqli() {
   sql man < "$SQL_NAME"_man$SQL_SUFFIX.sql
   sqlrm pcs
   sqlmk pcs
-  sql pcs < "$SQL_NAME"_pcs_$SQL_SUFFIX.sql
+  sql pcs < "$SQL_NAME"_pcs$SQL_SUFFIX.sql
 }
 
 # TODO CSC only
