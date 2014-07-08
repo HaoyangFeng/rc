@@ -1,4 +1,5 @@
 #### TODO {{{
+# rrc bring to arbitrary dir
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
 # Mount MAP rev with sshfs
 # Isolate personal parts from common parts
@@ -168,6 +169,7 @@ esk() {
 }
 
 # Start second-level cron job
+# TODO Make friendly with pager
 scron() {
   if [ "$2" = "" ]; then
     SLEEP_TIME=1;
@@ -640,7 +642,7 @@ fl() {
 
 # Find by full file name
 f() {
-  find . -regex ".*/$1" ${@:2} | nl
+  pn f "find . -regex '.*/$1' ${@:2}"
 }
 
 # Find by partial name
@@ -695,8 +697,10 @@ uz() {
     tar xvfz $1
   elif [[ $1 = *.tar ]]; then
     tar xvf $1
+  elif [[ $1 == *.bz2 ]]; then
+    bunzip2 $1
   fi
-  rm $1
+  r $1
 }
 
 # Back Up : Back Up
@@ -940,12 +944,6 @@ d() {
   l
 }
 
-# Directory : Mount
-# dm calypso : Move to mounted directory calypso
-dm() {
-  d $MNT/$1
-}
-
 # Disk : Usage
 # du : Show a break down of the disk usages for the current directory
 du() {
@@ -1006,8 +1004,19 @@ o() {
 
 # Vi {{{
 
-# Find by full name and open with Vi
+# Vi
 v() {
+  if [ "$2" = "" ]; then
+    vi $1
+    l
+  else
+    vi +$2 $1
+    l
+  fi
+}
+
+# Find by full name and open with Vi
+vf() {
   if [ "$2" = "" ]; then
     vi $(f $1 | unl)
     l
@@ -1176,7 +1185,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/GP/Kansas
+export CDS=/KIWI/datasets/Amcor/Awlive
 export MODE=VUE
 
 # Selecting the development mode
@@ -1267,6 +1276,10 @@ upall() {
 # calypso : Go to the mounted server calypso
 calypso() {
   dm calypso
+}
+
+angeline() {
+  ssh angeline.loh@nzdevangelinel2
 }
 
 # Login to nzboom
@@ -1707,9 +1720,16 @@ bl() {
 
 # Misc Navigation {{{
 
-# Go to common folder
-oc() {
-  o $COMMON/$1
+# Directory : Common
+# dc osm : Go to the osm common folder
+dc() {
+  d $COMMON/$1
+}
+
+# Directory : Mount
+# dm calypso : Go to the mounted directory calypso
+dm() {
+  d $MNT/$1
 }
 
 # Go to the desktop work directory
@@ -1745,7 +1765,7 @@ note() {
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=tss-7.90.4
+export JPJ=mes-7.90.4
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -1807,6 +1827,7 @@ wk() {
 
 cd $SV/$SITE_NAME/current/conf/kiwiplan/jini
 export JSVC=$(( $(fp launch | wc -l) + 1 ))
+cd -
 sss() {
   jpc=$(pf jdk java $SITE_NAME | wc -l)
   if [[ $jpc == 0 ]]; then
