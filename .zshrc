@@ -1,4 +1,5 @@
 #### TODO {{{
+# Implement directory stack
 # rrc bring to arbitrary dir
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
 # Mount MAP rev with sshfs
@@ -41,6 +42,157 @@
 # z
 # td : Todo
 # }}}
+
+#### ZSH {{{ 
+
+# Color {{{
+autoload colors
+colors
+for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
+eval BR$color='$terminfo[bold]$fg[${(L)color}]'
+eval PBR$color='%{$terminfo[bold]$fg[${(L)color}]%}'
+eval BRBG$color='$terminfo[bold]$bg[${(L)color}]'
+eval PBRBG$color='%{$terminfo[bold]$bg[${(L)color}]%}'
+eval $color='$fg[${(L)color}]'
+eval BG$color='$bg[${(L)color}]'
+eval P$color='%{$fg[${(L)color}]%}'
+(( count = $count + 1 ))
+done
+FINISH="$terminfo[sgr0]"
+PFINISH="%{$terminfo[sgr0]%}"
+# }}}
+
+# Prompt {{{  
+
+autoload -U add-zsh-hook
+
+#add-zsh-hook precmd title_precmd
+#add-zsh-hook preexec o_preexec
+
+o_preexec() {
+}
+
+top_prompt() {
+# Restore old Buffer
+  if [[ $BUFFER != "" ]]; then
+    LAST_BUFFER=$BUFFER
+  fi
+  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE  $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
+}
+
+# Set tmux window title
+wt() {
+  print -Pn "\033k$1\033\\"
+}
+
+zle-enter() {
+  wt $(lnode $BUFFER " " 1)
+  unset LAST_BUFFER
+  cs
+  BUFFER_BAK=$BUFFER
+  zle expand-word
+  if [[ $BUFFER = "" ]]; then
+    BUFFER="o"
+  elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
+    BUFFER="o $BUFFER"
+  else
+    BUFFER=$BUFFER_BAK
+  fi
+  zle accept-line
+}
+zle -N zle-enter
+bindkey "\r" zle-enter
+
+PROMPT="${PYELLOW}%/ $ ${PFINISH}"
+
+# }}}
+
+# Editor {{{
+export EDITOR=vim
+bindkey -M vicmd '?' history-incremental-search-backward
+# }}}
+
+# Syntax {{{
+#setopt extended_glob
+#TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
+# 
+#recolor-cmd() {
+#   region_highlight=()
+#   colorize=true
+#   start_pos=0
+#   for arg in ${(z)BUFFER}; do
+#       ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
+#       ((end_pos=$start_pos+${#arg}))
+#       if $colorize; then
+#           colorize=false
+#           res=$(LC_ALL=C builtin type $arg 2>/dev/null)
+#           case $res in
+#               *'reserved word'*)   style="fg=magenta";;
+#               *'alias for'*)       style="fg=cyan";;
+#               *'shell builtin'*)   style="fg=yellow";;
+#               *'shell function'*)  style='fg=green';;
+#               *"$arg is"*)
+#                   [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
+#               *)                   style='none';;
+#           esac
+#           region_highlight+=("$start_pos $end_pos $style")
+#       fi
+#       [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
+#       start_pos=$end_pos
+#   done
+#}
+#
+#expand-cmd() {
+#}
+#
+#self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
+#backward-delete-char() { zle .backward-delete-char && recolor-cmd }
+# 
+#zle -N self-insert
+#zle -N backward-delete-char
+# }}}
+
+# History {{{
+export HISTSIZE=10000
+export SAVEHIST=10000
+export HISTFILE=~/.zhistory
+setopt INC_APPEND_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt EXTENDED_HISTORY     
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+# }}}
+
+# Development Environment {{{
+#PATH=$PATH:$HOME/.rvm/bin:~/bin # Add RVM to PATH for scripting
+#source ~/.rvm/scripts/rvm
+
+# }}}
+
+# Completion {{{
+
+#. $MOS_ROOT/src/zsh-autosuggestions/autosuggestions.zsh
+#zle-line-init() {
+#  zle autosuggest-start
+#}
+#zle -N zle-line-init
+#bindkey '^T' autosuggest-toggle
+
+
+autoload predict-on
+predict-toggle() {
+    ((predict_on=1-predict_on)) && predict-on || predict-off
+}
+zle -N predict-toggle
+bindkey '^T' predict-toggle
+#zstyle ':predict' toggle true
+#zstyle ':predict' verbose true
+
+# }}}
+
+#}}}
 
 #### General OS {{{
 
@@ -223,6 +375,12 @@ pgp() {
   cs && echo
   e $MAGENTA $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BLUE}Selected:$SI$FINISH
   catb | nl | al $PAGER_TOP $PAGER_BOTTOM
+}
+
+# Pager : Pager Line Count
+# pglc : Print the total number of lines in the pager buffer
+pglc() {
+  catb | wc -l
 }
 
 # Pager : Pager
@@ -1831,7 +1989,8 @@ wk() {
 }
 
 cd $SV/$SITE_NAME/current/conf/kiwiplan/jini
-export JSVC=$(( $(fp launch | wc -l) + 1 ))
+fp launch
+export JSVC=$(( $(pglc) + 1 ))
 cd -
 sss() {
   jpc=$(pf jdk java $SITE_NAME | wc -l)
@@ -2436,157 +2595,6 @@ if [ -d "~/.local/bin" ] ; then
     PATH="~/.local/bin:$PATH"
 fi
 PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
-# }}}
-
-#}}}
-
-#### ZSH {{{ 
-
-# Color {{{
-autoload colors
-colors
-for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
-eval BR$color='$terminfo[bold]$fg[${(L)color}]'
-eval PBR$color='%{$terminfo[bold]$fg[${(L)color}]%}'
-eval BRBG$color='$terminfo[bold]$bg[${(L)color}]'
-eval PBRBG$color='%{$terminfo[bold]$bg[${(L)color}]%}'
-eval $color='$fg[${(L)color}]'
-eval BG$color='$bg[${(L)color}]'
-eval P$color='%{$fg[${(L)color}]%}'
-(( count = $count + 1 ))
-done
-FINISH="$terminfo[sgr0]"
-PFINISH="%{$terminfo[sgr0]%}"
-# }}}
-
-# Prompt {{{  
-
-autoload -U add-zsh-hook
-
-#add-zsh-hook precmd title_precmd
-#add-zsh-hook preexec o_preexec
-
-o_preexec() {
-}
-
-top_prompt() {
-# Restore old Buffer
-  if [[ $BUFFER != "" ]]; then
-    LAST_BUFFER=$BUFFER
-  fi
-  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE  $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
-  echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
-}
-
-# Set tmux window title
-wt() {
-  print -Pn "\033k$1\033\\"
-}
-
-zle-enter() {
-  wt $(lnode $BUFFER " " 1)
-  unset LAST_BUFFER
-  cs
-  BUFFER_BAK=$BUFFER
-  zle expand-word
-  if [[ $BUFFER = "" ]]; then
-    BUFFER="o"
-  elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
-    BUFFER="o $BUFFER"
-  else
-    BUFFER=$BUFFER_BAK
-  fi
-  zle accept-line
-}
-zle -N zle-enter
-bindkey "\r" zle-enter
-
-PROMPT="${PYELLOW}%/ $ ${PFINISH}"
-
-# }}}
-
-# Editor {{{
-export EDITOR=vim
-bindkey -M vicmd '?' history-incremental-search-backward
-# }}}
-
-# Syntax {{{
-#setopt extended_glob
-#TOKENS_FOLLOWED_BY_COMMANDS=('|' '||' ';' '&' '&&' 'sudo' 'do' 'time' 'strace')
-# 
-#recolor-cmd() {
-#   region_highlight=()
-#   colorize=true
-#   start_pos=0
-#   for arg in ${(z)BUFFER}; do
-#       ((start_pos+=${#BUFFER[$start_pos+1,-1]}-${#${BUFFER[$start_pos+1,-1]## #}}))
-#       ((end_pos=$start_pos+${#arg}))
-#       if $colorize; then
-#           colorize=false
-#           res=$(LC_ALL=C builtin type $arg 2>/dev/null)
-#           case $res in
-#               *'reserved word'*)   style="fg=magenta";;
-#               *'alias for'*)       style="fg=cyan";;
-#               *'shell builtin'*)   style="fg=yellow";;
-#               *'shell function'*)  style='fg=green';;
-#               *"$arg is"*)
-#                   [[ $arg = 'sudo' ]] && style="fg=red" || style="fg=blue";;
-#               *)                   style='none';;
-#           esac
-#           region_highlight+=("$start_pos $end_pos $style")
-#       fi
-#       [[ ${${TOKENS_FOLLOWED_BY_COMMANDS[(r)${arg//|/\|}]}:+yes} = 'yes' ]] && colorize=true
-#       start_pos=$end_pos
-#   done
-#}
-#
-#expand-cmd() {
-#}
-#
-#self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
-#backward-delete-char() { zle .backward-delete-char && recolor-cmd }
-# 
-#zle -N self-insert
-#zle -N backward-delete-char
-# }}}
-
-# History {{{
-export HISTSIZE=10000
-export SAVEHIST=10000
-export HISTFILE=~/.zhistory
-setopt INC_APPEND_HISTORY
-setopt HIST_IGNORE_DUPS
-setopt EXTENDED_HISTORY     
-setopt AUTO_PUSHD
-setopt PUSHD_IGNORE_DUPS
-setopt HIST_IGNORE_SPACE
-# }}}
-
-# Development Environment {{{
-#PATH=$PATH:$HOME/.rvm/bin:~/bin # Add RVM to PATH for scripting
-#source ~/.rvm/scripts/rvm
-
-# }}}
-
-# Completion {{{
-
-#. $MOS_ROOT/src/zsh-autosuggestions/autosuggestions.zsh
-#zle-line-init() {
-#  zle autosuggest-start
-#}
-#zle -N zle-line-init
-#bindkey '^T' autosuggest-toggle
-
-
-autoload predict-on
-predict-toggle() {
-    ((predict_on=1-predict_on)) && predict-on || predict-off
-}
-zle -N predict-toggle
-bindkey '^T' predict-toggle
-#zstyle ':predict' toggle true
-#zstyle ':predict' verbose true
-
 # }}}
 
 #}}}
