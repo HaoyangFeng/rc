@@ -511,8 +511,35 @@ rc() {
   source $ZSHRC
 }
 
+# Regression Test RC
+rtrc() {
+# Prepare work directory
+  pwd=$(pwd)
+  sb
+  d rt
+  cs
+# Perform regression test
+  result=PASS
+  e --- Starting RT
+  if [[ $(rrc) != "" ]]; then
+    e rrc has output, will break aliasgrep.
+    result=FAIL
+  fi
+# Remove work directory
+  cd $pwd
+  if [[ $result == "FAIL" ]]; then
+    e --- RT FAILED
+    return 1
+  fi
+  e --- RT PASSED
+}
+
 # Commit and push configuration files
 circ() {
+  if ! rtrc; then
+    e Commit ommitted due to RT failure.
+    return
+  fi
   pushd .
   cd $RC
   ci $1
