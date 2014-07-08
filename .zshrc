@@ -1701,7 +1701,7 @@ co() {
 
 up() {
   if [ -d .git ]; then
-    git up
+    git pull
   fi
   if [ -d .svn ]; then
     svn up
@@ -2507,6 +2507,7 @@ PROMPT="${PYELLOW}%/ $ ${PFINISH}"
 
 # Editor {{{
 export EDITOR=vim
+bindkey -M vicmd '?' history-incremental-search-backward
 # }}}
 
 # Syntax {{{
