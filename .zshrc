@@ -195,6 +195,12 @@ bindkey '^T' predict-toggle
 
 #}}}
 
+#### MSH {{{
+
+MSH_LS_AUTO_MODE=false
+
+# }}}
+
 #### General OS {{{
 
 # Core Environment variables {{{
@@ -955,7 +961,7 @@ function command_not_found_handler() {
 # List Utility : List
 # l : List files in full or brief depending on total number of files
 l() {
-  if [[ $(lf $@ | wc -l) -lt 30 ]]; then
+  if $MSH_LS_AUTO_MODE && [[ $(lf $@ | wc -l) -lt 30 ]]; then
     lf $@
   else
     lb $@
@@ -2423,6 +2429,7 @@ rss() {
 }
 xl() {
   mwk
+  wt xl
   echo -e "secr8\n" > .secr8
   xlmain -i .secr8
   rm .secr8
