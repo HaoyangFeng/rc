@@ -1,4 +1,5 @@
 #### TODO {{{
+# cds should back up current vue dataset, and import new vue dataset automatically
 # Globally fix pglc
 # Block stdout for rrc
 # Implement directory stack
@@ -15,33 +16,35 @@
 # }}}
 
 #### Keymap {{{
-# a : Awk
+# a : 
 # b : 
-# c : Cat
-# d : Directory/Disk
-# e : Echo - TODO maybe change to Edit and free up v, also consider expanding o
+# c : 
+# d : 
+# e : Explain
 # f : Find
-# g : Grep
-# h : Help
+# g : 
+# h : History
 # i : 
 # j : 
 # k
-# l : List
+# l : 
 #*m : MAP
 # n
 # o : Open
-# p
+# p : Print
 # q
 # r
-# s : Sed
+# s : Search
 # t
 # u
-#*v : Vi - Vue
-# w : Which
+#*v : Vue
+# w 
 # x
 # y
 # z
+# rc : Source
 # td : Todo
+# ? : Help
 # }}}
 
 #### ZSH {{{ 
@@ -59,7 +62,7 @@ eval BG$color='$bg[${(L)color}]'
 eval P$color='%{$fg[${(L)color}]%}'
 (( count = $count + 1 ))
 done
-FINISH="$terminfo[sgr0]"
+FINISH="[m"
 PFINISH="%{$terminfo[sgr0]%}"
 # }}}
 
@@ -87,23 +90,51 @@ wt() {
   print -Pn "\033k$1\033\\"
 }
 
-zle-enter() {
+msh-enter() {
   wt $(lnode $BUFFER " " 1)
   unset LAST_BUFFER
   cs
   BUFFER_BAK=$BUFFER
   zle expand-word
   if [[ $BUFFER = "" ]]; then
-    BUFFER="o"
+    BUFFER="d"
   elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
     BUFFER="o $BUFFER"
   else
     BUFFER=$BUFFER_BAK
+    e $BUFFER >> $MSH_HISTCMD
   fi
   zle accept-line
 }
-zle -N zle-enter
-bindkey "\r" zle-enter
+zle -N msh-enter
+bindkey "\r" msh-enter
+
+msh-expand() {
+  BUFFER=$(tn $BUFFER)
+}
+zle -N msh-expand
+bindkey "^E" msh-expand
+
+msh-history() {
+  BUFFER="ch $BUFFER"
+  msh-enter
+}
+zle -N msh-history
+bindkey "^H" msh-history
+
+msh-forward() {
+  BUFFER=n
+  msh-enter
+}
+zle -N msh-forward
+bindkey "^F" msh-forward
+
+msh-backward() {
+  BUFFER=p
+  msh-enter
+}
+zle -N msh-backward
+bindkey "^B" msh-backward
 
 PROMPT="${PYELLOW}%/ $ ${PFINISH}"
 
@@ -182,12 +213,12 @@ setopt HIST_IGNORE_SPACE
 #bindkey '^T' autosuggest-toggle
 
 
-autoload predict-on
-predict-toggle() {
-    ((predict_on=1-predict_on)) && predict-on || predict-off
-}
-zle -N predict-toggle
-bindkey '^T' predict-toggle
+#autoload predict-on
+#predict-toggle() {
+#    ((predict_on=1-predict_on)) && predict-on || predict-off
+#}
+#zle -N predict-toggle
+#bindkey '^T' predict-toggle
 #zstyle ':predict' toggle true
 #zstyle ':predict' verbose true
 
@@ -223,6 +254,9 @@ export TMP=$WORK/.tmp
 export STDOUT=$TMP/stdout/$$
 export STDERR=$TMP/stderr/$$
 export STDBUF=$TMP/stdbuf/$$
+export MSH_HISTCMD=$TMP/HISTCMD
+export MSH_HISTOPEN=$TMP/HISTOPEN
+export MSH_HISTOPENFILE=$TMP/HISTOPENFILE
 
 export USE_GREP_COLOR=FULL
 
@@ -343,6 +377,20 @@ scron() {
   done 
 }
 
+# Start second-level cron daemon
+# TODO Make friendly with pager
+scrond() {
+  if [ "$2" = "" ]; then
+    SLEEP_TIME=1;
+  else
+    SLEEP_TIME=$2
+  fi
+  while true; do
+    evn $1
+    sleep $SLEEP_TIME;
+  done &
+}
+
 # Execute a command with the arguments from a file and open the output in vi
 # $1 command to execute
 # $2 file that contains all the arguments
@@ -381,7 +429,7 @@ PAGER_SIZE=30
 pgp() {
   cs && echo
   e $MAGENTA $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BLUE}Selected:$SI$FINISH
-  catb | nl | al $PAGER_TOP $PAGER_BOTTOM
+  catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
 
 # Pager : Pager Line Count
@@ -429,6 +477,14 @@ cs() {
   clear
   top_prompt
 }
+
+msh-clear() {
+  BUFFER=cs
+  msh-enter
+}
+zle -N msh-clear
+bindkey "^L" msh-clear
+
 
 clip() {
   xclip -sel clip
@@ -586,7 +642,7 @@ crc() {
 
 # Configure Vi
 vrc() {
-  vi $VIMRC
+  o $VIMRC
 }
 
 # Configure Tmux
@@ -717,6 +773,10 @@ eve() {
   eval $(e $@)
 }
 
+efp() {
+  readlink -f $1
+}
+
 # }}}
 
 # Awk {{{
@@ -766,9 +826,9 @@ gv() {
 
 gr() {
   if [ "$2" = "" ]; then
-    eval $(echo "grep -irnI $1 .") | nl
+    pn g "grep -irnI $1 ."
   else
-    eval $(echo "grep -irnI --include=\"$2\" $1 .") | nl
+    pn g "grep -irnI --include=\"$2\" $1 ."
   fi
 }
 
@@ -793,7 +853,7 @@ gsp() {
 }
 
 gf() {
-  eval $(echo "grep \"^[^C].*($1)\" -rin . --include=\"*.f\" -B9999 | grep \"\s\sprogram\s|\s\sfunction\s|\s\ssubroutine\s|^[^C].*($1)\" -i | grep \"^[^C].*($1)\" -B1 -i | grep -v \"\-\-\"") | nl
+  pn g "grep \"^[^C].*($1)\" -rin . --include=\"*.f\" -B9999 | grep \"\s\sprogram\s|\s\sfunction\s|\s\ssubroutine\s|^[^C].*($1)\" -i | grep \"^[^C].*($1)\" -B1 -i | grep -v \"\-\-\""
 }
 
 gjf() {
@@ -885,14 +945,22 @@ zr() {
 }
 
 uz() {
-  if [[ $1 = *.tar.gz ]]; then
-    tar xvfz $1
-  elif [[ $1 = *.tar ]]; then
-    tar xvf $1
-  elif [[ $1 == *.bz2 ]]; then
-    bunzip2 $1
-  fi
-  r $1
+  for target in $@; do
+    echo $target
+    if [[ $target = *.tar.gz ]]; then
+      tar xvfz $target
+      r $target
+    elif [[ $target = *.gz ]]; then
+      gunzip $target
+      r $target
+    elif [[ $target = *.tar ]]; then
+      tar xvf $target
+      r $target
+    elif [[ $target == *.bz2 ]]; then
+      bunzip2 $target
+      r $target
+    fi
+  done
 }
 
 # Back Up : Back Up
@@ -1171,11 +1239,15 @@ OFT=(png eog pdf evince zip uz jar oj)
 # o a : Go to into directory or open file in Vi
 o() {
   if [[ $1 = "" ]]; then
-    d
-  elif [[ -d $1 || $1 = "-" ]]; then
+    oh
+    return
+  fi
+  e $(efp $1) >> $MSH_HISTOPEN
+  if [[ -d $1 || $1 = "-" ]]; then
     d $1
   elif [[ -f $1 ]]; then
-    wt $1
+    wt $(rnode $1 "/" 0)
+    e $(efp $1) >> $MSH_HISTOPENFILE
     if [[ -x $1 ]]; then
       $1
     else
@@ -1198,6 +1270,42 @@ oj() {
   java -jar $1
 }
 
+# History Utility : Open History File
+# ohf histfile : Show open history for a specific history file
+ohf() {
+  pn oh "tac $1 | sort | uniq -c | sort -nr"
+}
+
+# History : Open History
+# ofh : Show open history
+oh() {
+  ohf $MSH_HISTOPEN
+}
+
+# History : Open File History
+# ofh : Show open file history
+ofh() {
+  ohf $MSH_HISTOPENFILE
+}
+
+# History : Command History
+# ch [xml] : Show command history [that involves xml]
+ch() {
+  if [[ $1 == "" ]]; then
+    pn ch "tac $MSH_HISTCMD | gv \"^ch$\" | gv \"^ch \" | sort | uniq -c | sort -nr"
+  else
+    pn ch "tac $MSH_HISTCMD | gv \"^ch$\" | gv \"^ch \" | g $1 | sort | uniq -c | sort -nr"
+  fi
+}
+
+# History : History Clear
+# hc : Clear all history
+hc() {
+  : > $MSH_HISTCMD
+  : > $MSH_HISTOPEN
+  : > $MSH_HISTOPENFILE
+}
+
 #}}}
 
 # Vi {{{
@@ -1215,13 +1323,8 @@ v() {
 
 # Find by full name and open with Vi
 vf() {
-  if [ "$2" = "" ]; then
-    vi $(f $1 | unl)
-    l
-  else
-    vi +$2 $(f $1 | unl)
-    l
-  fi
+  f $1
+  rn 1
 }
 
 # Find by partial name and open with Vi
@@ -1314,6 +1417,37 @@ fn() {
   catlbnc $1 | xargs ${@:2}
 }
 
+# Translate Numbered Shortcut
+tn() {
+    n=$(catlbnc $1)
+    case $(pnc) in
+        d) e cd +$1;;
+        t) e o $(rnode $n " " 0);;
+        note) e o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        l) case $2 in 
+               r) e r "$(echo $n | awk '{print $9}')";;
+               "") e o "$(echo $n | awk '{print $9}')";;
+               *) e $2 "$(echo $n | awk '{print $9}')" ${@:3};;
+           esac;;
+        lt) e o $(echo $n | awk '{print $9}');;
+        fl) e o $n;;
+        f) e o $n;;
+        fa) e o $n;;
+        fp) e o $n;;
+        fps) e o $n;;
+        fpa) e o $n;;
+        tca) e vimdiff $n $PJ_ROOT/$MB/$n;;
+        oh) e o $(rnode $n " " 0);;
+        ch) e $(e $n | cut -c 9-);;
+        g) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
+        gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
+        gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
+        wh) e wh $(echo $n | cut -d " " -f 1);;
+        clog) e o $n;;
+        *) echo Done nothing.;;
+    esac
+}
+
 # Numbered shortcut: Run numbered shortcut # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
 # Listing numbers to add to selected list quickly
@@ -1333,32 +1467,7 @@ rn() {
       pgp
     fi
   else
-    n=$(catlbnc $1)
-    case $(pnc) in
-        d) cd +$1;;
-        t) o $(rnode $n " " 0);;
-        note) o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
-        l) case $2 in 
-               r) r "$(echo $n | awk '{print $9}')";;
-               "") o "$(echo $n | awk '{print $9}')";;
-               *) $2 "$(echo $n | awk '{print $9}')" ${@:3};;
-           esac;;
-        lt) o $(echo $n | awk '{print $9}');;
-        fl) o $n;;
-        f) o $n;;
-        fa) o $n;;
-        fp) o $n;;
-        fps) o $n;;
-        fpa) o $n;;
-        tca) vimdiff $n $PJ_ROOT/$MB/$n;;
-        g) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
-        gs) o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
-        gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
-        wh) wh $(echo $n | cut -d " " -f 1);;
-        clog) o $n;;
-
-        *) echo Done nothing.;;
-    esac
+    eve $(tn $@)
   fi
 }
 
@@ -1383,7 +1492,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/Amcor/Awlive
+export CDS=/KIWI/datasets/Individual/FiveStarSheets
 export MODE=VUE
 
 # Selecting the development mode
@@ -1582,7 +1691,7 @@ kpi() {
 
 # Login to aurora
 aurora() {
-  ssh ssd@aurora
+  o $MNT/aurora
 }
 
 # Demo machine
@@ -1603,7 +1712,7 @@ sql() {
   if [ "$1" = "" ]; then
     DB=""
   else
-    DB=$SQL_NAME"_"$1
+    DB=${SQL_PREFIX}$1
   fi
   mysql -uroot -proot $DB "${@:2}"
 }
@@ -1611,12 +1720,20 @@ sql() {
 # Find table in databases
 sqlf() {
   aliasgrepnocolor
-  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_NAME); do
+  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_PREFIX); do
     #if mysql -uroot -proot $database -e "show tables" | grep "^"$1"$"; then
     if mysql -uroot -proot $database -e "show tables" | grep $(pab $1); then
       echo $database
     fi
   done | gv $1
+  aliasgrepfullcolor
+}
+
+# SQL : SQL List Database
+# sqlld : List all databases under the SQL_PREFIX
+sqlld() {
+  aliasgrepnocolor
+  mysql -uroot -proot -e "show databases" | g $SQL_PREFIX | s "s/$SQL_PREFIX//"
   aliasgrepfullcolor
 }
 
@@ -1631,15 +1748,14 @@ sqlmv() {
 
 # Drop SQL database
 sqlrm() {
-  mysql -uroot -proot -e "drop database "$SQL_NAME"_"$1""
+  mysql -uroot -proot -e "drop database "${SQL_PREFIX}$1""
 }
 
 # Create SQL database
 sqlmk() {
-  mysql -uroot -proot -e "create database "$SQL_NAME"_"$1""
+  mysql -uroot -proot -e "create database "${SQL_PREFIX}$1""
 }
 
-# TODO CSC only
 # Import SQL script to database
 # $2 database dump suffix
 # sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
@@ -1647,24 +1763,27 @@ sqli() {
   if [[ $1 != "" ]]; then
     SQL_SUFFIX=_$1
   fi
-  sqlrm csc
-  sqlmk csc
-  sql csc < "$SQL_NAME"_csc$SQL_SUFFIX.sql
-  sqlrm man
-  sqlmk man
-  sql man < "$SQL_NAME"_man$SQL_SUFFIX.sql
-  sqlrm pcs
-  sqlmk pcs
-  sql pcs < "$SQL_NAME"_pcs$SQL_SUFFIX.sql
+  for db in $(sqlld); do
+    sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
+    if [[ -f $sqlfile ]]; then
+      sqlrm $db
+      sqlmk $db
+      sql $db < $sqlfile
+    fi
+  done
 }
 
-# TODO CSC only
 # Export SQL database to script
 # $1 database dump suffix
 # sqlo tailim : Exports mes_8_csc/man to mes_8_csc/man_tailim.sql if java revision is mes-8
 sqlo() {
-  mysqldump --skip-tz-utc -uroot -proot "$SQL_NAME"_csc > "$SQL_NAME"_csc_"$1".sql
-  mysqldump --skip-tz-utc -uroot -proot "$SQL_NAME"_man > "$SQL_NAME"_man_"$1".sql
+  if [[ $1 != "" ]]; then
+    SQL_SUFFIX=_$1
+  fi
+  for db in $(sqlld); do
+    sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
+    mysqldump --skip-tz-utc -uroot -proot $SQL_PREFIX$db > $sqlfile
+  done
 }
 
 # Show SQL process list
@@ -1874,7 +1993,7 @@ ci() {
   fi
   if [ -d .svn ]; then
     if [[ $(svn st | grep "^C") = "" ]]; then
-      svn ci -m $1
+      svn ci ${@:2} -m "$1"
     else
       echo ci: Couldn\'t commit due to following conflicts
       svn st | grep "^C"
@@ -1963,11 +2082,11 @@ note() {
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=mes-7.90.4
+export JPJ=tss-7.90.3
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
-export SQL_NAME=$SITE_NAME
+export SQL_PREFIX=${SITE_NAME}_
 export VDS=$CDS/VUE
 export REBEL_HOME=~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel
 export SV=/kiwi/java/sites
@@ -2006,9 +2125,7 @@ svl() {
 
 # Go to java tomcat directory
 tc() {
-  cd $TC
-  cd $SITE_NAME
-  cd current
+  o $TC/$SITE_NAME/current
 }
 
 # Go to java comms directory
@@ -2023,26 +2140,42 @@ wk() {
   cd $SITE_NAME
 }
 
-evn fp launch $SV/$SITE_NAME/current/conf/kiwiplan/jini
-export JSVC=$(( $(pglc) + 1 ))
 sss() {
-  jpc=$(pf jdk java $SITE_NAME | wc -l)
-  if [[ $jpc == 0 ]]; then
+  if [[ $(pf jdk java $SITE_NAME | wc -l) == 0 ]]; then
     e DOWN
-  elif [[ $jpc < $JSVC ]]; then
-    e STARTING
-  else
+  elif [[ $(pf jdk java tomcat $SITE_NAME | wc -l) == 1 ]]; then
     e UP
+  else
+    e STARTING
   fi
 }
 
+ssse() {
+  scrond "sss > $TMP/sss"
+}
+
 # Start java services
-ss() {
+sts() {
   sv
-  sss=$(sss)
+  evn bin/startservers.sh
+}
+
+# Stop java services
+sps() {
+  pk jdk java $SITE_NAME
+}
+
+dps() {
+  dp
+  ss
+}
+
+# Start/Stop java services
+ss() {
+  sss=$(decolor <<< $(sss))
   case $sss in
-    DOWN) evn bin/startservers.sh;;
-    *) pk jdk java $SITE_NAME
+    DOWN) sts;;
+    *) sps; sts;;
   esac
 }
 
@@ -2133,7 +2266,7 @@ EOF
 
 jpj() {
   vue
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)"'
+  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
   crc JPJ $menu
   if [ -d $PJ_ROOT/$PJ ]; then
     pj
@@ -2152,12 +2285,19 @@ jsv() {
   vue
   menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
   crc JPJ $menu
-  jin
+  sv
 }
 
-# TODO only works for CSC-only
+jstss() {
+  tc
+  d webapps/kp-tss-map-tiles/maptiles
+  sudo mount nzmaptiles.kiwiplan.co.nz:/data/default  .
+}
+
+
+
 jup() {
-  jst &
+  sps
   jid
 
 # Run installation
@@ -2165,27 +2305,11 @@ jup() {
 
 $SITE_NAME
 
-
-n
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 EOF
+  jstss
   sv
-  jdt
-  jss
+  sts
 }
 
 jid() {
@@ -2287,7 +2411,7 @@ jdi
 #  n
 ## Manufacturing Classic DB
 #  y
-#  ${SQL_NAME}_man
+#  ${SQL_PREFIX}man
 #  n
 ## TSS integration
 ## Unit size calculator
@@ -2321,8 +2445,8 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=7.90_01apr2014
-export MAP_REV=7.90_01apr2014
+export MAP_REV=7.80_01oct2013
+export MAP_REV=7.80_01oct2013
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
@@ -2409,6 +2533,7 @@ jiq() {
 }
 pcs() {
   mwk
+  wt pcs
   pcsmenu
 }
 csc() {
@@ -2619,7 +2744,7 @@ dj() {
 #export _JAVA_OPTIONS="-Dawt.useSystemAAFontSettings=lcd"
 
 PATH="$PATH:$MOS_BIN"
-if [ -d "~/projects/maven-misc/bin" ] ; then
+if [[ -d "~/projects/maven-misc/bin" ]] ; then
     PATH="~/projects/maven-misc/bin:$PATH"
 fi
 if [ -d "/usr/local/java/maven3/bin" ] ; then
@@ -2629,6 +2754,7 @@ if [ -d "~/.local/bin" ] ; then
     PATH="~/.local/bin:$PATH"
 fi
 PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
+PATH=$PATH:~/projects/maven-misc/bin
 # }}}
 
 #}}}
@@ -2653,6 +2779,11 @@ md $MNT
 if [[ ! -d $MNT/calypso ]]; then
   md $MNT/calypso
   rmm calypso:/data/kiwiplan/docs/TSS $MNT/calypso
+fi
+
+if [[ ! -d $MNT/aurora ]]; then
+  md $MNT/aurora
+  rmm ssd@aurora:/ $MNT/aurora
 fi
 
 

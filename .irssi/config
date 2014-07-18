@@ -175,6 +175,9 @@ aliases = {
   jon = "q \"Jonathan Marsh\"";
   aaron = "q \"Aaron Park\"";
   john = "q \"John Vermeer\"";
+  martina = "q \"Martina Delany\"";
+  glenys = "q \"Glenys Earle\"";
+  kevin = "q \"Kevin Chan\"";
   x = "win close";
 };
 

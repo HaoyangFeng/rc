@@ -8,3 +8,4 @@ colorscheme solarized-light
 au Fullscreen .* :set guioptions+=s
 
 " vim: set ft=pentadactyl:
+set passkeys+='drive.google.com':jkxANTPSDFcuarvzs<Return>./d?,gn,gl,gf,gd

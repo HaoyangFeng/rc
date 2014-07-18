@@ -113,6 +113,11 @@ alias paul Paul <paul.mackenzie@kiwiplan.co.nz>
 alias wayne Wayne <wayne.stocks@kiwiplan.com>
 alias chuck Chuck <chuck.raymond@kiwiplan.com>
 alias neil Neil <neil.bond@kiwiplan.com>
+alias tss TSS <TSSNextGeneration@kiwiplan.co.nz>
+alias kevin Kevin <kevin.chan@kiwiplan.co.nz>
+alias martina Martina <martina.delany@kiwiplan.co.nz>
+alias glenys Glenys <glenys.earle@kiwiplan.co.nz>
+alias tssinternal TSS Internal kevin,martina,glenys,janet
 
 # mailing lists we are on (these are regexps!)
 #subscribe "gentoo-.*@gentoo\\.org"
