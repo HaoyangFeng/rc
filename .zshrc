@@ -102,7 +102,9 @@ msh-enter() {
     BUFFER="o $BUFFER"
   else
     BUFFER=$BUFFER_BAK
-    e $BUFFER >> $MSH_HISTCMD
+    if which $(lnode $BUFFER " " 1) &> /dev/null; then
+      e $BUFFER >> $MSH_HISTCMD
+    fi
   fi
   zle accept-line
 }
@@ -794,6 +796,12 @@ al() {
        selected=$BLUE altbg=$BGWHITE finish=$FINISH
 }
 
+# Process : Process Line
+# pl 1 10 : Print from line 1 to 10
+pl() {
+  awk "NR >= $1 && NR <= $2 {print \$0}"
+}
+
 # }}}
 
 # Sed {{{
@@ -1233,7 +1241,7 @@ df() {
 # Open : Open File Type (Variable)
 # OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
-OFT=(png eog pdf evince zip uz jar oj)
+OFT=(png eog pdf evince zip uz gz uz jar oj)
 
 # Open : Open
 # o a : Go to into directory or open file in Vi
@@ -1271,30 +1279,34 @@ oj() {
 }
 
 # History Utility : Open History File
-# ohf histfile : Show open history for a specific history file
+# ohf histfile [keyword] : Show open history for a specific history file
 ohf() {
-  pn oh "tac $1 | sort | uniq -c | sort -nr"
+  if [[ $2 == "" ]]; then
+    pn oh "tac $1 | sort | uniq -c | sort -nr"
+  else
+    pn oh "tac $1 | g $2 | sort | uniq -c | sort -nr"
+  fi
 }
 
 # History : Open History
 # ofh : Show open history
 oh() {
-  ohf $MSH_HISTOPEN
+  ohf $MSH_HISTOPEN $1
 }
 
 # History : Open File History
 # ofh : Show open file history
 ofh() {
-  ohf $MSH_HISTOPENFILE
+  ohf $MSH_HISTOPENFILE $1
 }
 
 # History : Command History
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "tac $MSH_HISTCMD | gv \"^ch$\" | gv \"^ch \" | sort | uniq -c | sort -nr"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | sort | uniq -c | sort -nr"
   else
-    pn ch "tac $MSH_HISTCMD | gv \"^ch$\" | gv \"^ch \" | g $1 | sort | uniq -c | sort -nr"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1 | sort | uniq -c | sort -nr"
   fi
 }
 
@@ -1529,6 +1541,9 @@ hd() {
 # cds : Change data set
 cds() {
   crc CDS $(pwd)
+  rm /kiwi/data
+  sc $(pwd)/MAP /kiwi/data
+  jdi
 
 #  if [[ "$TARGET" = *.sql ]]; then
 #    ln -s $DS/sql /kiwi/data
@@ -1721,11 +1736,12 @@ sql() {
 sqlf() {
   aliasgrepnocolor
   for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_PREFIX); do
-    #if mysql -uroot -proot $database -e "show tables" | grep "^"$1"$"; then
-    if mysql -uroot -proot $database -e "show tables" | grep $(pab $1); then
-      echo $database
+    if table=$(mysql -uroot -proot $database -e "show tables" | g $(pab $1)); then
+      e $database
+      e $table
+      e
     fi
-  done | gv $1
+  done
   aliasgrepfullcolor
 }
 
@@ -1733,17 +1749,17 @@ sqlf() {
 # sqlld : List all databases under the SQL_PREFIX
 sqlld() {
   aliasgrepnocolor
-  mysql -uroot -proot -e "show databases" | g $SQL_PREFIX | s "s/$SQL_PREFIX//"
+  mysql -uroot -proot -e "show databases" | g "^$SQL_PREFIX" | s "s/^$SQL_PREFIX//"
   aliasgrepfullcolor
 }
 
 # Rename SQL database
 sqlmv() {
-  mysql -uroot -proot -e "create database $2"
-  for table in `mysql -uroot -proot -B -N -e "show tables" $1`; do 
-    mysql -uroot -proot -e "rename table $1.$table to $2.$table"
+  mysql -uroot -proot -e "create database ${SQL_PREFIX}$2"
+  for table in `mysql -uroot -proot -B -N -e "show tables" ${SQL_PREFIX}$1`; do 
+    mysql -uroot -proot -e "rename table ${SQL_PREFIX}$1.$table to ${SQL_PREFIX}$2.$table"
   done
-  mysql -uroot -proot -e "drop database $1"
+  mysql -uroot -proot -e "drop database ${SQL_PREFIX}$1"
 }
 
 # Drop SQL database
@@ -1794,7 +1810,7 @@ sqlp() {
 # Execute SQL in database
 sqle() {
   table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
-  database=$(sqlf $table)
+  database=$(sqlf $table | pl 1 1)
   eval "mysql -uroot -proot $database -e \"$@\""
 }
 
@@ -1810,12 +1826,13 @@ sqlq() {
   fi
 }
 sqlqe() {
-  table=$1
-  database=$(sqlf $table)
+  result=$(sqlf $1)
+  database=$(e $result | pl 1 1)
+  table=$(e $result | pl 2 2)
   count=$(sqle "select count(*) from $table" | head -3 | tail -1)
   (( column = $(sqle "desc $table" | wc -l) - 1 )) 
   (e $table@$database: $count rows and $column columns;
-   sqle "select * from $1 \G") | vi -
+   sqle "select * from $table \G") | vi -
 }
 
 # SQL Utility: Explain a SQL table
@@ -2083,10 +2100,10 @@ note() {
 
 export JPJ_ROOT=~/projects
 export JPJ=tss-7.90.3
+export JPD=$(lnode $JPJ - 1)
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
-export SQL_PREFIX=${SITE_NAME}_
 export VDS=$CDS/VUE
 export REBEL_HOME=~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel
 export SV=/kiwi/java/sites
@@ -2096,6 +2113,7 @@ export WK=/kiwi/java/work
 export IN=~/installers
 export JSVN="svn+ssh://corona2/svn/mapjava"
 if [[ $MODE == "VUE" ]]; then
+  export SQL_PREFIX=${SITE_NAME}_
   export SVN=$JSVN
   export PJ_ROOT=$JPJ_ROOT
   export PJ=$JPJ
@@ -2202,9 +2220,9 @@ rmsite() {
   rm -rf $SV/$SITE_NAME
   rm -rf $WK/$SITE_NAME
   rm -rf $TC/$SITE_NAME
-  sqlrm csc
-  sqlrm pcs
-  sqlrm man
+  for db in $(sqlld); do
+    sqlrm $db
+  done
 }
 
 # Java Development: Log
@@ -2282,10 +2300,13 @@ cplic() {
 }
 
 jsv() {
+  sps
   vue
   menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
   crc JPJ $menu
   sv
+  jdi
+  ss
 }
 
 jstss() {
@@ -2315,7 +2336,7 @@ EOF
 jid() {
   d $IN/$JPJ
   rmu 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")/ . $JPJ'-*'
-  cplic $(lnode $JPJ - 1)
+  cplic $JPD
 }
 
 jwid() {
@@ -2326,24 +2347,29 @@ jwid() {
   scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
 }
 
+# Import SQL script to database
+# $2 database dump suffix
+# sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
 jdi() {
   vds
   sqli $1
   sv
   bin/upgrade.sh
+  vds
+  sqlo ${1}upgraded
+  if [[ -f time.properties ]]; then
+    cp time.properties $SV/$SITE_NAME/current/conf/kiwiplan/time.properties
+    cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties
+  fi
 }
 
-# TODO only works for CSC-only
-# Java Setup: Fresh Service Installation
-# jin : Do a fresh installation of the current java revision
-jin() {
-  rmsite
-  jid
+jdr() {
+  vds
+  sqli ${1}upgraded
+}
 
-# Run installation
-  METRIC=y
-  OFFSET=0
-echo "### Basic
+jinmes() {
+  echo "### Basic
 # Change base?
 n
 # Site name
@@ -2386,49 +2412,81 @@ n
 # Configure
 e
 " | gv "#" | ./$JPJ-*.sh
-jdi
 }
 
-#jtss() {
-## Base
-#  n
-## Site name and offset
-#  $SITENAME
-#  $OFFSET
-## Install
-#  n
-##
-#  admin1
-#  n
-#  localhost
-#  root
-#  root
-#  root
-#  root
-## Metric?
-#  y
-#  $METRIC
-#  n
-## Manufacturing Classic DB
-#  y
-#  ${SQL_PREFIX}man
-#  n
-## TSS integration
-## Unit size calculator
-#  n
-## PCS scheduler configuration
-#  n # Should be changed
-## TSS DB
-#  n
-## Completed
-#  e
-#
-#  TODO PORT PROBLEM
-#  TODO Obtain XML for classic and RAF for OSM routers
+jintss() {
+  mv tss.licence kansas.licence #TODO generate a TSS licence
+  echo "### Basic
+# Change base?
+n
+# Site name
+$SITE_NAME
+# Offset
+$OFFSET
+# Install
+n
+# Admin password
+admin1
+n
+### Database
+# Hostname
+localhost
+# Super user name
+root # Super user password
+root
+# Normal user name
+root
+# Super user password
+root
+# Metric
+y
+$METRIC
+n
+### Manufacturing Classic DB
+#Change database name?
+y
+${SQL_PREFIX}map
+n
+### TSS integration
+# Unit size calculator
+n
+# PCS scheduler configuration
+y
+/kiwi
+
+n
+# TSS DB
+n
+### Completed
+# Configure
+e
+" | gv "#" | ./$JPJ-*.sh
+
+
+
+#  TODO PORT PROBLEM?
+
+cp $COMMON/roadgrids/* $SV/conf/kiwiplan/roadgrids
+
 #  TODO Change pcs properties
 #  TODO MAP: Tomcat/webapps/kp-tss-map-tiles
 #  sudo mount nzmaptiles.kiwiplan.co.nz:/data  /mnt
-#}
+}
+
+# TODO Metric depends on current dataset, cds should configure service
+# Java Setup: Fresh Service Installation
+# jin : Do a fresh installation of the current java revision
+jin() {
+  rmsite
+  jid
+  METRIC=n
+  OFFSET=0
+  case $JPD in
+    mes) jinmes;;
+    tss) jintss;;
+  esac
+jdi
+}
 
 # Java Setup: Debug Trim
 # jdt : Turn on debug for trim
@@ -2456,6 +2514,7 @@ export MHD=kiwi_head
 export MMB=kiwi_riegelsville
 export MSVN="svn+ssh://corona2/svn/map"
 if [[ $MODE == "MAP" ]]; then
+  export SQL_PREFIX=""
   export SVN=$MSVN
   export PJ_ROOT=$MPJ_ROOT
   export PJ=$MPJ
@@ -2763,7 +2822,7 @@ PATH=$PATH:~/projects/maven-misc/bin
 
 # Install Software {{{
 
-for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs) wn $dep || pi $dep;
+for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip) wn $dep || pi $dep;
 
 # }}}
 
