@@ -77,12 +77,17 @@ o_preexec() {
 }
 
 top_prompt() {
-# Restore old Buffer
-  if [[ $BUFFER != "" ]]; then
-    LAST_BUFFER=$BUFFER
-  fi
-  echo "${CYAN}MSH $$   $RED$(rnode $CDS \/ 1) $(rnode $CDS \/ 0) | $MODE  $BLUE$PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
-  echo $GREEN$(pwd) $ ${MAGENTA}$LAST_BUFFER${FINISH}
+  #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  e " ${BRCYAN}MSH-$$${FINISH}"
+  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
+  usr_line="${BLUE} USR: $MSH_INTER"
+  pwd_lth=$(echo $LAST_PWD | wc -c)
+  usr_line_lth=$(echo $usr_line | decolor | wc -c)
+  printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
+  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
+  e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
+  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
 }
 
 # Set tmux window title
@@ -90,18 +95,34 @@ wt() {
   print -Pn "\033k$1\033\\"
 }
 
+msh_personality() {
+# Intepretation
+  if [[ $BUFFER == "" ]]; then
+    MSH_INTER="Go home"
+  else
+    MSH_INTER=$BUFFER
+  fi
+# Reply
+  if [[ $BUFFER == $LAST_BUFFER ]]; then
+    MSH_REPLY="You're nagging again.."
+  else
+    MSH_REPLY="OK"
+  fi
+}
+
 msh-enter() {
   wt $(lnode $BUFFER " " 1)
-  unset LAST_BUFFER
+  msh_personality
+  LAST_BUFFER=$BUFFER
+  LAST_PWD=$(pwd)
   cs
-  BUFFER_BAK=$BUFFER
   zle expand-word
   if [[ $BUFFER = "" ]]; then
     BUFFER="d"
   elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
     BUFFER="o $BUFFER"
   else
-    BUFFER=$BUFFER_BAK
+    BUFFER=$LAST_BUFFER
     if which $(lnode $BUFFER " " 1) &> /dev/null; then
       e $BUFFER >> $MSH_HISTCMD
     fi
@@ -138,7 +159,10 @@ msh-backward() {
 zle -N msh-backward
 bindkey "^B" msh-backward
 
-PROMPT="${PYELLOW}%/ $ ${PFINISH}"
+PROMPT="
+${PBRCYAN}---------------------------------------------------------------------------------------------------------------${PFINISH}
+${PBLUE} USR: ${PFINISH}"
+RPROMPT="${PBRCYAN}%/${PFINISH}"
 
 # }}}
 
@@ -424,7 +448,7 @@ timestamp() {
 
 # Pager : Pager Size
 # PAGER_SIZE=30 : Set the pager size to 30
-PAGER_SIZE=30
+PAGER_SIZE=25
 
 # Pager : Pager Print
 # pgp : Print the current page
@@ -823,7 +847,11 @@ si() {
 # Grep {{{
 
 g() {
-  grep -i $@
+  grep -i --line-buffered $@
+}
+
+gc() {
+  grep -i --line-buffered -C $1 ${@:2}
 }
 
 # Grep Utility: Reverse grep
@@ -1899,13 +1927,21 @@ sw() {
 # SVN Rollback
 # rb 1000 1004 : Roll back changes from revision 1000 to 1004
 rb() {
-  svn merge -r $2:$1 .
+  if [[ $2 == "" ]]; then
+    svn merge -c -$1 .
+  else
+    svn merge -r $2:$1 .
+  fi
 }
 
 # SVN Merge Utility
 # mg 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
 mg() {
-  svn merge -c $2 $(svn info | grep URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+  if [[ $2 == "" ]]; then
+    svn merge -c $1 .
+  else
+    svn merge -c $2 $(svn info | grep URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+  fi
 }
 
 # SVN Merge Out Utility
@@ -1966,9 +2002,9 @@ svncomment() {
 
 svnlog() {
   if [ "$1" = "" ]; then
-    svn log | head -40 | head -40
+    svn log | head -10000 | head -30
   else
-    svn log | grep $1 -C2 | head -40 | head -40
+    svn log | head -10000 | gc 2 $1 | head -30
   fi
 }
 
@@ -2159,9 +2195,9 @@ wk() {
 }
 
 sss() {
-  if [[ $(pf jdk java $SITE_NAME | wc -l) == 0 ]]; then
+  if [[ $(pf jdk java jini | wc -l) == 0 ]]; then
     e DOWN
-  elif [[ $(pf jdk java tomcat $SITE_NAME | wc -l) == 1 ]]; then
+  elif [[ $(pf jdk java tomcat jini | wc -l) == 1 ]]; then
     e UP
   else
     e STARTING
@@ -2174,8 +2210,7 @@ ssse() {
 
 # Start java services
 sts() {
-  sv
-  evn bin/startservers.sh
+  evn $SV/$SITE_NAME/current/bin/startservers.sh
 }
 
 # Stop java services
