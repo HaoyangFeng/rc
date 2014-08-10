@@ -44,7 +44,6 @@
 # z
 # rc : Source
 # td : Todo
-# ? : Help
 # }}}
 
 #### ZSH {{{ 
@@ -90,9 +89,32 @@ top_prompt() {
   e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
 }
 
+# Set tmux window title and prevent further changes
+wt_lock() {
+  if [[ $1 != "" ]]; then
+    wt $1
+  fi
+  MSH_WT=false
+}
+
+# Set tmux window title and allow further changes
+wt_unlock() {
+  MSH_WT=true
+  if [[ $1 != "" ]]; then
+    wt $1
+  fi
+}
+
+# Test whether tmux window title is allowed to change
+wt_test() {
+  e $MSH_WT
+}
+
 # Set tmux window title
 wt() {
-  print -Pn "\033k$1\033\\"
+  if $(wt_test); then
+    print -Pn "\033k$1\033\\"
+  fi
 }
 
 msh_personality() {
@@ -117,7 +139,7 @@ msh-enter() {
   LAST_PWD=$(pwd)
   cs
   zle expand-word
-  if [[ $BUFFER = "" ]]; then
+  if [[ $BUFFER == "" ]]; then
     BUFFER="d"
   elif [[ -a $BUFFER || $BUFFER = "-" ]]; then 
     BUFFER="o $BUFFER"
@@ -255,6 +277,7 @@ setopt HIST_IGNORE_SPACE
 #### MSH {{{
 
 MSH_LS_AUTO_MODE=false
+MSH_AUTO_EXCLUDE=true
 
 # }}}
 
@@ -284,8 +307,6 @@ export MSH_HISTCMD=$TMP/HISTCMD
 export MSH_HISTOPEN=$TMP/HISTOPEN
 export MSH_HISTOPENFILE=$TMP/HISTOPENFILE
 
-export USE_GREP_COLOR=FULL
-
 # }}}
 
 # Core Aliases {{{
@@ -303,28 +324,6 @@ alias beep='paplay $BEEP'
 alias bc='bc -l'
 alias emacs='emacs -nw'
 
-aliasgrep() {
-  if [ "$USE_GREP_COLOR" = "FULL" ]; then
-    alias grep='grep -E --color=always'
-  else
-    alias grep='grep -E --color=none'
-  fi
-}
-
-aliasgrepnocolor() {
-  crc USE_GREP_COLOR NONE
-  aliasgrep
-  rrc
-}
-
-aliasgrepfullcolor() {
-  crc USE_GREP_COLOR FULL
-  aliasgrep
-  rrc
-}
-
-aliasgrep
-
 # }}}
 
 # Utility functions {{{
@@ -337,14 +336,14 @@ lnode() {
 }
 
 # Right Node
-# rnode a/b/c/d / 2 : Split a/b/c/d by delimiter / to [a,b,c,d] and obtain the second to last substring c
+# rnode a/b/c/d / 2 : Split a/b/c/d by delimiter / to [a,b,c,d] and obtain the second to last substring b (0 based)
 rnode() {
-  echo $1 | cut -d $2 -f $(echo "$(echo $1 | grep -o $2 | wc -l) + 1 - $3" | bc)
+  echo $1 | cut -d $2 -f $(echo "$(echo $1 | g -o $2 | wc -l) + 1 - $3" | bc)
 }
 
 # Print previous command
 pc() {
-  fc -nl 1 | grep -v "^[ef]?[0-9]*$" | tail -1
+  fc -nl 1 | gv "^[ef]?[0-9]*$" | tail -1
 }
 
 # Run previous command
@@ -422,8 +421,6 @@ scrond() {
 # $2 file that contains all the arguments
 # exe sqle queries : Execute sqle with every line in the file "queries" as argument
 exe() {
-  #IFS="
-  #"
   while read args; do
     echo $1 $args
     $1 $args
@@ -520,6 +517,8 @@ decolor() {
   sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
 }
 
+# Evaluate : Evaluate to Buffer
+# evb : evaluate
 evb() {
   eval $@ &> $TMP/stdbuf/$$
   decolor $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
@@ -610,7 +609,7 @@ rtrc() {
   result=PASS
   e --- Starting RT
   if [[ $(rrc) != "" ]]; then
-    e rrc has output, will break aliasgrep.
+    e rrc has output
     result=FAIL
   fi
 # Remove work directory
@@ -648,13 +647,13 @@ ciarc() {
 # h func : List all function documentation with the keyword func
 h() {
   pattern="#.*$(kw $@)"
-  cat $ZSHRC | grep -i $pattern  -C1 | grep -v "\(\)" | grep -v "^$" | grep -v "\{\{\{"
+  cat $ZSHRC | gv "\(\)" | gv "^$" | gv "\{\{\{" | g -C1 "$pattern"
 }
 
 # Help: Full precise function help
 # fh func : Show the documentation and code of function func
 fh() {
-  cat $ZSHRC | grep "^$1\(" -B2  | head -2
+  cat $ZSHRC | gc "^$1\(" -B2 | head -2
   w $1
 }
 
@@ -773,9 +772,7 @@ clog() {
     #pn "for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d \" \" -f 8 | grep \"\/[^\/]*@\" | nl"
     pn clog "for file in $\(ls\); do echo $file; done"
   else
-    aliasgrepnocolor
-    o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | grep $1 | cut -d " " -f 8 | grep "\/[^\/]*@")
-    aliasgrepfullcolor
+    o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | g $(date +%F) | g $1 | cut -d " " -f 8 | g "\/[^\/]*@")
   fi
 }
 
@@ -847,11 +844,11 @@ si() {
 # Grep {{{
 
 g() {
-  grep -i --line-buffered $@
+  grep -Ei --line-buffered --color=auto $@
 }
 
 gc() {
-  grep -i --line-buffered -C $1 ${@:2}
+  grep -Ei --line-buffered --color=always $@
 }
 
 # Grep Utility: Reverse grep
@@ -862,30 +859,30 @@ gv() {
 
 gr() {
   if [ "$2" = "" ]; then
-    pn g "grep -irnI $1 ."
+    pn g "grep --color-always -EirnI $1 ."
   else
-    pn g "grep -irnI --include=\"$2\" $1 ."
+    pn g "grep --color-always -EirnI --include=\"$2\" $1 ."
   fi
 }
 
 gs() {
   if [ "$2" = "" ]; then
-    pn gs "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
+    pn gs "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
   else
-    pn gs "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
+    pn gs "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
   fi
 }
 
 gsa() {
   if [ "$2" = "" ]; then
-    eval $(echo "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath,inf} \"$1\" .") | nl
+    eval $(echo "grep --color-always -EirnI --exclude-dir={.svn,testsrc,target,.classpath,inf} \"$1\" .") | nl
   else
-    eval $(echo "grep -irnI --exclude-dir={.svn,testsrc,target,.classpath,inf} --include=\"*$2*\" \"$1\" .") | nl
+    eval $(echo "grep --color-always -EirnI --exclude-dir={.svn,testsrc,target,.classpath,inf} --include=\"*$2*\" \"$1\" .") | nl
   fi
 }
 
 gsp() {
-  eval $(echo "grep -irnI --exclude-dir={.svn,testsrc,inf} $@ .")
+  eval $(echo "grep --color-always -EirnI --exclude-dir={.svn,testsrc,inf} $@ .")
 }
 
 gf() {
@@ -930,22 +927,16 @@ fl() {
 
 # Find by full file name
 f() {
-  pn f "find $2 -regex '.*/$1' ${@:3}"
+  if $MSH_AUTO_EXCLUDE; then
+    pn f "find $2 -regex '.*/$1' ! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*' ${@:3}"
+  else
+    pn f "find $2 -regex '.*/$1' ${@:3}"
+  fi
 }
 
 # Find by partial name
 fp() {
   f ".*"$1"[^\/]*" ${@:2}
-}
-
-# Find source by full name
-fs() {
-  f $1 -type f ${@:2} ! -path "*/testsrc/*" ! -path "*/classes/*" ! -path "*/target/*" ! -path "*/.svn/*"
-}
-
-# Find source by partial name
-fps() {
-  fp $1 -type f ${@:2} ! -path "*/testsrc/*" ! -path "*/classes/*" ! -path "*/target/*" ! -path "*/.svn/*"
 }
 
 # Find source by full PascalCase abbreviated name
@@ -1118,7 +1109,8 @@ ms() {
   l
 }
 
-export TRASH=~/.Trash
+export TRASH=$MOS_ROOT/.Trash
+export ARCHIVE=$MOS_ROOT/.Archive
 
 # Remove Utility: Remove
 # r file : Move file to trash
@@ -1149,6 +1141,19 @@ rl() {
 # re : Empty files in trash
 re() {
   rm -rf $TRASH/*
+}
+
+# Remove : Archive
+# ra a : Archive file a
+ra() {
+  archive=$ARCHIVE/$(timestamp)
+  md $archive
+  if [[ $1 == "" ]]; then
+    mv * $archive
+  elif [[ -a $1 ]]; then
+    mv $@ $archive
+  fi
+  l
 }
 
 # Cat Utility: Cat Line
@@ -1310,9 +1315,10 @@ oj() {
 # ohf histfile [keyword] : Show open history for a specific history file
 ohf() {
   if [[ $2 == "" ]]; then
-    pn oh "tac $1 | sort | uniq -c | sort -nr"
+    pn oh "tac $1"
+    #| sort | uniq -c | sort -nr"
   else
-    pn oh "tac $1 | g $2 | sort | uniq -c | sort -nr"
+    pn oh "tac $1"
   fi
 }
 
@@ -1332,9 +1338,9 @@ ofh() {
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | sort | uniq -c | sort -nr"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \""
   else
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1 | sort | uniq -c | sort -nr"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1"
   fi
 }
 
@@ -1369,7 +1375,8 @@ vf() {
 
 # Find by partial name and open with Vi
 vp() {
-  vi $(fp $1 | unl)
+  vf $1
+  rn 1
 }
 
 # Find source by full name and open with Vi
@@ -1532,7 +1539,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/Individual/FiveStarSheets
+export CDS=/KIWI/datasets/GP/Kansas
 export MODE=VUE
 
 # Selecting the development mode
@@ -1568,10 +1575,12 @@ hd() {
 # Data Set: Change Data Set
 # cds : Change data set
 cds() {
+  wt_lock "Changing dataset"
   crc CDS $(pwd)
   rm /kiwi/data
   sc $(pwd)/MAP /kiwi/data
-  jdi
+  jdi $1
+  wt_unlock "Changing dataset [DONE]"
 
 #  if [[ "$TARGET" = *.sql ]]; then
 #    ln -s $DS/sql /kiwi/data
@@ -1762,23 +1771,19 @@ sql() {
 
 # Find table in databases
 sqlf() {
-  aliasgrepnocolor
-  for database in $(mysql -uroot -proot -e "show databases" | grep $SQL_PREFIX); do
+  for database in $(mysql -uroot -proot -e "show databases" | g $SQL_PREFIX); do
     if table=$(mysql -uroot -proot $database -e "show tables" | g $(pab $1)); then
       e $database
       e $table
       e
     fi
   done
-  aliasgrepfullcolor
 }
 
 # SQL : SQL List Database
 # sqlld : List all databases under the SQL_PREFIX
 sqlld() {
-  aliasgrepnocolor
   mysql -uroot -proot -e "show databases" | g "^$SQL_PREFIX" | s "s/^$SQL_PREFIX//"
-  aliasgrepfullcolor
 }
 
 # Rename SQL database
@@ -1913,7 +1918,7 @@ rv() {
   if [ -d .svn ]; then
     svn -R revert .
     svn st
-    svn st | grep \? | awk '{print $2}' | xargs rm -rf
+    svn st | g \? | awk '{print $2}' | xargs rm -rf
     svn st
   fi
 }
@@ -1921,7 +1926,7 @@ rv() {
 # SVN Switch Utility
 # sw 7.72 : Switch the current working copy to branch 7.72
 sw() {
-  svn sw $(svn info | grep URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
+  svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
 }
 
 # SVN Rollback
@@ -1940,7 +1945,7 @@ mg() {
   if [[ $2 == "" ]]; then
     svn merge -c $1 .
   else
-    svn merge -c $2 $(svn info | grep URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+    svn merge -c $2 $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
   fi
 }
 
@@ -1969,13 +1974,13 @@ mi() {
 # SVN Tree Conflict: List Add Conflicts
 # tca : List tree conflicts for "local add, incoming add"
 tca() {
-  svn st | grep ">   local add, incoming add upon merge" -B1 | grep -v ">" | grep -v "\-\-" | cut -c9- | nl
+  svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9- | nl
 }
 
 # SVN Tree Conflict: Resolve Identical Add Conflicts
 # tcar : Resolve tree conflicts for "local add, incoming add" by accepting local, where the files are identical
 tcar() {
-  for tc in $(svn st | grep ">   local add, incoming add upon merge" -B1 | grep -v ">" | grep -v "\-\-" | cut -c9-); do
+  for tc in $(svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9-); do
     if [ "$(diff $tc $PJ_ROOT/$MB/$tc)" = "" ]; then
       svn resolve --accept working $tc
     fi
@@ -1985,7 +1990,7 @@ tcar() {
 # SVN Tree Conflict: Accept Incoming
 # tcaa : Accept incoming files for tree conflicts for "local add, incoming add"
 tcaa() {
-  for tc in $(svn st | grep ">   local add, incoming add upon merge" -B1 | grep -v ">" | grep -v "\-\-" | cut -c9-); do
+  for tc in $(svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9-); do
     cp $PJ_ROOT/$MB/$tc $tc
   done
 }
@@ -1993,7 +1998,7 @@ tcaa() {
 # SVN Tree Conflict: List Other Conflicts (Non-add)
 # tco : List Tree conflicts other than "local add, incoming add"
 tco() {
-  svn st | grep -v ">   local add, incoming add upon merge" | grep ">()" -B1 | grep -v ">" | grep -v "\-\-" | cut -c9-
+  svn st | gv ">   local add, incoming add upon merge" | g ">()" -B1 | gv ">" | gv "\-\-" | cut -c9-
 }
 
 svncomment() {
@@ -2002,9 +2007,9 @@ svncomment() {
 
 svnlog() {
   if [ "$1" = "" ]; then
-    svn log | head -10000 | head -30
+    svn log | head -5000 | head -30
   else
-    svn log | head -10000 | gc 2 $1 | head -30
+    svn log | head -5000 | g -C2 $1 | head -30
   fi
 }
 
@@ -2022,7 +2027,7 @@ st() {
 }
 
 stm() {
-  st | grep "^M" | nl
+  st | g ^M
 }
 
 dt() {
@@ -2045,14 +2050,41 @@ ci() {
     git commit -a -m $1
   fi
   if [ -d .svn ]; then
-    if [[ $(svn st | grep "^C") = "" ]]; then
+    if [[ $(svn st | g "^C") = "" ]]; then
       svn ci ${@:2} -m "$1"
     else
       echo ci: Couldn\'t commit due to following conflicts
-      svn st | grep "^C"
+      svn st | g "^C"
       return 1
     fi
   fi
+}
+
+# Java Commit
+# jci "Comment" 7.70 7.70.2 : Commit with "Comment" for the current rev, merging to 7.70 and 7.70.2
+jci() {
+  wt_lock "Committing"
+  pj
+  up
+  externals=("${(@f)$(stm | cut -c9- | cut -c-3)}")
+  ci $1 $externals
+  up
+  o ${externals[1]}
+  merge_to_rev=$(svnlog haoyang | head -2 | tail -1 | cut -d " " -f 1 | cut -c2-)
+  for rev in ${@:2}; do
+    e --- Merging to $rev..
+    pjr
+    o $JPD-$rev
+    up
+    for external in $externals; do
+      o $external
+      mg $JREV $merge_to_rev
+      o ..
+    done
+    ci $1 $externals
+    up
+  done
+  wt_unlock "Committing [DONE]"
 }
 
 co() {
@@ -2074,7 +2106,7 @@ up() {
 }
 
 svnst() {
-  svn di -r 31094:31095 $SVN/trunk/$1 | grep Index | cut -d " " -f2
+  svn di -r 31094:31095 $SVN/trunk/$1 | g Index | cut -d " " -f2
 }
 
 svndil() {
@@ -2137,6 +2169,7 @@ note() {
 export JPJ_ROOT=~/projects
 export JPJ=tss-7.90.3
 export JPD=$(lnode $JPJ - 1)
+export JREV=$(e $JPJ | cut -c5-)
 export JHD=mes-8.0
 export JMB=mes-8.0
 export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
@@ -2272,7 +2305,7 @@ lg() {
 
 # Start tomcat debug
 rdb() {
-  ps xu | grep tomcat | grep -v grep | awk '{print $2}' | xargs kill -9
+  pk tomcat
   export JPDA_ADDRESS=13066
   export JPDA_TRANSPORT=dt_socket
   bin/catalina.sh jpda run
@@ -2319,7 +2352,7 @@ EOF
 
 jpj() {
   vue
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
+  menu 'svn ls $SVN/projects | gv master | g "\-(7)" | sed "s/\///"'
   crc JPJ $menu
   if [ -d $PJ_ROOT/$PJ ]; then
     pj
@@ -2337,7 +2370,7 @@ cplic() {
 jsv() {
   sps
   vue
-  menu 'svn ls $SVN/projects | grep -v master | grep "\-(7)" | sed "s/\///"'
+  menu 'svn ls $SVN/projects | gv master | g "\-(7)" | sed "s/\///"'
   crc JPJ $menu
   sv
   jdi
@@ -2396,6 +2429,7 @@ jdi() {
     cp time.properties $SV/$SITE_NAME/current/conf/kiwiplan/time.properties
     cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties
   fi
+  ss
 }
 
 jdr() {
@@ -2502,9 +2536,10 @@ e
 #  TODO PORT PROBLEM?
 
 cp $COMMON/roadgrids/* $SV/conf/kiwiplan/roadgrids
+jstss
+
 
 #  TODO Change pcs properties
-#  TODO MAP: Tomcat/webapps/kp-tss-map-tiles
 #  sudo mount nzmaptiles.kiwiplan.co.nz:/data  /mnt
 }
 
@@ -2520,7 +2555,7 @@ jin() {
     mes) jinmes;;
     tss) jintss;;
   esac
-jdi
+  jdi
 }
 
 # Java Setup: Debug Trim
@@ -2849,6 +2884,7 @@ if [ -d "~/.local/bin" ] ; then
 fi
 PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
 PATH=$PATH:~/projects/maven-misc/bin
+PATH=$PATH:/usr/sbin
 # }}}
 
 #}}}
@@ -2865,6 +2901,7 @@ for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs x
 
 md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
 md $MNT
+md $TRASH $ARCHIVE
 
 # }}}
 

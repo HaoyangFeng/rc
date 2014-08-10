@@ -178,6 +178,7 @@ aliases = {
   martina = "q \"Martina Delany\"";
   glenys = "q \"Glenys Earle\"";
   kevin = "q \"Kevin Chan\"";
+  jason = "q \"Jason Zhang\"";
   x = "win close";
 };
 
