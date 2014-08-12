@@ -69,7 +69,7 @@ PFINISH="%{$terminfo[sgr0]%}"
 
 autoload -U add-zsh-hook
 
-#add-zsh-hook precmd title_precmd
+#add-zsh-hook precmd o_precmd
 #add-zsh-hook preexec o_preexec
 
 o_preexec() {
@@ -117,7 +117,64 @@ wt() {
   fi
 }
 
-msh_personality() {
+msh-guess() {
+  BUFFER=$(echo $BUFFER | head -1)
+  BUFFER_CHAR=$(echo $BUFFER | wc -c)
+  if [[ $BUFFER == "" ]]; then
+    MSH_GUESS="Hello"
+  else
+    MSH_GUESS=$(chd $BUFFER $MSH_GUESS_INDEX)
+  fi
+  BUFFER+="
+ MSH: $MSH_GUESS ?"
+  region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
+}
+
+msh-guess-first() {
+  MSH_GUESS_INDEX=1
+  msh-guess
+}
+self-insert() {
+  zle .self-insert
+  msh-guess-first
+}
+zle -N self-insert
+backward-delete-char() {
+  zle .backward-delete-char
+  msh-guess-first
+}
+zle -N backward-delete-char
+vi-backward-delete-char() {
+  zle .vi-backward-delete-char
+  msh-guess-first
+}
+zle -N vi-backward-delete-char
+delete-char() {
+  zle .delete-char
+  msh-guess-first
+}
+zle -N delete-char
+vi-delete-char() {
+  zle .vi-delete-char
+  msh-guess-first
+}
+zle -N vi-delete-char
+
+msh-guess-next() {
+  (( MSH_GUESS_INDEX = $MSH_GUESS_INDEX + 1 ))
+  msh-guess
+}
+zle -N msh-guess-next
+bindkey "^N" msh-guess-next
+
+msh-guess-previous() {
+  (( MSH_GUESS_INDEX = $MSH_GUESS_INDEX - 1 ))
+  msh-guess
+}
+zle -N msh-guess-previous
+bindkey "^P" msh-guess-previous
+
+msh-personality() {
 # Intepretation
   if [[ $BUFFER == "" ]]; then
     MSH_INTER="Go home"
@@ -134,7 +191,7 @@ msh_personality() {
 
 msh-enter() {
   wt $(lnode $BUFFER " " 1)
-  msh_personality
+  msh-personality
   LAST_BUFFER=$BUFFER
   LAST_PWD=$(pwd)
   cs
@@ -151,8 +208,22 @@ msh-enter() {
   fi
   zle accept-line
 }
-zle -N msh-enter
-bindkey "\r" msh-enter
+
+msh-accept-guess() {
+# Accept guess 
+  BUFFER=$MSH_GUESS
+  msh-enter
+}
+zle -N msh-accept-guess
+bindkey "^G" msh-accept-guess
+
+msh-new-command() {
+# Remove guess
+  BUFFER=$(echo $BUFFER | head -1)
+  msh-enter
+}
+zle -N msh-new-command
+bindkey "\r" msh-new-command
 
 msh-expand() {
   BUFFER=$(tn $BUFFER)
@@ -161,6 +232,7 @@ zle -N msh-expand
 bindkey "^E" msh-expand
 
 msh-history() {
+  BUFFER=$(echo $BUFFER | head -1)
   BUFFER="ch $BUFFER"
   msh-enter
 }
@@ -223,13 +295,9 @@ bindkey -M vicmd '?' history-incremental-search-backward
 #   done
 #}
 #
-#expand-cmd() {
-#}
 #
-#self-insert() { zle .self-insert && expand-cmd && recolor-cmd}
 #backward-delete-char() { zle .backward-delete-char && recolor-cmd }
 # 
-#zle -N self-insert
 #zle -N backward-delete-char
 # }}}
 
@@ -1343,6 +1411,11 @@ ch() {
     pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1 | uniq -c"
   fi
 }
+
+chd() {
+  tac $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g $1 | uniq -c | head -$2 | tail -1 | cut -c9-
+}
+
 
 # History : History Clear
 # hc : Clear all history
