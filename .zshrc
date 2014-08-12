@@ -1315,7 +1315,7 @@ oj() {
 # ohf histfile [keyword] : Show open history for a specific history file
 ohf() {
   if [[ $2 == "" ]]; then
-    pn oh "tac $1"
+    pn oh "tac $1 | uniq -c"
     #| sort | uniq -c | sort -nr"
   else
     pn oh "tac $1"
@@ -1338,9 +1338,9 @@ ofh() {
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \""
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
   else
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1 | uniq -c"
   fi
 }
 
@@ -1539,7 +1539,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/GP/Kansas
+export CDS=/KIWI/datasets/Individual/FiveStarSheets
 export MODE=VUE
 
 # Selecting the development mode
@@ -2196,6 +2196,10 @@ alias vue="mode <<< 1"
 # Go to java service directory
 sv() {
   o $SV
+  if [[ ! -d $SITE_NAME ]]; then
+    wt "sv not found"
+    return 1
+  fi
   o $SITE_NAME
   o current
   wt sv
@@ -2372,7 +2376,9 @@ jsv() {
   vue
   menu 'svn ls $SVN/projects | gv master | g "\-(7)" | sed "s/\///"'
   crc JPJ $menu
-  sv
+  if ! sv; then
+    jin
+  fi
   jdi
   ss
 }
@@ -2535,12 +2541,11 @@ e
 
 #  TODO PORT PROBLEM?
 
-cp $COMMON/roadgrids/* $SV/conf/kiwiplan/roadgrids
-jstss
+  cp $COMMON/roadgrids/* $SV/$SITE_NAME/current/conf/kiwiplan/roadgrids
+  jstss
 
 
 #  TODO Change pcs properties
-#  sudo mount nzmaptiles.kiwiplan.co.nz:/data  /mnt
 }
 
 # TODO Metric depends on current dataset, cds should configure service
@@ -2555,7 +2560,6 @@ jin() {
     mes) jinmes;;
     tss) jintss;;
   esac
-  jdi
 }
 
 # Java Setup: Debug Trim
