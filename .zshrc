@@ -123,7 +123,11 @@ msh-guess() {
   if [[ $BUFFER == "" ]]; then
     MSH_GUESS="Hello"
   else
-    MSH_GUESS=$(chd $BUFFER $MSH_GUESS_INDEX)
+    if [[ -a $BUFFER* ]]; then
+      MSH_GUESS=$BUFFER*
+    else
+      MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
+    fi
   fi
   BUFFER+="
  MSH: $MSH_GUESS ?"
@@ -446,10 +450,12 @@ pab() {
   echo $var
 }
 
+# Escape for sed replacement
 esr() {
  sed -e 's/[\/&]/\\&/g'
 }
 
+# Escape for regex
 esk() {
   sed -e 's/[]\/()$*.^|[]/\\&/g'
 }
@@ -927,9 +933,17 @@ gv() {
 
 gr() {
   if [ "$2" = "" ]; then
-    pn g "grep --color-always -EirnI $1 ."
+    if $MSH_AUTO_EXCLUDE; then
+      pn g "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
+    else
+      pn g "grep --color=always -EirnI \"$1\" ."
+    fi
   else
-    pn g "grep --color-always -EirnI --include=\"$2\" $1 ."
+    if $MSH_AUTO_EXCLUDE; then
+      pn g "grep --color=always -EirnI --include=\"$2\" --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
+    else
+      pn g "grep --color=always -EirnI --include=\"$2\" \"$1\" ."
+    fi
   fi
 }
 
@@ -1408,12 +1422,12 @@ ch() {
   if [[ $1 == "" ]]; then
     pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
   else
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g $1 | uniq -c"
+    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
   fi
 }
 
 chd() {
-  tac $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g $1 | uniq -c | head -$2 | tail -1 | cut -c9-
+  tac $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq -c | head -$2 | tail -1 | cut -c9-
 }
 
 
@@ -1612,7 +1626,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/Individual/FiveStarSheets
+export CDS=/KIWI/datasets/GP/Kansas
 export MODE=VUE
 
 # Selecting the development mode
@@ -1883,14 +1897,18 @@ sqlmk() {
 # sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
 sqli() {
   if [[ $1 != "" ]]; then
-    SQL_SUFFIX=_$1
+    sql_suffix=_$1
+  else
+    unset sql_suffix
   fi
   for db in $(sqlld); do
-    sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
+    sqlfile=$SQL_PREFIX$db$sql_suffix.sql
     if [[ -f $sqlfile ]]; then
       sqlrm $db
       sqlmk $db
       sql $db < $sqlfile
+    else
+      e Cannot find $sqlfile
     fi
   done
 }
@@ -2381,10 +2399,11 @@ lg() {
 }
 
 # Start tomcat debug
-rdb() {
+dbt() {
   pk tomcat
   export JPDA_ADDRESS=13066
   export JPDA_TRANSPORT=dt_socket
+  tc
   bin/catalina.sh jpda run
 }
 
@@ -2452,7 +2471,7 @@ jsv() {
   if ! sv; then
     jin
   fi
-  jdi
+  #jdi
   ss
 }
 
