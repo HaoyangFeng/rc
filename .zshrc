@@ -1153,14 +1153,14 @@ l() {
 # List Utility: List All
 # la : List almost all files
 la() {
-  pn l "ls -ltuhA --color $@"
+  pn l "ls -ltuhA --color $@ | gv ^total"
   wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -ltuh --color $@"
+  pn l "ls -ltuh --color $@ | gv ^total"
   wt $(rnode $(pwd) "/" 0)
 }
 
