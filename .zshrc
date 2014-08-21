@@ -1,4 +1,5 @@
 #### TODO {{{
+# General de-numbering
 # cds should back up current vue dataset, and import new vue dataset automatically
 # Globally fix pglc
 # Block stdout for rrc
@@ -123,8 +124,8 @@ msh-guess() {
   if [[ $BUFFER == "" ]]; then
     MSH_GUESS="Hello"
   else
-    if [[ -a $BUFFER* ]]; then
-      MSH_GUESS=$BUFFER*
+    if ! evn "e \"$BUFFER\" | g \" \"" && evn "lfd $MSH_GUESS_INDEX $BUFFER*"; then
+      MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $BUFFER*")
     else
       MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
     fi
@@ -317,6 +318,10 @@ setopt PUSHD_IGNORE_DUPS
 setopt HIST_IGNORE_SPACE
 # }}}
 
+# Options {{{
+#setopt NULL_GLOB
+# }}}
+
 # Development Environment {{{
 #PATH=$PATH:$HOME/.rvm/bin:~/bin # Add RVM to PATH for scripting
 #source ~/.rvm/scripts/rvm
@@ -457,7 +462,7 @@ esr() {
 
 # Escape for regex
 esk() {
-  sed -e 's/[]\/()$*.^|[]/\\&/g'
+  sed -e 's/[]\/(){}$*.^|[]/\\&/g'
 }
 
 # Start second-level cron job
@@ -1138,24 +1143,24 @@ function command_not_found_handler() {
 # List Utility : List
 # l : List files in full or brief depending on total number of files
 l() {
-  if $MSH_LS_AUTO_MODE && [[ $(lf $@ | wc -l) -lt 30 ]]; then
-    lf $@
+  if $MSH_LS_AUTO_MODE && [[ $(la $@ | wc -l) -lt 30 ]]; then
+    la $@
   else
     lb $@
  fi
 }
 
-# List Utility: List Full
-# lf : List almost all files
-lf() {
-  pn l "ls -ltuhA --color $@ | gv ^total"
+# List Utility: List All
+# la : List almost all files
+la() {
+  pn l "ls -ltuhA --color $@"
   wt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -ltuh --color $@ | gv ^total"
+  pn l "ls -ltuh --color $@"
   wt $(rnode $(pwd) "/" 0)
 }
 
@@ -1164,6 +1169,17 @@ lb() {
 lh() {
   pn l "ls -ltuhd --color .*"
   wt $(rnode $(pwd) "/" 0)
+}
+
+# List : List Filtered
+# lf : List files with filename pattern filter
+lf() {
+  pn l "ls -ltuhd --color $@"
+  wt $(rnode $(pwd) "/" 0)
+}
+
+lfd() {
+  ls -tuhd --color=none ${@:2} | head -$1 | tail -1
 }
 
 # Shortcut : Shortcut
@@ -1430,7 +1446,6 @@ chd() {
   tac $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq -c | head -$2 | tail -1 | cut -c9-
 }
 
-
 # History : History Clear
 # hc : Clear all history
 hc() {
@@ -1539,7 +1554,7 @@ sn() {
 
 pn() {
   echo $1 > $TMP/stdbuf/$$.cmd
-  evb $2
+  evb ${@:2}
   pg
 }
 
