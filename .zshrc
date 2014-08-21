@@ -220,7 +220,7 @@ msh-accept-guess() {
   msh-enter
 }
 zle -N msh-accept-guess
-bindkey "^G" msh-accept-guess
+bindkey "^@" msh-accept-guess
 
 msh-new-command() {
 # Remove guess
