@@ -118,6 +118,7 @@ wt() {
   fi
 }
 
+# TODO Tab to expand current word - progress guess
 msh-guess() {
   BUFFER=$(echo $BUFFER | head -1)
   BUFFER_CHAR=$(echo $BUFFER | wc -c)
@@ -126,6 +127,8 @@ msh-guess() {
   else
     if ! evn "e \"$BUFFER\" | g \" \"" && evn "lfd $MSH_GUESS_INDEX $BUFFER*"; then
       MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $BUFFER*")
+    #elif evn "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*"; then
+    #  MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*")
     else
       MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
     fi
@@ -897,9 +900,14 @@ al() {
 }
 
 # Process : Process Line
-# pl 1 10 : Print from line 1 to 10
+# pl 2 10 : Print from line 2 to 10
+# pl 2 : Print from line 2 to the end
 pl() {
-  awk "NR >= $1 && NR <= $2 {print \$0}"
+  if [[ $2 == "" ]]; then
+    awk "NR >= $1 {print \$0}"
+  else
+    awk "NR >= $1 && NR <= $2 {print \$0}"
+  fi
 }
 
 # }}}
@@ -1096,11 +1104,16 @@ bur() {
 # Back Up : Put Back
 pb() {
   r $1
-  if [ $2 = "" ]; then
+  if [[ $2 == "" ]]; then
     cp -r $1.bak $1
   else
     cp -r $1.bak.$2 $1
   fi
+}
+
+pbr() {
+  r $1
+  m $1.bak $1
 }
 
 # TODO
@@ -1967,7 +1980,10 @@ sqlq() {
 sqlqe() {
   result=$(sqlf $1)
   database=$(e $result | pl 1 1)
-  table=$(e $result | pl 2 2)
+  tables=$(e $result | pl 2)
+  if ! table=$(e $tables | g ^$1$); then
+    table=$(e $tables | pl 1 1) # Use the first match if no exact match
+  fi
   count=$(sqle "select count(*) from $table" | head -3 | tail -1)
   (( column = $(sqle "desc $table" | wc -l) - 1 )) 
   (e $table@$database: $count rows and $column columns;
@@ -2353,7 +2369,10 @@ ssse() {
 
 # Start java services
 sts() {
+  pwd=$(pwd)
+  mwk
   evn $SV/$SITE_NAME/current/bin/startservers.sh
+  o $pwd
 }
 
 # Stop java services
@@ -2738,6 +2757,7 @@ mwk() {
 # Restore MAP QA ISAM dataset
 rest() {
   mds
+  r *
   scp -r "ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1/*" .
 }
 
