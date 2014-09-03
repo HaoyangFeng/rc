@@ -179,6 +179,7 @@ aliases = {
   glenys = "q \"Glenys Earle\"";
   kevin = "q \"Kevin Chan\"";
   jason = "q \"Jason Zhang\"";
+  yukio= "q \"yukio.fukuzawa@kiwiim.kiwiplan.co.nz/Home\"";
   x = "win close";
 };
 

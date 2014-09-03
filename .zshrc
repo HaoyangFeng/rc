@@ -1605,6 +1605,7 @@ tn() {
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
+        st) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         *) echo Done nothing.;;
     esac
@@ -1654,7 +1655,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/GP/Kansas
+export CDS=/KIWI/datasets/rest/multipic
 export MODE=VUE
 
 # Selecting the development mode
@@ -1939,6 +1940,7 @@ sqli() {
       e Cannot find $sqlfile
     fi
   done
+  wt "sqli [DONE]"
 }
 
 # Export SQL database to script
@@ -1952,6 +1954,7 @@ sqlo() {
     sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
     mysqldump --skip-tz-utc -uroot -proot $SQL_PREFIX$db > $sqlfile
   done
+  wt "sqlo [DONE]"
 }
 
 # Show SQL process list
@@ -2144,12 +2147,12 @@ st() {
     git status
   fi
   if [ -d .svn ]; then
-    svn status
+    pn st "svn status"
   fi
 }
 
 stm() {
-  st | g ^M
+  svn st | g ^M
 }
 
 dt() {
@@ -2286,6 +2289,8 @@ note() {
 
 #### Java Development {{{
 
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
@@ -2354,9 +2359,9 @@ wk() {
 }
 
 sss() {
-  if [[ $(pf jdk java jini | wc -l) == 0 ]]; then
+  if [[ $(pf jvm java jini | wc -l) == 0 ]]; then
     e DOWN
-  elif [[ $(pf jdk java tomcat jini | wc -l) == 1 ]]; then
+  elif [[ $(pf jvm java tomcat jini | wc -l) == 1 ]]; then
     e UP
   else
     e STARTING
@@ -2377,7 +2382,7 @@ sts() {
 
 # Stop java services
 sps() {
-  pk jdk java $SITE_NAME
+  pk jvm java $SITE_NAME
 }
 
 dps() {
@@ -2430,6 +2435,12 @@ lg() {
   else
     tail -f logs/$1*.log.txt
   fi
+}
+
+# Java Development: Log Error
+# lge : Tail logs and monitor for errors
+lge() {
+  lg | g Exception
 }
 
 # Start tomcat debug
@@ -2703,8 +2714,8 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=7.80_01oct2013
-export MAP_REV=7.80_01oct2013
+export MAP_REV=7.90_01apr2014
+export MAP_REV=7.90_01apr2014
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
@@ -3013,7 +3024,7 @@ fi
 if [ -d "~/.local/bin" ] ; then
     PATH="~/.local/bin:$PATH"
 fi
-PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
+#PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
 PATH=$PATH:~/projects/maven-misc/bin
 PATH=$PATH:/usr/sbin
 # }}}
