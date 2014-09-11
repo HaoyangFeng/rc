@@ -377,6 +377,7 @@ export COMMON=$MOS_ROOT/common
 export SANDBOX=$MOS_ROOT/sandbox
 export NOTE=$MOS_ROOT/note
 export MOS_BIN=$MOS_ROOT/bin
+export MOS_LIB=$MOS_ROOT/lib
 export MNT=$MOS_ROOT/mnt
 
 export TMP=$WORK/.tmp
@@ -2289,7 +2290,7 @@ note() {
 
 #### Java Development {{{
 
-export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+export JAVA_HOME=/usr/lib/jvm/java-6-oracle
 
 # Java Navigation {{{
 
@@ -2483,7 +2484,7 @@ cmp() {
 # jco mes-8.0 : Check out mes-8.0 projects
 jco() {
   vue
-  pj
+  pjr
   mvn project:workspace << EOF
 $SVN/projects/$1
 
@@ -3027,6 +3028,10 @@ fi
 #PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
 PATH=$PATH:~/projects/maven-misc/bin
 PATH=$PATH:/usr/sbin
+
+PERL_MB_OPT="--install_base \"/home/haoyang.feng/perl5\""; export PERL_MB_OPT;
+PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
+
 # }}}
 
 #}}}

@@ -179,7 +179,7 @@ aliases = {
   glenys = "q \"Glenys Earle\"";
   kevin = "q \"Kevin Chan\"";
   jason = "q \"Jason Zhang\"";
-  yukio= "q \"yukio.fukuzawa@kiwiim.kiwiplan.co.nz/Home\"";
+  yukio = "q \"yukio.fukuzawa@kiwiim.kiwiplan.co.nz/Home\"";
   x = "win close";
 };
 
@@ -305,6 +305,7 @@ settings = {
     real_name = "Haoyang  Feng";
     user_name = "haoyang.feng";
     nick = "haoyang.feng";
+    timestamp_format = "%H:%M";
   };
   "fe-text" = { actlist_sort = "refnum"; };
   "fe-common/core" = {
@@ -330,3 +331,4 @@ windows = {
   };
 };
 mainwindows = { 1 = { first_line = "1"; lines = "47"; }; };
+logs = { };
