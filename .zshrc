@@ -1668,7 +1668,7 @@ export MODE=VUE
 
 # Selecting the development mode
 mode() {
-  menu "echo 'VUE\nMAP'"
+  menu "echo 'VUE\nMAP\nListSum'"
   crc MODE $menu
 }
 
