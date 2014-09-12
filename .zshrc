@@ -358,6 +358,9 @@ setopt HIST_IGNORE_SPACE
 
 MSH_LS_AUTO_MODE=false
 MSH_AUTO_EXCLUDE=true
+MSH_AUTO_EXCLUDE_GLIST=".svn,testsrc,target,.classpath,node_modules"
+MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
+MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules"
 
 # }}}
 
@@ -948,13 +951,13 @@ gv() {
 gr() {
   if [ "$2" = "" ]; then
     if $MSH_AUTO_EXCLUDE; then
-      pn g "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
+      pn g "grep --color=always -EirnI --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
     else
       pn g "grep --color=always -EirnI \"$1\" ."
     fi
   else
     if $MSH_AUTO_EXCLUDE; then
-      pn g "grep --color=always -EirnI --include=\"$2\" --exclude-dir={.svn,testsrc,target,.classpath} \"$1\" ."
+      pn g "grep --color=always -EirnI --include=\"$2\" --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
     else
       pn g "grep --color=always -EirnI --include=\"$2\" \"$1\" ."
     fi
@@ -1024,7 +1027,7 @@ fl() {
 # Find by full file name
 f() {
   if $MSH_AUTO_EXCLUDE; then
-    pn f "find $2 -regex '.*/$1' ! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*' ${@:3}"
+    pn f "find $2 -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
   else
     pn f "find $2 -regex '.*/$1' ${@:3}"
   fi
@@ -1125,7 +1128,11 @@ pbr() {
 
 # Tree
 t() {
-  pn t "tree -f --noreport $@"
+  if $MSH_AUTO_EXCLUDE; then
+    pn t "tree -f --noreport $@ $MSH_AUTO_EXCLUDE_TLIST"
+  else
+    pn t "tree -f --noreport $@"
+  fi
 }
 
 tl() {
@@ -2186,8 +2193,15 @@ ci() {
   fi
 }
 
+cip() {
+  ci $1
+  if [ -d .git ]; then
+    git push
+  fi
+}
+
 # Java Commit
-# jci "Comment" 7.70 7.70.2 : Commit with "Comment" for the current rev, merging to 7.70 and 7.70.2
+# jci "Comment" : Commit with "Comment" for the current rev, merging to revisions in $MERGEREV
 jci() {
   wt_lock "Committing"
   pj
@@ -2197,10 +2211,10 @@ jci() {
   up
   o ${externals[1]}
   merge_to_rev=$(svnlog haoyang | head -2 | tail -1 | cut -d " " -f 1 | cut -c2-)
-  for rev in ${@:2}; do
+  for rev in $MERGEREV; do
     e --- Merging to $rev..
     pjr
-    o $JPD-$rev
+    o $rev
     up
     for external in $externals; do
       o $external
@@ -2290,13 +2304,14 @@ note() {
 
 #### Java Development {{{
 
-export JAVA_HOME=/usr/lib/jvm/java-6-oracle
+export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
 export JPJ=tss-7.90.3
 export JPD=$(lnode $JPJ - 1)
+MERGEREV=("tss-7.95.2" "mes-8.0" "mes-8.0.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
 export JHD=mes-8.0
 export JMB=mes-8.0
@@ -2494,7 +2509,7 @@ EOF
 
 jpj() {
   vue
-  menu 'svn ls $SVN/projects | gv master | g "\-(7)" | sed "s/\///"'
+  menu 'svn ls $SVN/projects | gv master | g '$1' | sed "s/\///"'
   crc JPJ $menu
   if [ -d $PJ_ROOT/$PJ ]; then
     pj
