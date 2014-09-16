@@ -1129,7 +1129,7 @@ pbr() {
 # Tree
 t() {
   if $MSH_AUTO_EXCLUDE; then
-    pn t "tree -f --noreport $@ $MSH_AUTO_EXCLUDE_TLIST"
+    pn t "tree -f --noreport -I \"$MSH_AUTO_EXCLUDE_TLIST\" $@"
   else
     pn t "tree -f --noreport $@"
   fi
@@ -1668,7 +1668,7 @@ export MODE=VUE
 
 # Selecting the development mode
 mode() {
-  menu "echo 'VUE\nMAP\nListSum'"
+  menu "echo 'VUE\nMAP'"
   crc MODE $menu
 }
 
