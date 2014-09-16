@@ -1129,9 +1129,9 @@ pbr() {
 # Tree
 t() {
   if $MSH_AUTO_EXCLUDE; then
-    pn t "tree -f --noreport -I \"$MSH_AUTO_EXCLUDE_TLIST\" $@"
+    pn t "tree -fC --noreport -I \"$MSH_AUTO_EXCLUDE_TLIST\" $@"
   else
-    pn t "tree -f --noreport $@"
+    pn t "tree -fC --noreport $@"
   fi
 }
 
