@@ -2228,12 +2228,14 @@ jci() {
 }
 
 co() {
+  wt_lock "Check out"
   if [[ $1 == *git* ]]; then
     git clone $1
   fi
   if [[ $1 == *svn* ]]; then
     svn co $1
   fi
+  wt_unlock "Check out [DONE]"
 }
 
 up() {
