@@ -1668,7 +1668,7 @@ export MODE=VUE
 
 # Selecting the development mode
 mode() {
-  menu "echo 'VUE\nMAP'"
+  menu "echo 'VUE\nMAP\nSCD'"
   crc MODE $menu
 }
 
@@ -2777,6 +2777,179 @@ export KWSQL_PASS=test
 
 
 alias map="mode <<< 2"
+
+# Go to MAP work directory
+mwk() {
+  o $KIWIWORK
+}
+
+# Restore MAP QA ISAM dataset
+rest() {
+  mds
+  r *
+  scp -r "ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1/*" .
+}
+
+# Restore MAP QA SQL dataset
+restsql() {
+  DIR=$DS/rest/$MAP_DATA_REV
+  if [ ! -f $DIR/test$1.sql ]; then
+    scp ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1.sql $DIR
+  fi
+  lndata $DIR/test$1.sql
+}
+
+
+jip() {
+  mwk
+  jimportpaper
+}
+jib() {
+  mwk
+  jimportboard
+}
+jih() {
+  mwk
+  jimporthistory
+}
+jio() {
+  mwk
+  jimportorder
+}
+jiq() {
+  mwk
+  jimportprogset
+}
+pcs() {
+  mwk
+  wt pcs
+  pcsmenu
+}
+csc() {
+  mwk
+  cscmenu
+}
+xm() {
+  mwk
+  xmgen grp=$1
+}
+ult() {
+  mwk
+  ult00
+}
+rss() {
+  mwk
+  rss01
+}
+xl() {
+  mwk
+  wt xl
+  echo -e "secr8\n" > .secr8
+  xlmain -i .secr8
+  rm .secr8
+}
+
+# }}}
+
+# MAP Setup {{{
+
+# Update MAP rev
+upmap() {
+  cd /KIWI/revisions
+  if [ -d kiwi_$MAP_REV ]; then
+    rm -rf kiwi_$MAP_REV.bak
+    mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
+  fi
+  mkdir kiwi_$MAP_REV
+  cd kiwi_$MAP_REV
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
+  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
+}
+
+# Change MAP rev
+maprev() {
+  menu "echo 'boom_base\nboom_haoyang'"
+  crc MAP_REV_SRC $menu
+  menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
+  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
+  source $ZSHRC
+  rm /kiwi/kiwilink
+  if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
+    upmap
+  fi
+  ln -s /kiwi/revisions/kiwi_$menu /kiwi/kiwilink
+}
+
+# Change MAP rev for dataset restores
+mapdatarev() {
+  menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
+  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
+  source $ZSHRC
+}
+
+# MAP Setup: MAP Work Cleanup
+# mwc : Clean up MAP work directory by removing temp files
+mwc() {
+  rm *.LS
+  rm *.TM
+  rm *.XXX
+  rm *.LOG
+  rm *.log
+  rm *.LG
+  rm *.LG1
+  rm *.OK
+  rm *.LK
+  rm *.lk
+  rm *.TXT
+  rm *.txt
+  rm trim.log.*
+  rm *.out
+  rm core
+  rm SQLERROR.*
+}
+
+# }}}
+
+# MAP Workflow {{{
+
+mgmess() {
+  m
+  pj && rv && up
+  svn merge -c 11111 $SVN/trunk
+  echo pj
+  hd && rv && up
+  echo hd
+}
+
+# }}}
+
+# MAP Build {{{
+
+# MAP Build: MAP Continuous Integration
+# mci : Show the MAP continuous integration status
+mci() {
+  ssh nzboom ls -lrt /src/CI/logs
+}
+
+#}}}
+ 
+#}}}
+
+#### SCD Development {{{
+
+# SCD Navigation {{{
+
+export SPJ_ROOT="$WORK/sycoden"
+export SPJ=listsum
+if [[ $MODE == "SCD" ]]; then
+  export PJ_ROOT=$SPJ_ROOT
+  export PJ=$SPJ
+fi
+
+alias scd="mode <<< 3"
 
 # Go to MAP work directory
 mwk() {
