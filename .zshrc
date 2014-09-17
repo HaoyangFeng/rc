@@ -1664,7 +1664,7 @@ done
 
 export DS=/KIWI/datasets
 export CDS=/KIWI/datasets/rest/multipic
-export MODE=VUE
+export MODE=SCD
 
 # Selecting the development mode
 mode() {
@@ -2943,7 +2943,7 @@ mci() {
 # SCD Navigation {{{
 
 export SPJ_ROOT="$WORK/sycoden"
-export SPJ=listsum
+export SPJ=ListSum
 if [[ $MODE == "SCD" ]]; then
   export PJ_ROOT=$SPJ_ROOT
   export PJ=$SPJ
