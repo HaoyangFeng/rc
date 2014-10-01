@@ -383,13 +383,13 @@ export MOS_BIN=$MOS_ROOT/bin
 export MOS_LIB=$MOS_ROOT/lib
 export MNT=$MOS_ROOT/mnt
 
-export TMP=$WORK/.tmp
-export STDOUT=$TMP/stdout/$$
-export STDERR=$TMP/stderr/$$
-export STDBUF=$TMP/stdbuf/$$
-export MSH_HISTCMD=$TMP/HISTCMD
-export MSH_HISTOPEN=$TMP/HISTOPEN
-export MSH_HISTOPENFILE=$TMP/HISTOPENFILE
+export MOS_TMP=$WORK/.tmp
+export STDOUT=$MOS_TMP/stdout/$$
+export STDERR=$MOS_TMP/stderr/$$
+export STDBUF=$MOS_TMP/stdbuf/$$
+export MSH_HISTCMD=$MOS_TMP/HISTCMD
+export MSH_HISTOPEN=$MOS_TMP/HISTOPEN
+export MSH_HISTOPENFILE=$MOS_TMP/HISTOPENFILE
 
 # }}}
 
@@ -606,24 +606,24 @@ decolor() {
 # Evaluate : Evaluate to Buffer
 # evb : evaluate
 evb() {
-  eval $@ &> $TMP/stdbuf/$$
-  decolor $TMP/stdbuf/$$ > $TMP/stdbuf/$$.nocolor
+  eval $@ &> $MOS_TMP/stdbuf/$$
+  decolor $MOS_TMP/stdbuf/$$ > $MOS_TMP/stdbuf/$$.nocolor
 }
 
 catb() {
-  cat $TMP/stdbuf/$$
+  cat $MOS_TMP/stdbuf/$$
 }
 
 catbnc() {
-  cat $TMP/stdbuf/$$.nocolor
+  cat $MOS_TMP/stdbuf/$$.nocolor
 }
 
 catlb() {
-  catl $TMP/stdbuf/$$ $1
+  catl $MOS_TMP/stdbuf/$$ $1
 }
 
 catlbnc() {
-  catl $TMP/stdbuf/$$.nocolor $1
+  catl $MOS_TMP/stdbuf/$$.nocolor $1
 }
 
 cato() {
@@ -674,12 +674,12 @@ rrc() {
 
 # Configure Zsh
 rc() {
-  echo ":set foldmethod=marker" > $TMP/rc.vi
-  echo "zR/^$1\(" > $TMP/rc1.vi
+  echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
+  echo "zR/^$1\(" > $MOS_TMP/rc1.vi
   if [ "$1" = "" ]; then
-    vi $ZSHRC -s "$TMP/rc.vi"
+    vi $ZSHRC -s "$MOS_TMP/rc.vi"
   else
-    vi $ZSHRC -s "$TMP/rc1.vi"
+    vi $ZSHRC -s "$MOS_TMP/rc1.vi"
   fi
   source $ZSHRC
 }
@@ -992,8 +992,8 @@ gjf() {
   gs "(private|protected|public)[^=]*$1[^\(]*;"
 }
 
-WHC=$TMP/wh/current
-WHH=$TMP/wh/history
+WHC=$MOS_TMP/wh/current
+WHH=$MOS_TMP/wh/history
 
 wh() {
   if [ ! -d $WHH ]; then
@@ -1003,7 +1003,7 @@ wh() {
     mv $WHC $WHH/$(ls -1 $WHH | wc -l)
   fi
   $(whs $1) > WHC
-  cat $TMP/wh/current | nl
+  cat $MOS_TMP/wh/current | nl
 }
 
 whs() {
@@ -1011,7 +1011,7 @@ whs() {
 }
 
 wha() {
-  sed -n "$1"p $TMP/wh/current | cut -d " " -f 2
+  sed -n "$1"p $MOS_TMP/wh/current | cut -d " " -f 2
 }
 
 # }}}
@@ -1146,14 +1146,14 @@ done
 # Tree diff
 tdiff() {
   d $1
-  tree > $TMP/tdiff.1
+  tree > $MOS_TMP/tdiff.1
   d -
   d $2
-  tree > $TMP/tdiff.2
+  tree > $MOS_TMP/tdiff.2
   d -
-  vimdiff $TMP/tdiff.1 $TMP/tdiff.2
-  rm $TMP/tdiff.1
-  rm $TMP/tdiff.2
+  vimdiff $MOS_TMP/tdiff.1 $MOS_TMP/tdiff.2
+  rm $MOS_TMP/tdiff.1
+  rm $MOS_TMP/tdiff.2
 }
 
 function command_not_found_handler() {
@@ -1574,13 +1574,13 @@ sn() {
 }
 
 pn() {
-  echo $1 > $TMP/stdbuf/$$.cmd
+  echo $1 > $MOS_TMP/stdbuf/$$.cmd
   evb ${@:2}
   pg
 }
 
 pnc() {
-  c $TMP/stdbuf/$$.cmd
+  c $MOS_TMP/stdbuf/$$.cmd
 }
 
 fn() {
@@ -1615,6 +1615,7 @@ tn() {
         wh) e wh $(echo $n | cut -d " " -f 1);;
         st) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
+        jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
         *) echo Done nothing.;;
     esac
 }
@@ -1664,7 +1665,7 @@ done
 
 export DS=/KIWI/datasets
 export CDS=/KIWI/datasets/rest/multipic
-export MODE=SCD
+export MODE=VUE
 
 # Selecting the development mode
 mode() {
@@ -2311,7 +2312,7 @@ export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=tss-7.90.3
+export JPJ=tss-7.95.2
 export JPD=$(lnode $JPJ - 1)
 MERGEREV=("tss-7.95.2" "mes-8.0" "mes-8.0.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
@@ -2387,7 +2388,7 @@ sss() {
 }
 
 ssse() {
-  scrond "sss > $TMP/sss"
+  scrond "sss > $MOS_TMP/sss"
 }
 
 # Start java services
@@ -2497,6 +2498,12 @@ cmp() {
 
 # Java Setup {{{
 
+# Java Debug: Debug Java service
+# jdb : Pick Java Service to debug
+jdb() {
+  pn jdb "ls /kiwi/java/sites/tss_7_95_2/current/conf/kiwiplan/jini/*.xml"
+}
+
 # Java Setup: Check out Java project
 # jco mes-8.0 : Check out mes-8.0 projects
 jco() {
@@ -2582,10 +2589,6 @@ jwid() {
 jdi() {
   vds
   sqli $1
-  sv
-  bin/upgrade.sh
-  vds
-  sqlo ${1}upgraded
   if [[ -f time.properties ]]; then
     cp time.properties $SV/$SITE_NAME/current/conf/kiwiplan/time.properties
     cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties
@@ -3080,7 +3083,7 @@ for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs x
 
 # Directories {{{
 
-md $TMP $TMP/stdout $TMP/stdbuf $TMP/stderr
+md $MOS_TMP $MOS_TMP/stdout $MOS_TMP/stdbuf $MOS_TMP/stderr
 md $MNT
 md $TRASH $ARCHIVE
 
