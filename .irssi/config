@@ -32,7 +32,7 @@ servers = (
     address = "kiwiim.kiwiplan.co.nz";
     use_ssl = "yes";
     chatnet = "Kiwiplan";
-    password = "Haofnz09";
+    password = "Haofnz11";
     autoconnect = "yes";
   }
 );
@@ -165,6 +165,7 @@ aliases = {
   sam = "q \"Sam Chang\"";
   edison = "q \"Edison Ouyang\"";
   dave = "q \"Dave Philip\"";
+  craig = "q \"Craig Philip\"";
   jane = "q \"Jane Agnew\"";
   tammy = "q \"Tammy Chee\"";
   michelle = "q \"Michelle Cho\"";
@@ -178,6 +179,7 @@ aliases = {
   martina = "q \"Martina Delany\"";
   glenys = "q \"Glenys Earle\"";
   kevin = "q \"Kevin Chan\"";
+  ana = "q \"Ana Stilinovic\"";
   jason = "q \"Jason Zhang\"";
   yukio = "q \"yukio.fukuzawa@kiwiim.kiwiplan.co.nz/Home\"";
   x = "win close";

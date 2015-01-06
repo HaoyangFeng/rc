@@ -808,14 +808,8 @@ std() {
     tmk Personal
     tmn Personal
     tmw Personal:2 
-    tmw Personal:3
-    tmw Personal:4
-    tmw Personal:5
     tmt Personal:1 "mutt" C-m
     tmt Personal:2 "irssi" C-m
-    tmt Personal:3 "douban.fm" C-m
-    tmt Personal:4 "top" C-m
-    tmt Personal:5 "note main" C-m
     tmg Personal:1
   fi
 
@@ -2312,9 +2306,9 @@ export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=tss-7.95.2
+export JPJ=mes-8.0.1
 export JPD=$(lnode $JPJ - 1)
-MERGEREV=("tss-7.95.2" "mes-8.0" "mes-8.0.1") export MERGEREV
+MERGEREV=("mes-8.0" "mes-8.0.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
 export JHD=mes-8.0
 export JMB=mes-8.0
@@ -2411,11 +2405,17 @@ dps() {
 
 # Start/Stop java services
 ss() {
-  sss=$(decolor <<< $(sss))
-  case $sss in
-    DOWN) sts;;
-    *) sps; sts;;
-  esac
+  if [[ $MODE == "SCD" ]]; then
+    pj
+    o src
+    npm start
+  else
+    sss=$(decolor <<< $(sss))
+    case $sss in
+      DOWN) sts;;
+      *) sps; sts;;
+    esac
+  fi
 }
 
 # Start Scheduler
@@ -2536,7 +2536,7 @@ cplic() {
 jsv() {
   sps
   vue
-  menu 'svn ls $SVN/projects | gv master | g "\-(7)" | sed "s/\///"'
+  menu 'svn ls $SVN/projects | gv master | g '$1' | sed "s/\///"'
   crc JPJ $menu
   if ! sv; then
     jin
@@ -2735,8 +2735,8 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=7.90_01apr2014
-export MAP_REV=7.90_01apr2014
+export MAP_REV=8.00_01oct2014
+export MAP_REV=8.00_01oct2014
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging

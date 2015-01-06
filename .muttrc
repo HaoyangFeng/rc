@@ -5,7 +5,7 @@ set use_from=yes
 
 # IMAP account settings
 set imap_user="haoyang.feng@kiwiplan.co.nz"
-set imap_pass=Haofnz09
+set imap_pass=Haofnz12
 set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
 set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
 set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
@@ -119,13 +119,17 @@ alias martina Martina <martina.delany@kiwiplan.co.nz>
 alias glenys Glenys <glenys.earle@kiwiplan.co.nz>
 alias jason Jason <jason.zhang@kiwiplan.co.nz>
 alias yukio Yukio <yukio.fukuzawa@kiwiplan.co.nz>
+alias craig Craig <craig.philip@kiwiplan.co.nz>
+alias aaron Aaron <aaron.park@kiwiplan.co.nz>
+alias ana Ana <ana.stilinovic@kiwiplan.co.nz>
 alias tssinternal TSS Internal kevin,martina,glenys,janet
+alias starcraft StarCraft edison,lucas,aaron,yukio,craig
 
 # mailing lists we are on (these are regexps!)
 #subscribe "gentoo-.*@gentoo\\.org"
 
 # SMTP mailing configuration (for sending mail)
-set smtp_pass=Haofnz09
+set smtp_pass=Haofnz12
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
 macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"

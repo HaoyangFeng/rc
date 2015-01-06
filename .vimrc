@@ -7,7 +7,7 @@ nnoremap <c-c> :qa!<ENTER>
 set smartindent
 set tabstop=2
 set shiftwidth=2
-set expandtab
+set noexpandtab
 syntax enable
 set background=light
 colorscheme solarized
