@@ -90,19 +90,31 @@ top_prompt() {
   e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
 }
 
+# Window Title
+wt() {
+	if [[ $1 != "" ]]; then
+		wtl $1
+	else
+		wtu
+	fi
+}
+
+# Window Title Lock
 # Set tmux window title and prevent further changes
-wt_lock() {
+wtl() {
+  MSH_WT=true
   if [[ $1 != "" ]]; then
-    wt $1
+    wtt $1
   fi
   MSH_WT=false
 }
 
+# Window Title Unlock
 # Set tmux window title and allow further changes
-wt_unlock() {
+wtu() {
   MSH_WT=true
   if [[ $1 != "" ]]; then
-    wt $1
+    wtt $1
   fi
 }
 
@@ -111,8 +123,8 @@ wt_test() {
   e $MSH_WT
 }
 
-# Set tmux window title
-wt() {
+# Window Title Temporary
+wtt() {
   if $(wt_test); then
     print -Pn "\033k$1\033\\"
   fi
@@ -198,7 +210,7 @@ msh-personality() {
 }
 
 msh-enter() {
-  wt $(lnode $BUFFER " " 1)
+  wtt $(lnode $BUFFER " " 1)
   msh-personality
   LAST_BUFFER=$BUFFER
   LAST_PWD=$(pwd)
@@ -1056,12 +1068,24 @@ c() {
 # Tar
 
 z() {
-  tar cvfz $1.tar.gz *$1*
+	if [[ $1 == "" ]]; then
+		tar cvfz all.tar.gz *
+	elif [[ $2 == "" ]]; then
+		tar cvfz $1.tar.gz $1
+	else
+		tar cvfz $1.tar.gz ${@:2}
+  fi
 }
 
 zr() {
-  tar cvfz $1.tar.gz $1
-  rm -rf $1
+	z $@
+	if [[ $1 == "" ]]; then
+		r *
+	elif [[ $2 == "" ]]; then
+		r $1
+	else
+		r ${@:2}
+  fi
 }
 
 uz() {
@@ -1169,28 +1193,28 @@ l() {
 # la : List almost all files
 la() {
   pn l "ls -ltuhA --color $@ | gv ^total"
-  wt $(rnode $(pwd) "/" 0)
+  wtt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
   pn l "ls -ltuh --color $@ | gv ^total"
-  wt $(rnode $(pwd) "/" 0)
+  wtt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Hidden
 # lh : List hidden files
 lh() {
   pn l "ls -ltuhd --color .*"
-  wt $(rnode $(pwd) "/" 0)
+  wtt $(rnode $(pwd) "/" 0)
 }
 
 # List : List Filtered
 # lf : List files with filename pattern filter
 lf() {
   pn l "ls -ltuhd --color $@"
-  wt $(rnode $(pwd) "/" 0)
+  wtt $(rnode $(pwd) "/" 0)
 }
 
 lfd() {
@@ -1400,7 +1424,7 @@ o() {
   if [[ -d $1 || $1 = "-" ]]; then
     d $1
   elif [[ -f $1 ]]; then
-    wt $(rnode $1 "/" 0)
+    wtt $(rnode $1 "/" 0)
     e $(efp $1) >> $MSH_HISTOPENFILE
     if [[ -x $1 ]]; then
       $1
@@ -1694,12 +1718,12 @@ hd() {
 # Data Set: Change Data Set
 # cds : Change data set
 cds() {
-  wt_lock "Changing dataset"
+  wtl "Changing dataset"
   crc CDS $(pwd)
   rm /kiwi/data
   sc $(pwd)/MAP /kiwi/data
   jdi $1
-  wt_unlock "Changing dataset [DONE]"
+  wtu "Changing dataset [DONE]"
 
 #  if [[ "$TARGET" = *.sql ]]; then
 #    ln -s $DS/sql /kiwi/data
@@ -1943,7 +1967,7 @@ sqli() {
       e Cannot find $sqlfile
     fi
   done
-  wt "sqli [DONE]"
+  wtt "sqli [DONE]"
 }
 
 # Export SQL database to script
@@ -1957,7 +1981,7 @@ sqlo() {
     sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
     mysqldump --skip-tz-utc -uroot -proot $SQL_PREFIX$db > $sqlfile
   done
-  wt "sqlo [DONE]"
+  wtt "sqlo [DONE]"
 }
 
 # Show SQL process list
@@ -2198,7 +2222,7 @@ cip() {
 # Java Commit
 # jci "Comment" : Commit with "Comment" for the current rev, merging to revisions in $MERGEREV
 jci() {
-  wt_lock "Committing"
+  wtl "Committing"
   pj
   up
   externals=("${(@f)$(stm | cut -c9- | cut -c-3)}")
@@ -2219,18 +2243,18 @@ jci() {
     ci $1 $externals
     up
   done
-  wt_unlock "Committing [DONE]"
+  wtu "Committing [DONE]"
 }
 
 co() {
-  wt_lock "Check out"
+  wtl "Check out"
   if [[ $1 == *git* ]]; then
     git clone $1
   fi
   if [[ $1 == *svn* ]]; then
     svn co $1
   fi
-  wt_unlock "Check out [DONE]"
+  wtu "Check out [DONE]"
 }
 
 up() {
@@ -2306,7 +2330,7 @@ export JAVA_HOME=/usr/lib/jvm/java-7-oracle
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=mes-8.0.1
+export JPJ=tssvue
 export JPD=$(lnode $JPJ - 1)
 MERGEREV=("mes-8.0" "mes-8.0.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
@@ -2337,12 +2361,12 @@ alias vue="mode <<< 1"
 sv() {
   o $SV
   if [[ ! -d $SITE_NAME ]]; then
-    wt "sv not found"
+    wtt "sv not found"
     return 1
   fi
   o $SITE_NAME
   o current
-  wt sv
+  wtt sv
 } 
 
 # Go to java service logs directory
@@ -2351,7 +2375,7 @@ svl() {
   o $SITE_NAME
   o current
   o logs
-  wt svl
+  wtt svl
 } 
 
 # Go to java tomcat directory
@@ -2422,9 +2446,9 @@ ss() {
 # ssc : Start TSS scheduler
 ssc() {
   sv
-  wt ssc
+  wtt ssc
   bin/runpcstssscheduler.sh
-  wt "ssc[DONE]"
+  wtt "ssc[DONE]"
 }
 
 
@@ -2825,7 +2849,7 @@ jiq() {
 }
 pcs() {
   mwk
-  wt pcs
+  wtt pcs
   pcsmenu
 }
 csc() {
@@ -2846,7 +2870,7 @@ rss() {
 }
 xl() {
   mwk
-  wt xl
+  wtt xl
   echo -e "secr8\n" > .secr8
   xlmain -i .secr8
   rm .secr8
