@@ -1069,7 +1069,7 @@ c() {
 
 z() {
 	if [[ $1 == "" ]]; then
-		tar cvfz all.tar.gz *
+		tar cvfz $(rnode $(pwd) / 0).tar.gz *
 	elif [[ $2 == "" ]]; then
 		tar cvfz $1.tar.gz $1
 	else
