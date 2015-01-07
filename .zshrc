@@ -102,7 +102,6 @@ wt() {
 # Window Title Lock
 # Set tmux window title and prevent further changes
 wtl() {
-  MSH_WT=true
   if [[ $1 != "" ]]; then
     wtt $1
   fi
