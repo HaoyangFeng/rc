@@ -14,6 +14,7 @@
 # Advanced post-command support
 # Completing running task beeps terminal
 # Command takes precedence over file open
+# Auto clean of STDBUF
 # }}}
 
 #### Keymap {{{
@@ -1410,7 +1411,7 @@ df() {
 # Open : Open File Type (Variable)
 # OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
-OFT=(png eog pdf evince zip uz gz uz jar oj)
+OFT=(png eog jpg eog pdf evince zip uz gz uz jar oj)
 
 # Open : Open
 # o a : Go to into directory or open file in Vi
@@ -2324,12 +2325,12 @@ note() {
 
 #### Java Development {{{
 
-export JAVA_HOME=/usr/lib/jvm/java-7-oracle
+export JAVA_HOME=/usr/lib/jvm/java-6-oracle
 
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=tssvue
+export JPJ=mes-8.0.2
 export JPD=$(lnode $JPJ - 1)
 MERGEREV=("mes-8.0" "mes-8.0.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)

@@ -1,8 +1,9 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_cnt =7
 let g:netrw_dirhist_1='/home/haoyang.feng/.vim'
 let g:netrw_dirhist_2='/home/haoyang.feng/.irssi'
 let g:netrw_dirhist_3='/home'
 let g:netrw_dirhist_4='/home/haoyang.feng/mos/.rc/.pentadactyl'
 let g:netrw_dirhist_5='/home/haoyang.feng/mos/.rc/.irssi/scripts/autorun'
 let g:netrw_dirhist_6='/home/haoyang.feng/.irclogs/Kiwiplan/jason.zhang@kiwiim.kiwiplan.co.nz_Home'
+let g:netrw_dirhist_7='/home/haoyang.feng/mos/.rc/.urxvt/ext'
