@@ -612,7 +612,7 @@ clip() {
 }
 
 decolor() {
-  sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
+  sed "s/\x1B\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,1\}\)\{0,1\}[m|K]//g" $@
 }
 
 # Evaluate : Evaluate to Buffer
@@ -1682,7 +1682,7 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/rest/multipic
+export CDS=/KIWI/datasets/GP/Kansas
 export MODE=VUE
 
 # Selecting the development mode
@@ -2332,7 +2332,7 @@ export JAVA_HOME=/usr/lib/jvm/java-6-oracle
 export JPJ_ROOT=~/projects
 export JPJ=mes-8.0.2
 export JPD=$(lnode $JPJ - 1)
-MERGEREV=("mes-8.0" "mes-8.0.1") export MERGEREV
+MERGEREV=("mes-8.0") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
 export JHD=mes-8.0
 export JMB=mes-8.0
@@ -2759,7 +2759,7 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV=8.00_01oct2014
+export MAP_REV_SRC=aurora
 export MAP_REV=8.00_01oct2014
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
@@ -2787,6 +2787,10 @@ boom_base)
 boom_haoyang)
   export MAP_REV_SRC_SERVER=nzboom
   export MAP_REV_SRC_DIR=~/projects
+  ;;
+aurora)
+  export MAP_REV_SRC_SERVER=aurora
+  export MAP_REV_SRC_DIR=/src
   ;;
 esac
 
@@ -2889,11 +2893,11 @@ upmap() {
   fi
   mkdir kiwi_$MAP_REV
   cd kiwi_$MAP_REV
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
-  scp -r $MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
+  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
+  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
+  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
+  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
+  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
 }
 
 # Change MAP rev
