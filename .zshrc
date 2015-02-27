@@ -380,6 +380,9 @@ MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules"
 
 # Core Environment variables {{{
 
+# OS can be GNU or BSD
+export OS=BSD
+
 export PASS=Haofnz06
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
@@ -402,6 +405,9 @@ export STDBUF=$MOS_TMP/stdbuf/$$
 export MSH_HISTCMD=$MOS_TMP/HISTCMD
 export MSH_HISTOPEN=$MOS_TMP/HISTOPEN
 export MSH_HISTOPENFILE=$MOS_TMP/HISTOPENFILE
+
+export CLICOLOR=1
+export CLICOLOR_FORCE=1
 
 # }}}
 
@@ -612,7 +618,7 @@ clip() {
 }
 
 decolor() {
-  sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
+  sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" $@
 }
 
 # Evaluate : Evaluate to Buffer
@@ -660,7 +666,10 @@ wn() {
 
 pi() {
   e --- Installing $@
-  sudo apt-get install $@
+	case $OS in
+			GNU) sudo apt-get install $@;;
+			BSD) brew install $@;;
+	esac
 }
 
 pr() {
@@ -1192,15 +1201,23 @@ l() {
 # List Utility: List All
 # la : List almost all files
 la() {
-  pn l "ls -ltuhA --color $@ | gv ^total"
-  wtt $(rnode $(pwd) "/" 0)
+	case $OS in
+			GNU) pn l "ls -ltuhA --color $@ | gv ^total"
+					 wtt $(rnode $(pwd) "/" 0);;
+			BSD) pn l "ls -ltuhA $@ | gv ^total"
+					 wtt $(rnode $(pwd) "/" 0);;
+	esac
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "ls -ltuh --color $@ | gv ^total"
-  wtt $(rnode $(pwd) "/" 0)
+	case $OS in
+		GNU) pn l "ls -ltuh --color $@ | gv ^total"
+				 wtt $(rnode $(pwd) "/" 0);;
+		BSD) pn l "ls -ltuh $@ | gv ^total"
+				 wtt $(rnode $(pwd) "/" 0);;
+	esac
 }
 
 # List Utility: List Hidden
