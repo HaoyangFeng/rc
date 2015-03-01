@@ -411,6 +411,14 @@ export CLICOLOR_FORCE=1
 
 # }}}
 
+# OS Specific environment variables {{{
+
+if [[ $OS == "BSD" ]]; then
+	export HOMEBREW_GITHUB_API_TOKEN="e8f1e7cc39091e3114c790cfe2fd7736bdbbebf2"
+fi
+
+# }}}
+
 # Core Aliases {{{
 
 alias ja='mvn clean install'
@@ -3122,7 +3130,13 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # Install Software {{{
 
-for dep (zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip) wn $dep || pi $dep;
+case $OS in
+	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip);;
+	BSD) deps=(zsh tmux vim irssi elinks emacs git tree grc);;
+esac
+for dep in $deps; do
+	wn $dep || pi $dep
+done
 
 # }}}
 
