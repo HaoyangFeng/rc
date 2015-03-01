@@ -406,16 +406,13 @@ export MSH_HISTCMD=$MOS_TMP/HISTCMD
 export MSH_HISTOPEN=$MOS_TMP/HISTOPEN
 export MSH_HISTOPENFILE=$MOS_TMP/HISTOPENFILE
 
-export CLICOLOR=1
-export CLICOLOR_FORCE=1
+[[ $OS == "BSD" ]] && export CLICOLOR_FORCE=1
 
 # }}}
 
 # OS Specific environment variables {{{
 
-if [[ $OS == "BSD" ]]; then
-	export HOMEBREW_GITHUB_API_TOKEN="e8f1e7cc39091e3114c790cfe2fd7736bdbbebf2"
-fi
+[[ $OS == "BSD" ]] && export HOMEBREW_GITHUB_API_TOKEN="e8f1e7cc39091e3114c790cfe2fd7736bdbbebf2"
 
 # }}}
 
@@ -433,6 +430,13 @@ alias beep='paplay $BEEP'
 
 alias bc='bc -l'
 alias emacs='emacs -nw'
+
+case $OS in
+  GNU) alias lscolor='ls -color'
+	     alias lsnocolor='ls --color=none';;
+	BSD) alias lscolor='ls -G'
+	     alias lsnocolor='ls';;
+esac
 
 # }}}
 
@@ -1209,41 +1213,33 @@ l() {
 # List Utility: List All
 # la : List almost all files
 la() {
-	case $OS in
-			GNU) pn l "ls -ltuhA --color $@ | gv ^total"
-					 wtt $(rnode $(pwd) "/" 0);;
-			BSD) pn l "ls -ltuhA $@ | gv ^total"
-					 wtt $(rnode $(pwd) "/" 0);;
-	esac
+  pn l "lscolor -ltuhA $@ | gv ^total"
+	wtt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-	case $OS in
-		GNU) pn l "ls -ltuh --color $@ | gv ^total"
-				 wtt $(rnode $(pwd) "/" 0);;
-		BSD) pn l "ls -ltuh $@ | gv ^total"
-				 wtt $(rnode $(pwd) "/" 0);;
-	esac
+  pn l "lscolor -ltuh $@ | gv ^total"
+  wtt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Hidden
 # lh : List hidden files
 lh() {
-  pn l "ls -ltuhd --color .*"
+  pn l "lscolor -ltuhd .*"
   wtt $(rnode $(pwd) "/" 0)
 }
 
 # List : List Filtered
 # lf : List files with filename pattern filter
 lf() {
-  pn l "ls -ltuhd --color $@"
+  pn l "lscolor -ltuhd $@"
   wtt $(rnode $(pwd) "/" 0)
 }
 
 lfd() {
-  ls -tuhd --color=none ${@:2} | head -$1 | tail -1
+  lsnocolor -tuhd ${@:2} | head -$1 | tail -1
 }
 
 # Shortcut : Shortcut
