@@ -204,6 +204,16 @@ msh-personality() {
 # Reply
   if [[ $BUFFER == $LAST_BUFFER ]]; then
     MSH_REPLY="You're nagging again.."
+  elif [[ $BUFFER == "Hello" ]]; then
+    MSH_REPLY="Hey. By the way - you're hardly this polite. Is everything OK?"
+  elif [[ $LAST_BUFFER == "Hello" && $BUFFER == "No" || $BUFFER == "No" ]]; then
+    MSH_REPLY="Oh.. What's wrong?"
+  elif [[ $LAST_BUFFER == "No" ]]; then
+    MSH_REPLY="OK. Good luck."
+  elif [[ $BUFFER == "I like you" ]]; then
+    MSH_REPLY="Aww.. How sweet of you :)"
+  elif [[ $BUFFER == "I like"* ]]; then
+    MSH_REPLY="I like it too"
   else
     MSH_REPLY="OK"
   fi
@@ -370,9 +380,9 @@ setopt HIST_IGNORE_SPACE
 
 MSH_LS_AUTO_MODE=false
 MSH_AUTO_EXCLUDE=true
-MSH_AUTO_EXCLUDE_GLIST=".svn,testsrc,target,.classpath,node_modules"
+MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
 MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
-MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules"
+MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
 
 # }}}
 
@@ -630,7 +640,7 @@ clip() {
 }
 
 decolor() {
-  sed "s/\x1B\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,1\}\)\{0,1\}[m|K]//g" $@
+  sed "s/\[\([0-9]\{1,2\}\(;[0-9]\{1,2\}\)\{0,1\}\)\{0,1\}[m|K]//g" $@
 }
 
 # Evaluate : Evaluate to Buffer
@@ -1197,7 +1207,6 @@ tdiff() {
 
 function command_not_found_handler() {
   cs
-  echo I don\'t understand: $@
 }
 
 # List Utility : List
@@ -1655,6 +1664,11 @@ tn() {
         st) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
+				br) case $2 in 
+								"") if [[ $n == *remotes*origin* ]]; then e brt $(echo $n | s 's/remotes.origin.//g'); else e sw $n; fi;;
+								d) e brd $(e $n | s 's/\*//g');;
+								r) e brd $(e $n | s 's/\*//g');;
+						esac;;
         *) echo Done nothing.;;
     esac
 }
@@ -1704,7 +1718,7 @@ done
 
 export DS=/KIWI/datasets
 export CDS=/KIWI/datasets/GP/Kansas
-export MODE=VUE
+export MODE=SCD
 
 # Selecting the development mode
 mode() {
@@ -2099,7 +2113,13 @@ rv() {
 # SVN Switch Utility
 # sw 7.72 : Switch the current working copy to branch 7.72
 sw() {
-  svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
+  if [ -d .git ]; then
+		git checkout $1
+		br
+	fi
+  if [ -d .svn ]; then
+		svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
+	fi
 }
 
 # SVN Rollback
@@ -2115,11 +2135,16 @@ rb() {
 # SVN Merge Utility
 # mg 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
 mg() {
-  if [[ $2 == "" ]]; then
-    svn merge -c $1 .
-  else
-    svn merge -c $2 $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
-  fi
+  if [ -d .git ]; then
+		git merge $1
+	fi
+  if [ -d .svn ]; then
+		if [[ $2 == "" ]]; then
+			svn merge -c $1 .
+		else
+			svn merge -c $2 $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+		fi
+	fi
 }
 
 # SVN Merge Out Utility
@@ -2190,6 +2215,66 @@ svndi() {
   svn di -c $1 *
 }
 
+br() {
+	if [ -d .git ]; then
+		pn br "git branch --color -a $@"
+	fi
+}
+
+bru() {
+	if [ -d .git ]; then
+		git push -u origin $(brcur)
+	fi
+}
+
+brt() {
+	if [ -d .git ]; then
+		git checkout -b $1 origin/$1
+		br
+	fi
+}
+
+brn() {
+	if [ -d .git ]; then
+		git checkout -b $@
+	fi
+}
+
+# Repository Branch : Delete
+brd() {
+	if [[ -d .git ]]; then
+		if [[ $1 == $(brcur) ]]; then
+			# Trying to delete current branch, switch to master first
+			git checkout master
+			git branch -d $@
+		else
+			git branch -d $@
+		fi
+	fi
+	br
+}
+
+# Repository Branch : Current 
+# Get current branch name
+brcur() {
+	if [ -d .git ]; then
+		git branch | grep ^\* | cut -d" " -f2
+	fi
+}
+
+# Repository History : Simple
+hss() {
+  if [ -d .git ]; then
+    git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@
+  fi
+}
+	
+hs() {
+  if [ -d .git ]; then
+    git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@
+  fi
+}
+
 st() {
   if [ -d .git ]; then
     git status
@@ -2218,9 +2303,14 @@ cia() {
   fi
 }
 
+todo() {
+	gr "TODO "
+}
+
 ci() {
   if [ -d .git ]; then
     git commit -a -m $1
+		git push
   fi
   if [ -d .svn ]; then
     if [[ $(svn st | g "^C") = "" ]]; then
@@ -2346,7 +2436,7 @@ note() {
 
 #### Java Development {{{
 
-export JAVA_HOME=/usr/lib/jvm/java-6-oracle
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home
 
 # Java Navigation {{{
 
@@ -2453,7 +2543,7 @@ ss() {
   if [[ $MODE == "SCD" ]]; then
     pj
     o src
-    npm start
+		nodemon server.js
   else
     sss=$(decolor <<< $(sss))
     case $sss in
