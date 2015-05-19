@@ -81,14 +81,14 @@ top_prompt() {
   #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   e " ${BRCYAN}MSH-$$${FINISH}"
   e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
-  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
   usr_line_lth=$(echo $usr_line | decolor | wc -c)
   printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
-  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
-  e $BRCYAN---------------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
 }
 
 # Window Title
@@ -284,7 +284,7 @@ zle -N msh-backward
 bindkey "^B" msh-backward
 
 PROMPT="
-${PBRCYAN}---------------------------------------------------------------------------------------------------------------${PFINISH}
+${PBRCYAN}-------------------------------------------------------------------------------------------------------${PFINISH}
 ${PBLUE} USR: ${PFINISH}"
 RPROMPT="${PBRCYAN}%/${PFINISH}"
 
@@ -2292,6 +2292,14 @@ stm() {
   svn st | g ^M
 }
 
+# Repository : Diff Simple
+# rds : Show simple repository diff
+rds() {
+	if [[ -d .git ]]; then
+		git diff $@
+	fi
+}
+
 dt() {
   if [ -d .git ]; then
     git difftool $@
@@ -3221,8 +3229,8 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 # Install Software {{{
 
 case $OS in
-	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip);;
-	BSD) deps=(zsh tmux vim irssi elinks emacs git tree grc);;
+	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
+	BSD) deps=(zsh tmux vim irssi emacs git tree grc ssh-copy-id);;
 esac
 for dep in $deps; do
 	wn $dep || pi $dep
