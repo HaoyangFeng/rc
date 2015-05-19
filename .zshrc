@@ -571,7 +571,7 @@ timestamp() {
 
 # Pager : Pager Size
 # PAGER_SIZE=30 : Set the pager size to 30
-PAGER_SIZE=25
+PAGER_SIZE=15
 
 # Pager : Pager Print
 # pgp : Print the current page
@@ -920,7 +920,7 @@ eve() {
 }
 
 efp() {
-  readlink -f $1
+  echo $PWD/$1
 }
 
 # }}}
@@ -1485,10 +1485,10 @@ oj() {
 # ohf histfile [keyword] : Show open history for a specific history file
 ohf() {
   if [[ $2 == "" ]]; then
-    pn oh "tac $1 | uniq -c"
+    pn oh "tail -r $1 | uniq -c"
     #| sort | uniq -c | sort -nr"
   else
-    pn oh "tac $1"
+    pn oh "tail -r $1"
   fi
 }
 
@@ -1508,14 +1508,14 @@ ofh() {
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
+    pn ch "tail -r $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
   else
-    pn ch "tac $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
+    pn ch "tail -r $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
   fi
 }
 
 chd() {
-  tac $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq -c | head -$2 | tail -1 | cut -c9-
+  tail -r $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq | head -$2 | tail -1
 }
 
 # History : History Clear
