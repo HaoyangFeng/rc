@@ -1,6 +1,7 @@
 "call pathogen#infect()
 "call togglebg#map("<F5>")
 nnoremap <c-c> :qa!<ENTER>
+nnoremap <NUL> :wq!<ENTER>
 
 ::filetype plugin on
 

@@ -1348,7 +1348,10 @@ pf() {
 # Process : Process Kill
 # pk java tss : Kill all processes that includes "java" and "tss" in its details, order significant
 pk() {
-  pf $@ | cut -d " " -f 2 | xargs kill -9
+	case $OS in
+			GNU) pf $@ | cut -d " " -f 2 | xargs kill -9;;
+			BSD) pf $@ | cut -d " " -f 4 | xargs kill -9;;
+	esac
 }
 
 # }}}
@@ -2238,6 +2241,7 @@ brn() {
 	if [ -d .git ]; then
 		git checkout -b $@
 	fi
+	br
 }
 
 # Repository Branch : Delete
@@ -2246,9 +2250,9 @@ brd() {
 		if [[ $1 == $(brcur) ]]; then
 			# Trying to delete current branch, switch to master first
 			git checkout master
-			git branch -d $@
+			git branch -D $@
 		else
-			git branch -d $@
+			git branch -D $@
 		fi
 	fi
 	br
