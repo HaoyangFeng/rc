@@ -515,7 +515,7 @@ esk() {
 # Start second-level cron job
 # TODO Make friendly with pager
 scron() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     SLEEP_TIME=1;
   else
     SLEEP_TIME=$2
@@ -531,7 +531,7 @@ scron() {
 # Start second-level cron daemon
 # TODO Make friendly with pager
 scrond() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     SLEEP_TIME=1;
   else
     SLEEP_TIME=$2
@@ -719,7 +719,7 @@ rrc() {
 rc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   echo "zR/^$1\(" > $MOS_TMP/rc1.vi
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     vi $ZSHRC -s "$MOS_TMP/rc.vi"
   else
     vi $ZSHRC -s "$MOS_TMP/rc1.vi"
@@ -840,14 +840,14 @@ std() {
 
   rrc
 
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     tmux kill-server
   fi
 
   BASE="$HOME"
   cd $BASE
 
-  if [[ "$1" = "" || "$1" = "1" ]]; then
+  if [[ $1 = "" || $1 = "1" ]]; then
     tmk Personal
     tmn Personal
     tmw Personal:2 
@@ -856,14 +856,14 @@ std() {
     tmg Personal:1
   fi
 
-  if [[ "$1" = "" || "$1" = "2" ]]; then
+  if [[ $1 = "" || $1 = "2" ]]; then
     tmk Browsing
     tmn Browsing
     tmt Browsing:1 "pj" C-m
     tmg Browsing:1
   fi
 
-  if [[ "$1" = "" || "$1" = "3" ]]; then
+  if [[ $1 = "" || $1 = "3" ]]; then
     tmk Primary
     tmn Primary
     tmw Primary:2
@@ -874,7 +874,7 @@ std() {
     tmg Primary:1
   fi
 
-  if [[ "$1" = "" || "$1" = "4" ]]; then
+  if [[ $1 = "" || $1 = "4" ]]; then
     tmk Secondary
     tmn Secondary -n Secondary
   fi
@@ -891,7 +891,7 @@ dh() {
 }
 
 clog() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     #pn "for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d \" \" -f 8 | grep \"\/[^\/]*@\" | nl"
     pn clog "for file in $\(ls\); do echo $file; done"
   else
@@ -986,7 +986,7 @@ gv() {
 }
 
 gr() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     if $MSH_AUTO_EXCLUDE; then
       pn g "grep --color=always -EirnI --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
     else
@@ -1002,7 +1002,7 @@ gr() {
 }
 
 gs() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     pn gs "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} --exclude=\"*.sql\" \"$1\" ."
   else
     pn gs "grep --color=always -EirnI --exclude-dir={.svn,testsrc,target,.classpath} --include=\"*$2*\" \"$1\" ."
@@ -1010,7 +1010,7 @@ gs() {
 }
 
 gsa() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     eval $(echo "grep --color-always -EirnI --exclude-dir={.svn,testsrc,target,.classpath,inf} \"$1\" .") | nl
   else
     eval $(echo "grep --color-always -EirnI --exclude-dir={.svn,testsrc,target,.classpath,inf} --include=\"*$2*\" \"$1\" .") | nl
@@ -1033,10 +1033,10 @@ WHC=$MOS_TMP/wh/current
 WHH=$MOS_TMP/wh/history
 
 wh() {
-  if [ ! -d $WHH ]; then
+  if [[ ! -d $WHH ]]; then
     mkdir -p $WHH
   fi
-  if [ -f $WHC ]; then
+  if [[ -f $WHC ]]; then
     mv $WHC $WHH/$(ls -1 $WHH | wc -l)
   fi
   $(whs $1) > WHC
@@ -1048,7 +1048,7 @@ whs() {
 }
 
 wha() {
-  sed -n "$1"p $MOS_TMP/wh/current | cut -d " " -f 2
+  sed -n $1p $MOS_TMP/wh/current | cut -d " " -f 2
 }
 
 # }}}
@@ -1072,7 +1072,7 @@ f() {
 
 # Find by partial name
 fp() {
-  f ".*"$1"[^\/]*" ${@:2}
+  f ".*$1[^\/]*" ${@:2}
 }
 
 # Find source by full PascalCase abbreviated name
@@ -1140,7 +1140,7 @@ uz() {
 
 # Back Up : Back Up
 bu() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     cp -r $1 $1.bak
   else
     cp -r $1 $1.bak.$2
@@ -1326,7 +1326,7 @@ ra() {
 # Cat Utility: Cat Line
 # catl file 1 : Cat file line 1
 catl() {
-  sed -n "$2"p $1
+  sed -n $2p $1
 }
 
 # Write Utility: Insert Line
@@ -1363,7 +1363,7 @@ pk() {
 # rmc a:/b/ c:/d *.zip: Remotely copy *.zip from a:/b to c:/d
 rmc() {
   if [[ $3 != "" ]]; then
-    rsync -rLpt $1 $2 --include="$3" --exclude="*"
+    rsync -rLpt $1 $2 --include=$3 --exclude="*"
   else
     rsync -rLpt $1 $2
   fi
@@ -1374,7 +1374,7 @@ rmc() {
 # rmu a:/b/ c:/d *.zip: Remotely update c:/d to match a:/b/*.zip
 rmu() {
   if [[ $3 != "" ]]; then
-    rsync -rLpt --delete-excluded $1 $2 --include="$3" --exclude="*"
+    rsync -rLpt --delete-excluded $1 $2 --include=$3 --exclude="*"
   else
     rsync -rLpt --delete-excluded $1 $2
   fi
@@ -1426,7 +1426,7 @@ du() {
   #/usr/bin/du --max-depth=1 | sort -nr | cut -f2 | xargs -d '\n' du -sh
 
   # Schwartzian transform
-  /usr/bin/du -h --max-depth=1 | perl -e '%byte_order = ( G => -3, M => -2, K => -1, k => -1 ); print map { $_->[0] } sort { $byte_order{$a->[1]} <=> $byte_order{$b->[1]} || $b->[2] <=> $a->[2] } map { [ $_, /([MGK])/, /(\d+)/ ] } <>' | head -30
+  /usr/bin/du -h --max-depth=1 | perl -e '%byte_order = ( G => -3, M => -2, K => -1, k => -1 ); print map { $_->[0] } sort { $byte_order{$a->[1]} <=> $byte_order{$b->[1]} || $b->[2] <=> $a->[2] } map { [[ $_, /([MGK])/, /(\d+)/ ]] } <>' | head -30
 }
 
 # Disk : Free
@@ -1532,7 +1532,7 @@ hc() {
 
 # Vi
 v() {
-  if [ "$2" = "" ]; then
+  if [[ $2 = "" ]]; then
     vi $1
     pg
   else
@@ -1644,7 +1644,7 @@ tn() {
     case $(pnc) in
         d) e cd +$1;;
         t) e o $(rnode $n " " 0);;
-        note) e o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        note) e o $(rpc | sed -n $1p | cut -d "-" -f 3 | cut -d " " -f 2);;
         l) case $2 in 
                r) e r "$(echo $n | awk '{print $9}')";;
                "") e o "$(echo $n | awk '{print $9}')";;
@@ -1732,7 +1732,7 @@ mode() {
 # Go to projects directory, depending on the development mode
 pj() {
   cd $PJ_ROOT
-  if [ -d $PJ ]; then
+  if [[ -d $PJ ]]; then
     o $PJ
   fi
 }
@@ -1744,7 +1744,7 @@ pjr() {
 # Go to the head project directory, depending on the development mode
 hd() {
   cd $PJ_ROOT
-  if [ -d $HD ]; then
+  if [[ -d $HD ]]; then
     cd $HD
   fi
 }
@@ -1825,9 +1825,9 @@ angeline() {
 # Login to nzboom
 # If $1 is defined then upload the file to nzboom shared folder
 boom() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     ssh nzboom
-  elif [ -d $1 ]; then
+  elif [[ -d $1 ]]; then
     if [[ $2 = "" ]]; then
       scp -r $1 nzboom:~/shared
     else
@@ -1852,7 +1852,7 @@ support() {
 boomdl() {
   cdd boom
   rm -rf *
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     scp -r "nzboom:~/shared/*" .
   else
     scp -r "nzboom:~/shared/$1" .
@@ -1942,7 +1942,7 @@ sci() {
 
 # Run SQL with credentials and database
 sql() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     DB=""
   else
     DB=${SQL_PREFIX}$1
@@ -2061,7 +2061,7 @@ sqlqe() {
 # SQL Utility: Explain a SQL table
 # sqlt
 sqlt() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     while read table; do
       sqlte $table
     done
@@ -2102,10 +2102,10 @@ revert() {
 # SVN Revert Utility
 # rv : Revert all changes and remove unversioned files
 rv() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git reset --hard
   fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
     svn -R revert .
     svn st
     svn st | g \? | awk '{print $2}' | xargs rm -rf
@@ -2116,11 +2116,11 @@ rv() {
 # SVN Switch Utility
 # sw 7.72 : Switch the current working copy to branch 7.72
 sw() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
 		git checkout $1
 		br
 	fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
 		svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
 	fi
 }
@@ -2138,10 +2138,10 @@ rb() {
 # SVN Merge Utility
 # mg 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
 mg() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
 		git merge $1
 	fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
 		if [[ $2 == "" ]]; then
 			svn merge -c $1 .
 		else
@@ -2165,7 +2165,7 @@ mi() {
   crc MMB $MPJ
   crc JMB $JPJ
   hd
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     svn merge --reintegrate $PJ_ROOT/$MB
   else
     svn merge -c r$1 $PJ_ROOT/$MB
@@ -2182,7 +2182,7 @@ tca() {
 # tcar : Resolve tree conflicts for "local add, incoming add" by accepting local, where the files are identical
 tcar() {
   for tc in $(svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9-); do
-    if [ "$(diff $tc $PJ_ROOT/$MB/$tc)" = "" ]; then
+    if [[ "$(diff $tc $PJ_ROOT/$MB/$tc)" = "" ]]; then
       svn resolve --accept working $tc
     fi
   done
@@ -2207,7 +2207,7 @@ svncomment() {
 }
 
 svnlog() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     svn log | head -5000 | head -30
   else
     svn log | head -5000 | g -C2 $1 | head -30
@@ -2219,26 +2219,26 @@ svndi() {
 }
 
 br() {
-	if [ -d .git ]; then
+	if [[ -d .git ]]; then
 		pn br "git branch --color -a $@"
 	fi
 }
 
 bru() {
-	if [ -d .git ]; then
+	if [[ -d .git ]]; then
 		git push -u origin $(brcur)
 	fi
 }
 
 brt() {
-	if [ -d .git ]; then
+	if [[ -d .git ]]; then
 		git checkout -b $1 origin/$1
 		br
 	fi
 }
 
 brn() {
-	if [ -d .git ]; then
+	if [[ -d .git ]]; then
 		git checkout -b $@
 	fi
 	br
@@ -2261,29 +2261,29 @@ brd() {
 # Repository Branch : Current 
 # Get current branch name
 brcur() {
-	if [ -d .git ]; then
+	if [[ -d .git ]]; then
 		git branch | grep ^\* | cut -d" " -f2
 	fi
 }
 
 # Repository History : Simple
 hss() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@
   fi
 }
 	
 hs() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@
   fi
 }
 
 st() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git status
   fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
     pn st "svn status"
   fi
 }
@@ -2301,16 +2301,16 @@ rds() {
 }
 
 dt() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git difftool $@
   fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
     svn diff $@
   fi
 }
 
 cia() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git commit -a --amend -m $1
   fi
 }
@@ -2320,13 +2320,13 @@ todo() {
 }
 
 ci() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git commit -a -m $1
 		git push
   fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
     if [[ $(svn st | g "^C") = "" ]]; then
-      svn ci ${@:2} -m "$1"
+      svn ci ${@:2} -m $1
     else
       echo ci: Couldn\'t commit due to following conflicts
       svn st | g "^C"
@@ -2337,7 +2337,7 @@ ci() {
 
 cip() {
   ci $1
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git push
   fi
 }
@@ -2381,10 +2381,10 @@ co() {
 }
 
 up() {
-  if [ -d .git ]; then
+  if [[ -d .git ]]; then
     git pull
   fi
-  if [ -d .svn ]; then
+  if [[ -d .svn ]]; then
     svn up
   fi
 }
@@ -2421,7 +2421,7 @@ dm() {
 # Go to the desktop work directory
 work() {
   o $MOS_ROOT/work
-  if [[ "$1" != "" ]]; then
+  if [[ $1 != "" ]]; then
     d $1
   fi
 }
@@ -2435,7 +2435,7 @@ sb() {
 # Edit note
 note() {
   cd $NOTE
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     t -rt
   else
     vi $1
@@ -2578,7 +2578,7 @@ ssc() {
 # Go to java installers directory
 jind() {
   o $IN
-  if [ -d $SITE_NAME ]; then
+  if [[ -d $SITE_NAME ]]; then
     o $SITE_NAME
   fi
 }
@@ -2596,7 +2596,7 @@ rmsite() {
 # Java Development: Log
 # lg : Tail logs
 lg() {
-  if [[ "$1" = "" ]]; then
+  if [[ $1 = "" ]]; then
     tail -f logs/*
   else
     tail -f logs/$1*.log.txt
@@ -2667,7 +2667,7 @@ jpj() {
   vue
   menu 'svn ls $SVN/projects | gv master | g '$1' | sed "s/\///"'
   crc JPJ $menu
-  if [ -d $PJ_ROOT/$PJ ]; then
+  if [[ -d $PJ_ROOT/$PJ ]]; then
     pj
   else
     jco $menu
@@ -2724,7 +2724,7 @@ jid() {
 
 jwid() {
   d $IN/$JPJ
-  if [ -d windows ]; then
+  if [[ -d windows ]]; then
     rm -rf windows
   fi
   scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
@@ -2947,7 +2947,7 @@ rest() {
 # Restore MAP QA SQL dataset
 restsql() {
   DIR=$DS/rest/$MAP_DATA_REV
-  if [ ! -f $DIR/test$1.sql ]; then
+  if [[ ! -f $DIR/test$1.sql ]]; then
     scp ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1.sql $DIR
   fi
   lndata $DIR/test$1.sql
@@ -3010,7 +3010,7 @@ xl() {
 # Update MAP rev
 upmap() {
   cd /KIWI/revisions
-  if [ -d kiwi_$MAP_REV ]; then
+  if [[ -d kiwi_$MAP_REV ]]; then
     rm -rf kiwi_$MAP_REV.bak
     mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
   fi
@@ -3031,7 +3031,7 @@ maprev() {
   sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
   source $ZSHRC
   rm /kiwi/kiwilink
-  if [ ! -d /kiwi/revisions/kiwi_$menu ]; then
+  if [[ ! -d /kiwi/revisions/kiwi_$menu ]]; then
     upmap
   fi
   ln -s /kiwi/revisions/kiwi_$menu /kiwi/kiwilink
@@ -3145,7 +3145,7 @@ tda() {
 # Todo Utility: Add to the middle of the TODO list
 tdi() {
   task="${@:2}"
-  sed -i "$1"i"$task" $TD_TODO
+  sed -i $1i"$task" $TD_TODO
 }
 
 # Todo Utility: List tasks on the TODO list
@@ -3155,7 +3155,7 @@ tdl() {
 
 # Todo Utility: Delete current task
 tdd() {
-  if [ "$1" = "" ]; then
+  if [[ $1 = "" ]]; then
     line="1"
   else
     line=$1
@@ -3207,10 +3207,10 @@ PATH="$PATH:$MOS_BIN"
 if [[ -d "~/projects/maven-misc/bin" ]] ; then
     PATH="~/projects/maven-misc/bin:$PATH"
 fi
-if [ -d "/usr/local/java/maven3/bin" ] ; then
+if [[ -d "/usr/local/java/maven3/bin" ]] ; then
     PATH="/usr/local/java/maven3/bin:$PATH"
 fi
-if [ -d "~/.local/bin" ] ; then
+if [[ -d "~/.local/bin" ]] ; then
     PATH="~/.local/bin:$PATH"
 fi
 #PATH="$MOS_BIN/Sencha/Cmd/3.0.0.250:$PATH"
