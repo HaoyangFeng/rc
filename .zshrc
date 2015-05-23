@@ -214,6 +214,8 @@ msh-personality() {
     MSH_REPLY="Aww.. How sweet of you :)"
   elif [[ $BUFFER == "I like"* ]]; then
     MSH_REPLY="I like it too"
+  elif [[ $BUFFER == *"Haoyang"* ]]; then
+    MSH_REPLY="I think Haoyang is a genius."
   else
     MSH_REPLY="OK"
   fi
@@ -1107,27 +1109,22 @@ std() {
   if [[ $1 = "" || $1 = "1" ]]; then
     tmk Personal
     tmn Personal
-    tmw Personal:2 
-    tmt Personal:1 "mutt" C-m
-    tmt Personal:2 "irssi" C-m
+		tmw Personal:2
+    tmt Personal:1 "note" C-m
+    tmt Personal:2 "work" C-m
     tmg Personal:1
   fi
 
   if [[ $1 = "" || $1 = "2" ]]; then
     tmk Browsing
     tmn Browsing
-    tmt Browsing:1 "pj" C-m
     tmg Browsing:1
   fi
 
   if [[ $1 = "" || $1 = "3" ]]; then
     tmk Primary
     tmn Primary
-    tmw Primary:2
-    tmw Primary:3
-    tmt Primary:1 "note" C-m
-    tmt Primary:2 "work" C-m
-    tmt Primary:3 "pj" C-m
+    tmt Primary:1 "pj" C-m
     tmg Primary:1
   fi
 
@@ -1136,7 +1133,7 @@ std() {
     tmn Secondary -n Secondary
   fi
 
-  tma Personal
+  tma Primary
 }
 
 # }}}
@@ -1818,6 +1815,11 @@ upall() {
 
 # Servers {{{
 
+# Server : hynz
+# hynz : SSH to hynz server
+hynz() {
+	ssh haoyangnz.ddns.net
+}
 
 # Server : Haoyangnz
 # hynz : Connect to haoyangnz
@@ -2461,7 +2463,7 @@ note() {
 
 #### Java Development {{{
 
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home
 
 # Java Navigation {{{
 
@@ -2568,7 +2570,9 @@ ss() {
   if [[ $MODE == "SCD" ]]; then
     pj
     o src
+		wt ss
 		nodemon server.js
+		wt
   else
     sss=$(decolor <<< $(sss))
     case $sss in
@@ -3244,7 +3248,7 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 # TODO coreutils for BSD
 case $OS in
 	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
-	BSD) deps=(zsh tmux vim irssi emacs git tree grc ssh-copy-id);;
+	BSD) deps=(zsh tmux vim irssi emacs git tree grc node neo4j ssh-copy-id);;
 esac
 for dep in $deps; do
 	wn $dep || pi $dep

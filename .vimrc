@@ -1,5 +1,5 @@
-"call pathogen#infect()
-"call togglebg#map("<F5>")
+call pathogen#infect()
+call togglebg#map("<F5>")
 nnoremap <c-c> :qa!<ENTER>
 nnoremap <NUL> :wq!<ENTER>
 
@@ -11,7 +11,7 @@ set shiftwidth=2
 set noexpandtab
 syntax enable
 set background=light
-"colorscheme solarized
+colorscheme solarized
 
 let fortran_fold=1
 let fortran_fold_conditionals=1
