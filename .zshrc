@@ -1815,12 +1815,6 @@ upall() {
 
 # Servers {{{
 
-# Server : hynz
-# hynz : SSH to hynz server
-hynz() {
-	ssh haoyangnz.ddns.net
-}
-
 # Server : Haoyangnz
 # hynz : Connect to haoyangnz
 hynz() {
