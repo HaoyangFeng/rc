@@ -442,10 +442,10 @@ alias bc='bc -l'
 alias emacs='emacs -nw'
 
 case $OS in
-  GNU) alias lscolor='ls -color'
+  GNU) alias lscolor='ls --color'
 	     alias lsnocolor='ls --color=none';;
-	BSD) alias lscolor='ls -G'
-	     alias lsnocolor='ls';;
+	BSD) alias lscolor='gls --color'
+	     alias lsnocolor='gls --color=none';;
 esac
 
 # }}}
@@ -701,6 +701,256 @@ pr() {
 
 # }}}
 
+# File {{{
+
+# Cat
+c() {
+  if [[ -f $1 ]]; then
+    cat $1;
+  fi
+}
+
+# Tar
+
+z() {
+	if [[ $1 == "" ]]; then
+		tar cvfz $(rnode $(pwd) / 0).tar.gz *
+	elif [[ $2 == "" ]]; then
+		tar cvfz $1.tar.gz $1
+	else
+		tar cvfz $1.tar.gz ${@:2}
+  fi
+}
+
+zr() {
+	z $@
+	if [[ $1 == "" ]]; then
+		r *
+	elif [[ $2 == "" ]]; then
+		r $1
+	else
+		r ${@:2}
+  fi
+}
+
+uz() {
+  for target in $@; do
+    echo $target
+    if [[ $target = *.tar.gz ]]; then
+      tar xvfz $target
+      r $target
+    elif [[ $target = *.gz ]]; then
+      gunzip $target
+      r $target
+    elif [[ $target = *.tar ]]; then
+      tar xvf $target
+      r $target
+    elif [[ $target == *.bz2 ]]; then
+      bunzip2 $target
+      r $target
+    fi
+  done
+}
+
+# Back Up : Back Up
+bu() {
+  if [[ $2 = "" ]]; then
+    cp -r $1 $1.bak
+  else
+    cp -r $1 $1.bak.$2
+  fi
+  l
+}
+
+# Back Up : Back Up Remove
+bur() {
+  mv $1 $1.bak
+}
+
+# TODO pbr
+# Back Up : Put Back
+pb() {
+  r $1
+  if [[ $2 == "" ]]; then
+    cp -r $1.bak $1
+  else
+    cp -r $1.bak.$2 $1
+  fi
+}
+
+pbr() {
+  r $1
+  m $1.bak $1
+}
+
+# TODO
+# Directory history
+#d() {
+#  pn d "dirs -v | head -10"
+#}
+
+# Tree
+t() {
+  if $MSH_AUTO_EXCLUDE; then
+    pn t "tree -fC --noreport -I \"$MSH_AUTO_EXCLUDE_TLIST\" $@"
+  else
+    pn t "tree -fC --noreport $@"
+  fi
+}
+
+tl() {
+  pn t "tree -f --noreport -L $1 ${@:2}"
+}
+
+for ((i = 0; i < 100; i++)); do
+  alias t$i="tl $i"
+done
+
+# Tree diff
+tdiff() {
+  d $1
+  tree > $MOS_TMP/tdiff.1
+  d -
+  d $2
+  tree > $MOS_TMP/tdiff.2
+  d -
+  vimdiff $MOS_TMP/tdiff.1 $MOS_TMP/tdiff.2
+  rm $MOS_TMP/tdiff.1
+  rm $MOS_TMP/tdiff.2
+}
+
+function command_not_found_handler() {
+  cs
+}
+
+# List Utility : List
+# l : List files in full or brief depending on total number of files
+l() {
+  if $MSH_LS_AUTO_MODE && [[ $(la $@ | wc -l) -lt 30 ]]; then
+    la $@
+  else
+    lb $@
+ fi
+}
+
+# List Utility: List All
+# la : List almost all files
+la() {
+  pn l "lscolor -ltuhA $@ | gv ^total"
+	wtt $(rnode $(pwd) "/" 0)
+}
+
+# List Utility: List Brief
+# lb : List files in brief
+lb() {
+  pn l "lscolor -ltuh $@ | gv ^total"
+  wtt $(rnode $(pwd) "/" 0)
+}
+
+# List Utility: List Hidden
+# lh : List hidden files
+lh() {
+  pn l "lscolor -ltuhd .*"
+  wtt $(rnode $(pwd) "/" 0)
+}
+
+# List : List Filtered
+# lf : List files with filename pattern filter
+lf() {
+  pn l "lscolor -ltuhd $@"
+  wtt $(rnode $(pwd) "/" 0)
+}
+
+lfd() {
+  lsnocolor -tuhd ${@:2} | head -$1 | tail -1
+}
+
+# Shortcut : Shortcut
+# sc a/b : Create shortcut b pointing to a/b (shortcut name is taken from leaf of destination)
+# sc a/b c : Create shortcut c pointing to a/b
+sc() {
+  ln -fs $@
+}
+
+
+# Move : Move
+# m a b c : Move a and b to c
+m() {
+  mv ${@:1:-1} $@[-1]
+  l
+}
+
+# Move : Move Shortcut
+# ml a b c : Move a and b to c, and create symbolic links from a and b to c/a and c/b
+ms() {
+  m $@
+  for file in ${@:1:-1}; do
+    sc $@[-1]/$file
+  done
+  l
+}
+
+export TRASH=$MOS_ROOT/.Trash
+export ARCHIVE=$MOS_ROOT/.Archive
+
+# Remove Utility: Remove
+# r file : Move file to trash
+r() {
+  trash=$TRASH/$(timestamp)
+  md $trash
+  if [[ $1 == "" ]]; then
+    mv * $trash
+  elif [[ -a $1 ]]; then
+    mv $@ $trash
+  fi
+  l
+}
+
+# Remove Utility: Remove Undo TODO Create history aware Undo TODO Doesn't work when removed nested file
+# ru : Undo the last removal
+ru() {
+  m $TRASH/$(ls $TRASH | tail -1)/*(D) .
+}
+
+# Remove Utility: Remove List
+# rl : List files in trash
+rl() {
+  l $TRASH
+}
+
+# Remove Utility: Remove Empty
+# re : Empty files in trash
+re() {
+  rm -rf $TRASH/*
+}
+
+# Remove : Archive
+# ra a : Archive file a
+ra() {
+  archive=$ARCHIVE/$(timestamp)
+  md $archive
+  if [[ $1 == "" ]]; then
+    mv * $archive
+  elif [[ -a $1 ]]; then
+    mv $@ $archive
+  fi
+  l
+}
+
+# Cat Utility: Cat Line
+# catl file 1 : Cat file line 1
+catl() {
+  sed -n $2p $1
+}
+
+# Write Utility: Insert Line
+# ins file "text" : Insert "text" into line 1 of file
+ins() {
+  sed -i "1i$2" $1
+}
+
+# }}}
+
 # Configuration Files {{{
 
 export RC=$MOS_ROOT/.rc
@@ -709,6 +959,13 @@ export VIMRC=$RC/.vimrc
 export TMUXRC=$RC/.tmux.conf
 export MUTTRC=$RC/.muttrc
 export XMODMAP=$RC/.Xmodmap
+export DIRCOLORSRC=$RC/.dir_colors
+
+sc $ZSHRC ~
+sc $VIMRC ~
+sc $TMUXRC ~
+sc $MUTTRC ~
+sc $DIRCOLORSRC ~
 
 # Re-source Zsh
 rrc() {
@@ -1083,256 +1340,6 @@ fa() {
 # Find source by partial PascalCase abbreviated name
 fpa() {
   fps $(pab $1)
-}
-
-# }}}
-
-# File {{{
-
-# Cat
-c() {
-  if [[ -f $1 ]]; then
-    cat $1;
-  fi
-}
-
-# Tar
-
-z() {
-	if [[ $1 == "" ]]; then
-		tar cvfz $(rnode $(pwd) / 0).tar.gz *
-	elif [[ $2 == "" ]]; then
-		tar cvfz $1.tar.gz $1
-	else
-		tar cvfz $1.tar.gz ${@:2}
-  fi
-}
-
-zr() {
-	z $@
-	if [[ $1 == "" ]]; then
-		r *
-	elif [[ $2 == "" ]]; then
-		r $1
-	else
-		r ${@:2}
-  fi
-}
-
-uz() {
-  for target in $@; do
-    echo $target
-    if [[ $target = *.tar.gz ]]; then
-      tar xvfz $target
-      r $target
-    elif [[ $target = *.gz ]]; then
-      gunzip $target
-      r $target
-    elif [[ $target = *.tar ]]; then
-      tar xvf $target
-      r $target
-    elif [[ $target == *.bz2 ]]; then
-      bunzip2 $target
-      r $target
-    fi
-  done
-}
-
-# Back Up : Back Up
-bu() {
-  if [[ $2 = "" ]]; then
-    cp -r $1 $1.bak
-  else
-    cp -r $1 $1.bak.$2
-  fi
-  l
-}
-
-# Back Up : Back Up Remove
-bur() {
-  mv $1 $1.bak
-}
-
-# TODO pbr
-# Back Up : Put Back
-pb() {
-  r $1
-  if [[ $2 == "" ]]; then
-    cp -r $1.bak $1
-  else
-    cp -r $1.bak.$2 $1
-  fi
-}
-
-pbr() {
-  r $1
-  m $1.bak $1
-}
-
-# TODO
-# Directory history
-#d() {
-#  pn d "dirs -v | head -10"
-#}
-
-# Tree
-t() {
-  if $MSH_AUTO_EXCLUDE; then
-    pn t "tree -fC --noreport -I \"$MSH_AUTO_EXCLUDE_TLIST\" $@"
-  else
-    pn t "tree -fC --noreport $@"
-  fi
-}
-
-tl() {
-  pn t "tree -f --noreport -L $1 ${@:2}"
-}
-
-for ((i = 0; i < 100; i++)); do
-  alias t$i="tl $i"
-done
-
-# Tree diff
-tdiff() {
-  d $1
-  tree > $MOS_TMP/tdiff.1
-  d -
-  d $2
-  tree > $MOS_TMP/tdiff.2
-  d -
-  vimdiff $MOS_TMP/tdiff.1 $MOS_TMP/tdiff.2
-  rm $MOS_TMP/tdiff.1
-  rm $MOS_TMP/tdiff.2
-}
-
-function command_not_found_handler() {
-  cs
-}
-
-# List Utility : List
-# l : List files in full or brief depending on total number of files
-l() {
-  if $MSH_LS_AUTO_MODE && [[ $(la $@ | wc -l) -lt 30 ]]; then
-    la $@
-  else
-    lb $@
- fi
-}
-
-# List Utility: List All
-# la : List almost all files
-la() {
-  pn l "lscolor -ltuhA $@ | gv ^total"
-	wtt $(rnode $(pwd) "/" 0)
-}
-
-# List Utility: List Brief
-# lb : List files in brief
-lb() {
-  pn l "lscolor -ltuh $@ | gv ^total"
-  wtt $(rnode $(pwd) "/" 0)
-}
-
-# List Utility: List Hidden
-# lh : List hidden files
-lh() {
-  pn l "lscolor -ltuhd .*"
-  wtt $(rnode $(pwd) "/" 0)
-}
-
-# List : List Filtered
-# lf : List files with filename pattern filter
-lf() {
-  pn l "lscolor -ltuhd $@"
-  wtt $(rnode $(pwd) "/" 0)
-}
-
-lfd() {
-  lsnocolor -tuhd ${@:2} | head -$1 | tail -1
-}
-
-# Shortcut : Shortcut
-# sc a/b : Create shortcut b pointing to a/b (shortcut name is taken from leaf of destination)
-# sc a/b c : Create shortcut c pointing to a/b
-sc() {
-  ln -s $@
-}
-
-
-# Move : Move
-# m a b c : Move a and b to c
-m() {
-  mv ${@:1:-1} $@[-1]
-  l
-}
-
-# Move : Move Shortcut
-# ml a b c : Move a and b to c, and create symbolic links from a and b to c/a and c/b
-ms() {
-  m $@
-  for file in ${@:1:-1}; do
-    sc $@[-1]/$file
-  done
-  l
-}
-
-export TRASH=$MOS_ROOT/.Trash
-export ARCHIVE=$MOS_ROOT/.Archive
-
-# Remove Utility: Remove
-# r file : Move file to trash
-r() {
-  trash=$TRASH/$(timestamp)
-  md $trash
-  if [[ $1 == "" ]]; then
-    mv * $trash
-  elif [[ -a $1 ]]; then
-    mv $@ $trash
-  fi
-  l
-}
-
-# Remove Utility: Remove Undo TODO Create history aware Undo TODO Doesn't work when removed nested file
-# ru : Undo the last removal
-ru() {
-  m $TRASH/$(ls $TRASH | tail -1)/*(D) .
-}
-
-# Remove Utility: Remove List
-# rl : List files in trash
-rl() {
-  l $TRASH
-}
-
-# Remove Utility: Remove Empty
-# re : Empty files in trash
-re() {
-  rm -rf $TRASH/*
-}
-
-# Remove : Archive
-# ra a : Archive file a
-ra() {
-  archive=$ARCHIVE/$(timestamp)
-  md $archive
-  if [[ $1 == "" ]]; then
-    mv * $archive
-  elif [[ -a $1 ]]; then
-    mv $@ $archive
-  fi
-  l
-}
-
-# Cat Utility: Cat Line
-# catl file 1 : Cat file line 1
-catl() {
-  sed -n $2p $1
-}
-
-# Write Utility: Insert Line
-# ins file "text" : Insert "text" into line 1 of file
-ins() {
-  sed -i "1i$2" $1
 }
 
 # }}}
@@ -3209,7 +3216,7 @@ dj() {
 #export HISTCONTROL=ignoredups
 #export _JAVA_OPTIONS="-Dawt.useSystemAAFontSettings=lcd"
 
-PATH="$PATH:$MOS_BIN"
+PATH="$PATH:$MOS_BIN:$RC/bin"
 if [[ -d "~/projects/maven-misc/bin" ]] ; then
     PATH="~/projects/maven-misc/bin:$PATH"
 fi
@@ -3234,6 +3241,7 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # Install Software {{{
 
+# TODO coreutils for BSD
 case $OS in
 	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
 	BSD) deps=(zsh tmux vim irssi emacs git tree grc ssh-copy-id);;
@@ -3275,7 +3283,7 @@ fi
 
 case $OS in
 	GNU) eval $(dircolors ~/.dir_colors);;
-	BSD)
+	BSD) eval $(gdircolors ~/.dir_colors) && eval $(ls-colors-linux-to-bsd);;
 esac
 
 # }}}
