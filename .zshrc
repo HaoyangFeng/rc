@@ -1812,6 +1812,12 @@ upall() {
 # Servers {{{
 
 
+# Server : Haoyangnz
+# hynz : Connect to haoyangnz
+hynz() {
+	ssh haoyangnz.ddns.net
+}
+
 # Server : Calypso
 # calypso : Go to the mounted server calypso
 calypso() {
@@ -3267,7 +3273,10 @@ fi
 
 # Setup Environment {{{
 
-eval $(dircolors ~/.dir_colors)
+case $OS in
+	GNU) eval $(dircolors ~/.dir_colors);;
+	BSD)
+esac
 
 # }}}
 
