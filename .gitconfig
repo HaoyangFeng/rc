@@ -2,4 +2,6 @@
 	name = Haoyang Feng
 	email = haoyangnz@gmail.com
 [diff]
-  tool = vimdiff
+	tool = vimdiff
+	patience = true
+	algorithm = histogram

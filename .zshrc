@@ -393,9 +393,10 @@ MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bow
 # Core Environment variables {{{
 
 # OS can be GNU or BSD
-export OS=BSD
+export OS=GNU
 
-export PASS=Haofnz06
+# TODO Move personal stuff to prc
+export PASS=TODO
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
 export LANG=en_NZ.UTF-8
@@ -437,7 +438,7 @@ alias dp='deploy'
 alias jr='jrebel'
 alias pls='sudo $(!!)'
 alias dp='deploy'
-alias tst='maven build-all || cat target/test-reports/*.txt'
+
 alias beep='paplay $BEEP'
 
 alias bc='bc -l'
@@ -712,6 +713,13 @@ c() {
   fi
 }
 
+cr() {
+	case $OS in
+			GNU) tac $@;;
+			BSD) tail -r $@;;
+	esac
+}
+
 # Tar
 
 z() {
@@ -912,6 +920,7 @@ r() {
 # ru : Undo the last removal
 ru() {
   m $TRASH/$(ls $TRASH | tail -1)/*(D) .
+	rmdir $TRASH/$(ls $TRASH | tail -1)
 }
 
 # Remove Utility: Remove List
@@ -994,15 +1003,15 @@ rtrc() {
   d rt
   cs
 # Perform regression test
-  result=PASS
+  result=PASSED
   e --- Starting RT
   if [[ $(rrc) != "" ]]; then
     e rrc has output
-    result=FAIL
+    result=FAILED
   fi
 # Remove work directory
   cd $pwd
-  if [[ $result == "FAIL" ]]; then
+  if [[ $result == "FAILED" ]]; then
     e --- RT FAILED
     return 1
   fi
@@ -1239,6 +1248,10 @@ gv() {
   g -v $@
 }
 
+ge() {
+	gr exception
+}
+
 gr() {
   if [[ $2 = "" ]]; then
     if $MSH_AUTO_EXCLUDE; then
@@ -1301,10 +1314,6 @@ whs() {
   gs "private ($1|List<$1>) " | sed "s/^.*\///" | sed "s/\..*List.*$/ */" | cut -d "." -f 1
 }
 
-wha() {
-  sed -n $1p $MOS_TMP/wh/current | cut -d " " -f 2
-}
-
 # }}}
 
 # Find {{{
@@ -1326,7 +1335,7 @@ f() {
 
 # Find by partial name
 fp() {
-  f ".*$1[^\/]*" ${@:2}
+  f ".*"$1"[^\/]*" ${@:2}
 }
 
 # Find source by full PascalCase abbreviated name
@@ -1377,10 +1386,12 @@ rmc() {
 # rmu a:/b/ c:/d : Remotely update c:/d to match a:/b
 # rmu a:/b/ c:/d *.zip: Remotely update c:/d to match a:/b/*.zip
 rmu() {
-  if [[ $3 != "" ]]; then
-    rsync -rLpt --delete-excluded $1 $2 --include=$3 --exclude="*"
-  else
+	if [[ $2 == "" ]]; then
+    rsync -rLpt --delete-excluded $1 .
+  elif [[ $3 == "" ]]; then
     rsync -rLpt --delete-excluded $1 $2
+  else
+    rsync -rLpt --delete-excluded $1 $2 --include="$3" --exclude="*"
   fi
 }
 
@@ -1489,10 +1500,10 @@ oj() {
 # ohf histfile [keyword] : Show open history for a specific history file
 ohf() {
   if [[ $2 == "" ]]; then
-    pn oh "tail -r $1 | uniq -c"
+    pn oh "cr $1 | uniq -c"
     #| sort | uniq -c | sort -nr"
   else
-    pn oh "tail -r $1"
+    pn oh "cr $1"
   fi
 }
 
@@ -1512,14 +1523,14 @@ ofh() {
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "tail -r $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
+    pn ch "cr $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
   else
-    pn ch "tail -r $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
+    pn ch "cr $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
   fi
 }
 
 chd() {
-  tail -r $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq | head -$2 | tail -1
+  cr $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | g "$(echo $1 | esk)" | uniq | head -$2 | tail -1
 }
 
 # History : History Clear
@@ -1647,8 +1658,11 @@ tn() {
     n=$(catlbnc $1)
     case $(pnc) in
         d) e cd +$1;;
-        t) e o $(rnode $n " " 0);;
-        note) e o $(rpc | sed -n $1p | cut -d "-" -f 3 | cut -d " " -f 2);;
+        t) case $2 in
+               r) e r $(rnode $n " " 0);;
+               "") e o $(rnode $n " " 0);;
+					 esac;;
+        note) e o $(rpc | sed -n "$1"p | cut -d "-" -f 3 | cut -d " " -f 2);;
         l) case $2 in 
                r) e r "$(echo $n | awk '{print $9}')";;
                "") e o "$(echo $n | awk '{print $9}')";;
@@ -1724,8 +1738,8 @@ done
 # General Navigation {{{
 
 export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/GP/Kansas
-export MODE=SCD
+export CDS=/KIWI/datasets/Tailim/Paju
+export MODE=VUE
 
 # Selecting the development mode
 mode() {
@@ -1859,13 +1873,8 @@ support() {
 # Download from boom
 # If $1 is defined then download the file to nzboom shared folder
 boomdl() {
-  cdd boom
-  rm -rf *
-  if [[ $1 = "" ]]; then
-    scp -r "nzboom:~/shared/*" .
-  else
-    scp -r "nzboom:~/shared/$1" .
-  fi
+  dc boom
+	rmu 'nzboom:~/shared/*' .
 }
 
 #TODO Doesn't work
@@ -2351,33 +2360,6 @@ cip() {
   fi
 }
 
-# Java Commit
-# jci "Comment" : Commit with "Comment" for the current rev, merging to revisions in $MERGEREV
-jci() {
-  wtl "Committing"
-  pj
-  up
-  externals=("${(@f)$(stm | cut -c9- | cut -c-3)}")
-  ci $1 $externals
-  up
-  o ${externals[1]}
-  merge_to_rev=$(svnlog haoyang | head -2 | tail -1 | cut -d " " -f 1 | cut -c2-)
-  for rev in $MERGEREV; do
-    e --- Merging to $rev..
-    pjr
-    o $rev
-    up
-    for external in $externals; do
-      o $external
-      mg $JREV $merge_to_rev
-      o ..
-    done
-    ci $1 $externals
-    up
-  done
-  wtu "Committing [DONE]"
-}
-
 co() {
   wtl "Check out"
   if [[ $1 == *git* ]]; then
@@ -2462,9 +2444,10 @@ export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home
 # Java Navigation {{{
 
 export JPJ_ROOT=~/projects
-export JPJ=mes-8.0.2
+#export JPJ=mes-excl-8.10
+export JPJ=mes-excl-8.14
 export JPD=$(lnode $JPJ - 1)
-MERGEREV=("mes-8.0") export MERGEREV
+MERGEREV=("mes-8.10" "mes-8.10.1") export MERGEREV
 export JREV=$(e $JPJ | cut -c5-)
 export JHD=mes-8.0
 export JMB=mes-8.0
@@ -2599,6 +2582,9 @@ rmsite() {
   rm -rf $SV/$SITE_NAME
   rm -rf $WK/$SITE_NAME
   rm -rf $TC/$SITE_NAME
+	rmsitedb
+}
+rmsitedb() {
   for db in $(sqlld); do
     sqlrm $db
   done
@@ -2659,7 +2645,7 @@ cmp() {
 # Java Debug: Debug Java service
 # jdb : Pick Java Service to debug
 jdb() {
-  pn jdb "ls /kiwi/java/sites/tss_7_95_2/current/conf/kiwiplan/jini/*.xml"
+  pn jdb "ls $SV/$SITE_NAME/current/conf/kiwiplan/jini/*.xml"
 }
 
 # Java Setup: Check out Java project
@@ -2704,11 +2690,20 @@ jsv() {
 }
 
 jstss() {
+	cp $COMMON/roadgrids/* $SV/$SITE_NAME/current/conf/kiwiplan/roadgrids
   tc
   d webapps/kp-tss-map-tiles/maptiles
   sudo mount nzmaptiles.kiwiplan.co.nz:/data/default  .
 }
 
+jtst() {
+	if [[ $1 == "" ]]; then
+		maven build-all || cat target/test-reports/*.txt
+	else
+		testclass=$(find testsrc -name "$1.java" | cut -d "." -f1 | s 's/^testsrc\///g')
+		mvn test -Dtest=$testclass
+	fi
+}
 
 
 jup() {
@@ -2745,18 +2740,20 @@ jwid() {
 # $2 database dump suffix
 # sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
 jdi() {
-  vds
+	jdr $1
+	sv
+	bin/upgrade.sh
+	vds
+	sqlo $1
+}
+
+jdr() {
+	vds
   sqli $1
   if [[ -f time.properties ]]; then
     cp time.properties $SV/$SITE_NAME/current/conf/kiwiplan/time.properties
     cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties
-  fi
-  ss
-}
-
-jdr() {
-  vds
-  sqli ${1}upgraded
+	fi
 }
 
 jinmes() {
@@ -2857,9 +2854,7 @@ e
 
 #  TODO PORT PROBLEM?
 
-  cp $COMMON/roadgrids/* $SV/$SITE_NAME/current/conf/kiwiplan/roadgrids
   jstss
-
 
 #  TODO Change pcs properties
 }
@@ -2885,6 +2880,80 @@ jdt() {
   cat $COMMON/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
 }
 
+jdp() {
+	pj
+  modified_projects=("${(@f)$(svn st | grep "^[A-Z] " | grep -v ^X | cut -d " " -f8 | sed "s/src.*//g" | sed "s/test$//g" | sed "s/conf.*//g" | sed "s/pom.xml//g" | sed "s/file.*//g" | sort | uniq)}")
+	e
+	e Projects modified:
+	e
+	for project in $modified_projects; do
+		echo "* $project"
+	done
+	e
+	e ENTER to proceed, C-c to cancel
+	e
+	read
+	for project in $modified_projects; do
+		pj
+		cd $project
+		dp
+	done
+}
+
+jja() {
+	pj
+  modified_projects=("${(@f)$(svn st | grep "^[A-Z] " | grep -v ^X | cut -d " " -f8 | sed "s/src.*//g" | sed "s/test$//g" | sed "s/conf.*//g" | sed "s/pom.xml//g" | sed "s/file.*//g" | sort | uniq)}")
+	e
+	e Projects modified:
+	e
+	for project in $modified_projects; do
+		echo "* $project"
+	done
+	e
+	e ENTER to proceed, C-c to cancel
+	e
+	read
+	for project in $modified_projects; do
+		pj
+		cd $project
+		e;e;e;e;e;
+		e --------------------- BUILDING $project ------------------------
+		e;e;e;e;e;
+		ja || break
+		e;e;e;e;e;
+		e --------------------- FINISHED BUILDING $project ------------------------
+		e;e;e;e;e;
+	done
+}
+
+# Java Commit
+# jci "Comment" : Commit with "Comment" for the current rev, merging to revisions in $MERGEREV
+jci() {
+  wtl "Committing"
+  pj
+  up
+  externals=("${(@f)$(stm | cut -c9- | cut -c-3)}")
+  ci $1 $externals
+  up
+  o ${externals[1]}
+  merge_to_rev=$(svnlog haoyang | head -2 | tail -1 | cut -d " " -f 1 | cut -c2-)
+  for rev in $MERGEREV; do
+    e --- Merging to $rev..
+    pjr
+    o $rev
+    up
+    for external in $externals; do
+      o $external
+      mg $JREV $merge_to_rev
+      o ..
+    done
+    ci $1 $externals
+    up
+  done
+  wtu "Committing [DONE]"
+}
+
+
 # }}}
 
 #}}}
@@ -2893,12 +2962,12 @@ jdt() {
 
 # MAP Navigation {{{
 
-export MAP_REV_SRC=aurora
+export MAP_REV_SRC=boom_base
 export MAP_REV=8.00_01oct2014
 export MAP_DATA_REV=01oct2014
 export MAP_TRUNK=trunk
 export MAP_BRANCH=dev_branches/messaging
-export MPJ_ROOT="~/projects/map"
+export MPJ_ROOT=~/projects/map
 export MPJ=kiwi_riegelsville
 export MHD=kiwi_head
 export MMB=kiwi_riegelsville
