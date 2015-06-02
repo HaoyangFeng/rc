@@ -5,7 +5,7 @@ set use_from=yes
 
 # IMAP account settings
 set imap_user="haoyang.feng@kiwiplan.co.nz"
-set imap_pass=Haofnz8889
+set imap_pass=Santoki52
 set folder=imaps://haoyang.feng@mail.kiwiplan.co.nz/Folders
 set spoolfile=imaps://haoyang.feng@mail.kiwiplan.co.nz/
 set record=imaps://haoyang.feng@mail.kiwiplan.co.nz/Sent
@@ -129,7 +129,7 @@ alias starcraft StarCraft edison,lucas,aaron,yukio,craig
 #subscribe "gentoo-.*@gentoo\\.org"
 
 # SMTP mailing configuration (for sending mail)
-set smtp_pass=Haofnz8889
+set smtp_pass=Santoki52
 set smtp_url=smtp://haoyang.feng@mail.kiwiplan.co.nz:587
 
 macro index     .u      "l(~t haoyang (~f wayne|~f tim|~f paul|~f 'james bottomley') !~Q)|~F\n"

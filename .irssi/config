@@ -32,7 +32,7 @@ servers = (
     address = "kiwiim.kiwiplan.co.nz";
     use_ssl = "yes";
     chatnet = "Kiwiplan";
-    password = "Haofnz8889";
+    password = "Santoki52";
     autoconnect = "yes";
   }
 );
