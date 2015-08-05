@@ -5,3 +5,11 @@
 	tool = vimdiff
 	patience = true
 	algorithm = histogram
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	interactive = auto
+	ui = true
+	pager = true
+
