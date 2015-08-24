@@ -1,30 +1,39 @@
-call pathogen#infect()
-call togglebg#map("<F5>")
-nnoremap <c-c> :qa!<ENTER>
-nnoremap <NUL> :wq!<ENTER>
+"Vundle
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'pangloss/vim-javascript'
+Plugin 'sjl/gundo.vim'
+Plugin 'kien/ctrlp.vim'
+call vundle#end()
+filetype plugin indent on
 
-::filetype plugin on
+"Theme
+colorscheme solarized
+set background=light
+syntax enable
 
+"Settings
 set smartindent
 set tabstop=2
 set shiftwidth=2
 set noexpandtab
-syntax enable
-set background=light
-colorscheme solarized
-
-let fortran_fold=1
-let fortran_fold_conditionals=1
-"let fortran_fold_multilinecomments=1
-
-"set foldmethod=syntax
-
+set foldenable
+set foldmethod=syntax
+set foldlevelstart=1
+set foldnestmax=10
 set number
 set relativenumber
 set cursorline
 set ruler
 set showmode
 set showcmd
+set showmatch
+set wildmenu
+set lazyredraw
 set gdefault
 set ttyfast
 set statusline=2
@@ -33,23 +42,31 @@ set hlsearch
 set ignorecase
 set smartcase
 set tags=/home/haoyang.feng/.vimtags
+"set clipboard=unnamedplus
+if has('conceal')
+	set conceallevel=1
+	set concealcursor=nvic
+endif
 
-set clipboard=unnamedplus
-
+"Mappings
 let mapleader=","
+nnoremap <c-c> :qa!<enter>
+nnoremap <nul> :wq!<enter>
 nnoremap / /\v
-nnoremap <LEADER>t :TlistToggle<ENTER>
-nnoremap <silent><F12> :TlistAddFilesRecursive .<ENTER>:TlistToggle<ENTER>
+nnoremap <leader>t :TlistToggle<enter>
+nnoremap <leader><space> :nohlsearch<enter>
+nnoremap <leader>u :GundoToggle<CR>
+nnoremap <silent><F12> :TlistAddFilesRecursive .<enter>:TlistToggle<enter>
 nnoremap <silent><F11> :TlistAddFilesRecursive 
-nnoremap <silent><SPACE> za
+nnoremap <silent><space> za
 nnoremap <c-h> <c-w>h
 nnoremap <c-j> <c-w>j
 nnoremap <c-k> <c-w>k
 nnoremap <c-l> <c-w>l
-nnoremap <c-n> :n<ENTER>
-nnoremap <c-p> :N<ENTER>
-nnoremap <silent><F8> :se nosi<ENTER> :se nornu<ENTER>
-nnoremap <silent><F9> :se rnu<ENTER> :se si<ENTER>
+nnoremap <c-n> :n<enter>
+nnoremap <c-p> :N<enter>
+nnoremap <silent><F8> :se nosi<enter> :se nornu<enter>
+nnoremap <silent><F9> :se rnu<enter> :se si<enter>
 nnoremap * *zz
 nnoremap # #zz
 nnoremap n nzz
@@ -59,8 +76,9 @@ nnoremap ' `
 nnoremap <c-]> <c-]>zz
 nnoremap ]c ]czz
 nnoremap [c [czz
-nnoremap <LEADER>c 0R//<ESC>j
-"cnoremap <ENTER> <ENTER>zt
+nnoremap <leader>c 0R//<esc>j
+nnoremap gV `[v`]
+"cnoremap <enter> <enter>zt
 
 
 "svn blame
@@ -86,7 +104,7 @@ nnoremap <LEADER>c 0R//<ESC>j
   setlocal scrollbind
   syncbind
 :endfunction
-:map <LEADER>b :call <SID>svnBlame()<CR>
+:map <leader>b :call <SID>svnBlame()<CR>
 :command Blame call s:svnBlame() 
 
 :function PrepareGoogleDoc()
@@ -99,10 +117,42 @@ nnoremap <LEADER>c 0R//<ESC>j
   silent! syn match content "^[^\<].*$"
   silent! hi link content Keyword
 :endfunction
-:map <LEADER>g :call <SID>prepareGoogleDoc()<CR>
+:map <leader>g :call <SID>prepareGoogleDoc()<CR>
 :command Google call s:prepareGoogleDoc()
 
 :let g:easytags_auto_update = 0
 :autocmd CursorMoved * exe printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\'))
 :let b:easytags_auto_highlight = 0
 ":let g:TypesFileIncludeLocals = 1
+
+"JS
+let g:javascript_conceal_function   = "ƒ"
+let g:javascript_conceal_null       = "ø"
+let g:javascript_conceal_this       = "@"
+let g:javascript_conceal_return     = "⇚"
+let g:javascript_conceal_undefined  = "¿"
+let g:javascript_conceal_NaN        = "ℕ"
+let g:javascript_conceal_prototype  = "¶"
+let g:javascript_conceal_static     = "•"
+let g:javascript_conceal_super      = "Ω"
+
+"Fortran
+let fortran_fold=1
+let fortran_fold_conditionals=1
+"let fortran_fold_multilinecomments=1
+
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,.git/*
+
+"CtrlP
+let g:ctrlp_custom_ignore = {
+	\ 'dir':  '\v[\/](node_modules|lib|bower_components)$',
+	\ 'file': '\v\.(exe|so|dll|swp)$',
+	\ 'link': 'some_bad_symbolic_links',
+	\ }
+
+
+augroup configgroup
+	autocmd!
+	autocmd BufEnter *.msh setlocal foldmethod=marker
+	autocmd BufEnter *.msh setlocal foldlevel=0
+augroup END

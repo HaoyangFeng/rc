@@ -1,1 +1,1 @@
-. ~/msh/msh-core
+. ~/msh/msh-core/core.msh
