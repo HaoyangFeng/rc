@@ -5,9 +5,50 @@ set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'altercation/vim-colors-solarized'
+
 Plugin 'pangloss/vim-javascript'
+let g:javascript_conceal_function   = "ƒ"
+let g:javascript_conceal_null       = "ø"
+let g:javascript_conceal_this       = "@"
+let g:javascript_conceal_return     = "⇚"
+let g:javascript_conceal_undefined  = "¿"
+let g:javascript_conceal_NaN        = "ℕ"
+let g:javascript_conceal_prototype  = "¶"
+let g:javascript_conceal_static     = "•"
+let g:javascript_conceal_super      = "Ω"
+
+Plugin 'jelera/vim-javascript-syntax'
 Plugin 'sjl/gundo.vim'
+
 Plugin 'kien/ctrlp.vim'
+let g:ctrlp_custom_ignore = {
+	\ 'dir':  '\v[\/](node_modules|lib|bower_components)$',
+	\ 'file': '\v\.(exe|so|dll|swp)$',
+	\ 'link': 'some_bad_symbolic_links',
+	\ }
+
+Plugin 'easymotion/vim-easymotion'
+let g:EasyMotion_do_mapping = 0
+let g:EasyMotion_smartcase = 1
+
+Plugin 'tpope/vim-surround'
+Plugin 'Raimondi/delimitMate'
+Plugin 'Valloric/YouCompleteMe'
+
+Plugin 'marijnh/tern_for_vim'
+let g:tern_map_keys=1
+let g:tern_map_prefix = '<leader>'
+let g:tern_show_argument_hints='on_move'
+let tern#is_show_argument_hints_enabled = 1
+
+Plugin 'nathanaelkane/vim-indent-guides'
+let g:indent_guides_enable_on_vim_startup=1
+let g:indent_guides_start_level=2
+let g:indent_guides_guide_size=2
+
+Plugin 'scrooloose/syntastic'
+let g:syntastic_check_on_open=1
+
 call vundle#end()
 filetype plugin indent on
 
@@ -41,7 +82,6 @@ set incsearch
 set hlsearch
 set ignorecase
 set smartcase
-set tags=/home/haoyang.feng/.vimtags
 "set clipboard=unnamedplus
 if has('conceal')
 	set conceallevel=1
@@ -53,24 +93,23 @@ let mapleader=","
 nnoremap <c-c> :qa!<enter>
 nnoremap <nul> :wq!<enter>
 nnoremap / /\v
-nnoremap <leader>t :TlistToggle<enter>
 nnoremap <leader><space> :nohlsearch<enter>
 nnoremap <leader>u :GundoToggle<CR>
-nnoremap <silent><F12> :TlistAddFilesRecursive .<enter>:TlistToggle<enter>
-nnoremap <silent><F11> :TlistAddFilesRecursive 
 nnoremap <silent><space> za
 nnoremap <c-h> <c-w>h
 nnoremap <c-j> <c-w>j
 nnoremap <c-k> <c-w>k
 nnoremap <c-l> <c-w>l
 nnoremap <c-n> :n<enter>
-nnoremap <c-p> :N<enter>
+nnoremap <c-N> :N<enter>
 nnoremap <silent><F8> :se nosi<enter> :se nornu<enter>
 nnoremap <silent><F9> :se rnu<enter> :se si<enter>
 nnoremap * *zz
 nnoremap # #zz
 nnoremap n nzz
 nnoremap N Nzz
+"nnoremap j jzz
+"nnoremap k kzz
 nnoremap ` '
 nnoremap ' `
 nnoremap <c-]> <c-]>zz
@@ -78,8 +117,43 @@ nnoremap ]c ]czz
 nnoremap [c [czz
 nnoremap <leader>c 0R//<esc>j
 nnoremap gV `[v`]
+"map <leader> <Plug>(easymotion-prefix)
+map ; <Plug>(easymotion-s)
+map <leader>m <Plug>(easymotion-bd-w)
+map  / <Plug>(easymotion-sn)
 "cnoremap <enter> <enter>zt
 
+
+:autocmd CursorMoved * exe printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\'))
+
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,.git/*
+
+augroup configgroup
+	autocmd!
+	autocmd BufEnter *.msh setlocal foldmethod=marker
+	autocmd BufEnter *.msh setlocal foldlevel=0
+augroup END
+
+
+
+
+"Fortran
+let fortran_fold=1
+let fortran_fold_conditionals=1
+"let fortran_fold_multilinecomments=1
+
+:function PrepareGoogleDoc()
+  silent! s/<[^>]*>/\r&\r/
+  silent! g/^$/d
+  silent! %s/>\n</></
+  exec "normal /^[^<]\<CR>"
+  silent! syn match markup "<.*>"
+  silent! hi link markup Comment
+  silent! syn match content "^[^\<].*$"
+  silent! hi link content Keyword
+:endfunction
+:map <leader>g :call <SID>prepareGoogleDoc()<CR>
+:command Google call s:prepareGoogleDoc()
 
 "svn blame
 " Show in a new window the Subversion blame annotation for the current file.
@@ -106,53 +180,3 @@ nnoremap gV `[v`]
 :endfunction
 :map <leader>b :call <SID>svnBlame()<CR>
 :command Blame call s:svnBlame() 
-
-:function PrepareGoogleDoc()
-  silent! s/<[^>]*>/\r&\r/
-  silent! g/^$/d
-  silent! %s/>\n</></
-  exec "normal /^[^<]\<CR>"
-  silent! syn match markup "<.*>"
-  silent! hi link markup Comment
-  silent! syn match content "^[^\<].*$"
-  silent! hi link content Keyword
-:endfunction
-:map <leader>g :call <SID>prepareGoogleDoc()<CR>
-:command Google call s:prepareGoogleDoc()
-
-:let g:easytags_auto_update = 0
-:autocmd CursorMoved * exe printf('match IncSearch /\V\<%s\>/', escape(expand('<cword>'), '/\'))
-:let b:easytags_auto_highlight = 0
-":let g:TypesFileIncludeLocals = 1
-
-"JS
-let g:javascript_conceal_function   = "ƒ"
-let g:javascript_conceal_null       = "ø"
-let g:javascript_conceal_this       = "@"
-let g:javascript_conceal_return     = "⇚"
-let g:javascript_conceal_undefined  = "¿"
-let g:javascript_conceal_NaN        = "ℕ"
-let g:javascript_conceal_prototype  = "¶"
-let g:javascript_conceal_static     = "•"
-let g:javascript_conceal_super      = "Ω"
-
-"Fortran
-let fortran_fold=1
-let fortran_fold_conditionals=1
-"let fortran_fold_multilinecomments=1
-
-set wildignore+=*/tmp/*,*.so,*.swp,*.zip,.git/*
-
-"CtrlP
-let g:ctrlp_custom_ignore = {
-	\ 'dir':  '\v[\/](node_modules|lib|bower_components)$',
-	\ 'file': '\v\.(exe|so|dll|swp)$',
-	\ 'link': 'some_bad_symbolic_links',
-	\ }
-
-
-augroup configgroup
-	autocmd!
-	autocmd BufEnter *.msh setlocal foldmethod=marker
-	autocmd BufEnter *.msh setlocal foldlevel=0
-augroup END
