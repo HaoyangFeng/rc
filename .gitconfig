@@ -7,9 +7,14 @@
 	algorithm = histogram
 [color]
 	diff = auto
-	status = auto
+	status = always
 	branch = auto
 	interactive = auto
 	ui = true
 	pager = true
-
+[remote "origin"]
+	prune = true
+[merge]
+	tool = vimdiff
+	conflictstyle = diff3
+	prompt = false

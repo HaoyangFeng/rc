@@ -1,13 +1,5 @@
-!clear Shift
-clear Lock
-clear Control
-!clear Mod1
-!clear Mod2
-!clear Mod3
-!clear Mod4
-!clear Mod5
 keycode   8 =
-keycode   9 = NoSymbol NoSymbol NoSymbol NoSymbol Escape
+keycode   9 =
 keycode  10 = 1 exclam 1 exclam 1 exclam
 keycode  11 = 2 at 2 at 2 at
 keycode  12 = 3 numbersign 3 numbersign 3 numbersign
@@ -20,7 +12,7 @@ keycode  18 = 9 parenleft 9 parenleft 9 parenleft
 keycode  19 = 0 parenright 0 parenright 0 parenright
 keycode  20 = minus underscore minus underscore minus underscore
 keycode  21 = equal plus equal plus equal plus
-keycode  22 = NoSymbol NoSymbol NoSymbol NoSymbol BackSpace 
+keycode  22 =
 keycode  23 = Tab ISO_Left_Tab Tab ISO_Left_Tab Tab ISO_Left_Tab
 keycode  24 = q Q q Q q Q
 keycode  25 = w W w W w W
@@ -91,7 +83,7 @@ keycode  89 = KP_Next KP_3 KP_Next KP_3 KP_Next KP_3
 keycode  90 = KP_Insert KP_0 KP_Insert KP_0 KP_Insert KP_0
 keycode  91 = KP_Delete KP_Decimal KP_Delete KP_Decimal KP_Delete KP_Decimal
 keycode  92 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift NoSymbol ISO_Level3_Shift
-keycode  93 = space
+keycode  93 = space NoSymbol space NoSymbol space
 keycode  94 = less greater less greater bar brokenbar bar
 keycode  95 = F11 F11 F11 F11 F11 F11 XF86Switch_VT_11
 keycode  96 = F12 F12 F12 F12 F12 F12 XF86Switch_VT_12
@@ -103,10 +95,10 @@ keycode 101 = Hiragana_Katakana NoSymbol Hiragana_Katakana NoSymbol Hiragana_Kat
 keycode 102 = Muhenkan NoSymbol Muhenkan NoSymbol Muhenkan
 keycode 103 =
 keycode 104 = KP_Enter NoSymbol KP_Enter NoSymbol KP_Enter
-keycode 105 = NoSymbol NoSymbol NoSymbol NoSymbol Control_R
+keycode 105 =
 keycode 106 = KP_Divide KP_Divide KP_Divide KP_Divide KP_Divide KP_Divide XF86Ungrab
 keycode 107 = Print Sys_Req Print Sys_Req Print Sys_Req
-keycode 108 = Alt_R Meta_R Alt_R Meta_R Alt_R Meta_R
+keycode 108 = Alt_R NoSymbol Alt_R NoSymbol Alt_R
 keycode 109 = Linefeed NoSymbol Linefeed NoSymbol Linefeed
 keycode 110 = Home NoSymbol Home NoSymbol Home
 keycode 111 = Up NoSymbol Up NoSymbol Up
@@ -201,7 +193,7 @@ keycode 199 = XF86TouchpadToggle NoSymbol XF86TouchpadToggle NoSymbol XF86Touchp
 keycode 200 = XF86TouchpadOn NoSymbol XF86TouchpadOn NoSymbol XF86TouchpadOn
 keycode 201 = XF86TouchpadOff NoSymbol XF86TouchpadOff NoSymbol XF86TouchpadOff
 keycode 202 =
-keycode 203 = NoSymbol NoSymbol NoSymbol NoSymbol NoSymbol
+keycode 203 =
 keycode 204 = NoSymbol Alt_L NoSymbol Alt_L NoSymbol Alt_L
 keycode 205 = NoSymbol Meta_L NoSymbol Meta_L NoSymbol Meta_L
 keycode 206 = NoSymbol Super_L NoSymbol Super_L NoSymbol Super_L
@@ -254,13 +246,3 @@ keycode 252 =
 keycode 253 = BackSpace BackSpace BackSpace BackSpace BackSpace BackSpace
 keycode 254 = Return Return Return Return Return Return
 keycode 255 = Escape Escape Escape Escape Escape Escape
-!add Shift = Shift_L Shift_R
-!add Lock = Control_L Control_L
-add Control = Control_L Control_R
-!add Mod1 = Alt_L Alt_R
-!add Mod2 = Mode_switch
-!add Mod3 = 
-!add Mod4 = Super_L Super_R
-!add Mod5 =
-
-pointer = 1 2 3 5 4 7 6 8 9 10 11 12

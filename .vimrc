@@ -33,13 +33,13 @@ let g:EasyMotion_smartcase = 1
 
 Plugin 'tpope/vim-surround'
 Plugin 'Raimondi/delimitMate'
-Plugin 'Valloric/YouCompleteMe'
+"Plugin 'Valloric/YouCompleteMe'
 
-Plugin 'marijnh/tern_for_vim'
-let g:tern_map_keys=1
-let g:tern_map_prefix = '<leader>'
-let g:tern_show_argument_hints='on_move'
-let tern#is_show_argument_hints_enabled = 1
+"Plugin 'marijnh/tern_for_vim'
+"let g:tern_map_keys=1
+"let g:tern_map_prefix = '<leader>'
+"let g:tern_show_argument_hints='on_move'
+"let tern#is_show_argument_hints_enabled = 1
 
 Plugin 'nathanaelkane/vim-indent-guides'
 let g:indent_guides_enable_on_vim_startup=1
@@ -61,10 +61,10 @@ syntax enable
 set smartindent
 set tabstop=2
 set shiftwidth=2
-set noexpandtab
+set expandtab
 set foldenable
 set foldmethod=syntax
-set foldlevelstart=1
+set foldlevelstart=10
 set foldnestmax=10
 set number
 set relativenumber
@@ -87,12 +87,13 @@ if has('conceal')
 	set conceallevel=1
 	set concealcursor=nvic
 endif
+set undofile
+set undodir=~/.vim/undodir
 
 "Mappings
 let mapleader=","
 nnoremap <c-c> :qa!<enter>
 nnoremap <nul> :wq!<enter>
-nnoremap / /\v
 nnoremap <leader><space> :nohlsearch<enter>
 nnoremap <leader>u :GundoToggle<CR>
 nnoremap <silent><space> za
@@ -120,7 +121,7 @@ nnoremap gV `[v`]
 "map <leader> <Plug>(easymotion-prefix)
 map ; <Plug>(easymotion-s)
 map <leader>m <Plug>(easymotion-bd-w)
-map  / <Plug>(easymotion-sn)
+"map  / <Plug>(easymotion-sn)
 "cnoremap <enter> <enter>zt
 
 
